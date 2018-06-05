@@ -1,5 +1,3 @@
-// cd ~/Documents/Github/JParticle ; mvn clean install exec:java -Dexec.mainClass="com.ckkeith.monitor.Main"
-
 package com.ckkeith.monitor;
 
 import java.io.BufferedReader;
@@ -10,19 +8,9 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 
 public class Main {
-	
-	private static String getHomeDir() throws Exception {
-		String d = System.getProperty("user.home");
-		if (d == null || d.length() == 0) {
-			throw new IllegalArgumentException(
-					"Unable to determine user.home directory from System.getProperty(\"user.home\")");
-		}
-		return d;
-	}
 
 	private static String getCredentialsFileName() throws Exception {
-		return getHomeDir() + File.separator + "Documents" + File.separator + 
-				"particle-tokens.txt";
+		return Utils.getHomeDir() + File.separator + "Documents" + File.separator + "particle-tokens.txt";
 	}
 
 	private static ArrayList<String> readCredentials() throws Exception {
@@ -54,9 +42,9 @@ public class Main {
 				}
 			}
 		} catch (Exception e) {
-			System.out.println("main() : " + LocalDateTime.now().toString() + "\t" + e.getClass().getName() + " " + e.getMessage());
-		    e.printStackTrace(new PrintStream(System.out));
+			System.out.println("main() : " + LocalDateTime.now().toString() + "\t" + e.getClass().getName() + " "
+					+ e.getMessage());
+			e.printStackTrace(new PrintStream(System.out));
 		}
 	}
-	
 }
