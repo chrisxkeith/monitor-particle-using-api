@@ -37,9 +37,10 @@ public class Main {
 		try {
 			ArrayList<String> creds = readCredentials();
 			for (String c : creds) {
-				if (c != null) {
-					(new PhotonMonitor(c)).run();
+				if (c == null || c.startsWith("#")) {
+					continue;
 				}
+				(new PhotonMonitor(c)).run();
 			}
 		} catch (Exception e) {
 			System.out.println("main() : " + LocalDateTime.now().toString() + "\t" + e.getClass().getName() + " "
