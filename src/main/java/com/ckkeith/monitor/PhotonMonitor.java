@@ -42,17 +42,13 @@ public class PhotonMonitor extends Thread {
 	}
 
 	private String getVersionString(Device d) {		
-		// TODO : add version identifier if possible.
 		if (d.variables == null) {
-			return "no variables, unknown";
+			return "unknown (no variables)";
 		}
-		if (d.variables.has("gitHubHash")) {
-			return d.variables.getString("gitHubHash");
+		if (d.variables.has("GitHubHash")) {
+			return d.readString("GitHubHash", "Bearer " + accessToken);
 		}
-		if (d.variables.has("version")) {
-			return d.variables.getString("version");
-		}
-		return "no fields, unknown";
+		return "unknown (no GitHubHash)";
 	}
 	
 	public void run() {
@@ -65,10 +61,15 @@ public class PhotonMonitor extends Thread {
 					+ Utils.padWithSpaces("lastHeard", 28) + "\t" + Utils.padWithSpaces("version", 28), logFileName);
 			for (Map.Entry<String, Device> entry : c.devices.entrySet()) {
 				Device d = entry.getValue();
+
+				// Get device variables and functions
+				if (d.connected) {
+					d = Device.getDevice(d.id, "Bearer " + accessToken);
+				}
 				Utils.log(toTabbed(d), logFileName);
-				if (d.connected && d.name.contains("ermistor")) {
-//					ParticleDeviceEvent cb = new ParticleDeviceEvent(accountName, d.name);
-//					c.subscribe(cb);
+				if (d.connected) {
+					ParticleDeviceEvent cb = new ParticleDeviceEvent(accountName, d);
+					c.subscribe(cb);
 				}
 			}
 		} catch (Exception e) {
