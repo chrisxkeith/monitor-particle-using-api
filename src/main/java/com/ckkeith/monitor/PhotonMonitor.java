@@ -16,6 +16,7 @@ public class PhotonMonitor extends Thread {
 
 	private String accessToken = null;
 	private String accountName = null;
+	private String deviceName = null;
 
 	public PhotonMonitor(String credentials) throws Exception {
 		String[] creds = credentials.split("\t");
@@ -28,6 +29,9 @@ public class PhotonMonitor extends Thread {
 			this.accountName = creds[1];
 		} else {
 			this.accountName = "unknown_account";
+		}
+		if (creds.length > 2) {
+			this.deviceName = creds[2];
 		}
 	}
 
@@ -50,6 +54,18 @@ public class PhotonMonitor extends Thread {
 		}
 		return "unknown (no GitHubHash)";
 	}
+
+	private void addDevice(Device d, Cloud c) throws Exception {
+		// Get device variables and functions
+		if (d.connected) {
+			d = Device.getDevice(d.id, "Bearer " + accessToken);
+		}
+		Utils.log(toTabbed(d), logFileName);
+		if (d.connected) {
+			ParticleDeviceEvent cb = new ParticleDeviceEvent(d);
+			c.subscribe(cb);
+		}
+	}
 	
 	public void run() {
 		try {
@@ -57,19 +73,11 @@ public class PhotonMonitor extends Thread {
 			logger.info("Logging to " + logFileName);
 			Utils.log(this.accountName + " : PhotonMonitor thread starting up.", logFileName);
 			Cloud c = new Cloud("Bearer " + accessToken, true, false);
-			Utils.log(Utils.padWithSpaces("name", 20) + "\t" + Utils.padWithSpaces("id", 24) + "\t" + "connect" + "\t"
-					+ Utils.padWithSpaces("lastHeard", 28) + "\t" + Utils.padWithSpaces("version", 28), logFileName);
-			for (Map.Entry<String, Device> entry : c.devices.entrySet()) {
-				Device d = entry.getValue();
-
-				// Get device variables and functions
-				if (d.connected) {
-					d = Device.getDevice(d.id, "Bearer " + accessToken);
-				}
-				Utils.log(toTabbed(d), logFileName);
-				if (d.connected) {
-					ParticleDeviceEvent cb = new ParticleDeviceEvent(accountName, d);
-					c.subscribe(cb);
+			if (this.deviceName != null && !this.deviceName.isEmpty()) {
+				addDevice(c.devices.get(this.deviceName), c);
+			} else {
+				for (Map.Entry<String, Device> entry : c.devices.entrySet()) {
+					addDevice(entry.getValue(), c);
 				}
 			}
 		} catch (Exception e) {

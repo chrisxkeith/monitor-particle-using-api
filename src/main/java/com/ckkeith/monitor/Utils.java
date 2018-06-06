@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.PrintStream;
 import java.text.SimpleDateFormat;
+import java.time.format.DateTimeFormatter;
 
 public class Utils {
 	public static String getHomeDir() throws Exception {
@@ -16,7 +17,7 @@ public class Utils {
 
 	public static final boolean isDebug = java.lang.management.ManagementFactory.getRuntimeMXBean().getInputArguments()
 			.toString().indexOf("jdwp") >= 0;
-			
+
 	private static final SimpleDateFormat logDateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssX");
 
 	public static String padWithSpaces(String s, int length) {
@@ -57,4 +58,7 @@ public class Utils {
 		// Append to existing log file to get better long term data.
 		return path + File.separator + fn;
 	}
+
+	final static public DateTimeFormatter googleSheetsDateFormat =
+			DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
 }

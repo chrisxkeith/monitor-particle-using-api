@@ -2,6 +2,7 @@ package com.ckkeith.monitor;
 
 import java.io.PrintStream;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 
 import nl.infcomtec.jparticle.AnyDeviceEvent;
 import nl.infcomtec.jparticle.Device;
@@ -9,24 +10,30 @@ import nl.infcomtec.jparticle.Event;
 
 public class ParticleDeviceEvent extends AnyDeviceEvent {
 
-	private String accountName;
 	private Device device;
+	private String logFileName;
 
-	public ParticleDeviceEvent(String accountName, Device device) {
+	public ParticleDeviceEvent(Device device) throws Exception {
 		this.device = device;
-		this.accountName = accountName;
+		logFileName = Utils.getLogFileName(device.name + "_particle_log.txt");
+		System.out.println("Logging events to : " + logFileName);
 	}
 	
 	private String toCsvString(Event e) {
 		StringBuilder sb = new StringBuilder();
-		sb.append(e.name).append("\t").append(e.data).append("\t").append(device.name);
+		LocalDateTime ldt = LocalDateTime.ofInstant(e.publishedAt.toInstant(), ZoneId.systemDefault());
+		String d = Utils.googleSheetsDateFormat.format(ldt);
+		sb.append(d).append("\t")
+			.append(e.name).append("\t")
+			.append(e.data).append("\t")
+			.append(device.name);
 		return sb.toString();
 	}
 	
 	@Override
 	public void event(Event e) {
 		try {
-			Utils.log(toCsvString(e), Utils.getLogFileName(accountName + "_" + device.name + ".txt"));
+			Utils.log(toCsvString(e), logFileName);
 		} catch (Exception ex) {
 			System.out.println(
 					"run() : " + LocalDateTime.now().toString() + "\t" + ex.getClass().getName() + " " + ex.getMessage());
