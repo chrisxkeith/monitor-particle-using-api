@@ -2,6 +2,7 @@ package com.ckkeith.monitor;
 
 import java.io.PrintStream;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Map;
 import java.util.logging.Logger;
 
@@ -35,50 +36,37 @@ public class PhotonMonitor extends Thread {
 		}
 	}
 
-	private String toTabbed(Device d) {
-		StringBuffer sb = new StringBuffer();
-		sb.append(Utils.padWithSpaces(d.name, 20)).append("\t");
-		sb.append(d.id).append("\t");
-		sb.append(d.connected).append("\t");
-		sb.append(d.lastHeard).append("\t");
-		sb.append(getVersionString(d));
-		return sb.toString();
-	}
-
-	private String getVersionString(Device d) {		
-		if (d.variables == null) {
-			return "unknown (no variables)";
-		}
-		if (d.variables.has("GitHubHash")) {
-			return d.readString("GitHubHash", "Bearer " + accessToken);
-		}
-		return "unknown (no GitHubHash)";
-	}
-
-	private void addDevice(Device d, Cloud c) throws Exception {
-		// Get device variables and functions
-		if (d.connected) {
-			d = Device.getDevice(d.id, "Bearer " + accessToken);
-		}
-		Utils.log(toTabbed(d), logFileName);
-		if (d.connected) {
-			ParticleDeviceEvent cb = new ParticleDeviceEvent(d);
-			c.subscribe(cb);
-		}
-	}
-	
 	public void run() {
 		try {
 			logFileName = Utils.getLogFileName(accountName + "_particle_log.txt");
 			logger.info("Logging to " + logFileName);
 			Utils.log(this.accountName + " : PhotonMonitor thread starting up.", logFileName);
 			Cloud c = new Cloud("Bearer " + accessToken, true, false);
+			ArrayList<Device> devices = new ArrayList<Device>();
 			if (this.deviceName != null && !this.deviceName.isEmpty()) {
-				addDevice(c.devices.get(this.deviceName), c);
+				Device d = c.devices.get(this.deviceName);
+				if (d != null) {
+					devices.add(c.devices.get(this.deviceName));
+				}
 			} else {
 				for (Map.Entry<String, Device> entry : c.devices.entrySet()) {
-					addDevice(entry.getValue(), c);
+					devices.add(entry.getValue());
 				}
+			}
+			
+			// Print overview first, then start threads.
+			ArrayList<DeviceMonitor> deviceMonitors = new ArrayList<DeviceMonitor>();
+			for (Device device : devices) {
+				// Get device variables and functions
+				if (device.connected) {
+					device = Device.getDevice(device.id, "Bearer " + accessToken);
+				}
+				DeviceMonitor dm = new DeviceMonitor(accessToken, device, c);
+				Utils.log(dm.toTabbedString(), logFileName);
+				deviceMonitors.add(dm);
+			}
+			for (DeviceMonitor dm: deviceMonitors) {
+				dm.start();
 			}
 		} catch (Exception e) {
 			System.out.println(

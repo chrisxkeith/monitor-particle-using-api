@@ -16,10 +16,9 @@ public class ParticleDeviceEvent extends AnyDeviceEvent {
 	public ParticleDeviceEvent(Device device) throws Exception {
 		this.device = device;
 		logFileName = Utils.getLogFileName(device.name + "_particle_log.txt");
-		System.out.println("Logging events to : " + logFileName);
 	}
 	
-	private String toCsvString(Event e) {
+	private String toTabbedString(Event e) {
 		StringBuilder sb = new StringBuilder();
 		LocalDateTime ldt = LocalDateTime.ofInstant(e.publishedAt.toInstant(), ZoneId.systemDefault());
 		String d = Utils.googleSheetsDateFormat.format(ldt);
@@ -33,7 +32,7 @@ public class ParticleDeviceEvent extends AnyDeviceEvent {
 	@Override
 	public void event(Event e) {
 		try {
-			Utils.log(toCsvString(e), logFileName);
+			Utils.log(toTabbedString(e), logFileName);
 		} catch (Exception ex) {
 			System.out.println(
 					"run() : " + LocalDateTime.now().toString() + "\t" + ex.getClass().getName() + " " + ex.getMessage());
