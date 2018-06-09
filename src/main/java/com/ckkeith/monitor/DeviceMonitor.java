@@ -11,13 +11,11 @@ public class DeviceMonitor extends Thread {
 	private String accessToken;
 	private Device device;
 	private Cloud cloud;
-	private String logFileName;
 
 	public DeviceMonitor(String accessToken, Device device, Cloud cloud) throws Exception {
 		this.accessToken = accessToken;
 		this.device = device;
 		this.cloud = cloud;
-		logFileName = Utils.getLogFileName(device.name + "_particle_log.txt");
 	}
 	
 	public String toTabbedString() {
@@ -44,7 +42,7 @@ public class DeviceMonitor extends Thread {
 		int retries = 24;
 		try {
 			while (!device.connected && retries > 0) {
-				Utils.log(device.name + " not connected. Will retry in an hour.", logFileName);
+				System.out.println(device.name + " not connected. Will retry in an hour.");
 				sleep(60 * 60 * 1000);
 				device = Device.getDevice(device.id, "Bearer " + accessToken);
 				retries--;
@@ -53,7 +51,7 @@ public class DeviceMonitor extends Thread {
 				ParticleDeviceEvent cb = new ParticleDeviceEvent(device);
 				cloud.subscribe(cb);
 			} else {
-				Utils.log(device.name + " not connected after 24 hours. Giving up.", logFileName);
+				System.out.println(device.name + " not connected after 24 hours. Giving up.");
 			}
 		} catch (Exception e) {
 			System.out.println("run() : " + LocalDateTime.now().toString() + "\t" + e.getClass().getName() + " "
