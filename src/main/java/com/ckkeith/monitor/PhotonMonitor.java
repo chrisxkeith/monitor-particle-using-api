@@ -1,23 +1,18 @@
 package com.ckkeith.monitor;
 
 import java.io.PrintStream;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Map;
-import java.util.logging.Logger;
 
 import nl.infcomtec.jparticle.Cloud;
 import nl.infcomtec.jparticle.Device;
 
 public class PhotonMonitor extends Thread {
 
-	private static final Logger logger = Logger.getLogger(PhotonMonitor.class.getName());
-
-	private String logFileName;
-
 	private String accessToken = null;
 	private String accountName = null;
 	private String deviceName = null;
+	private String logFileName;
 
 	public PhotonMonitor(String credentials) throws Exception {
 		String[] creds = credentials.split("\t");
@@ -34,13 +29,12 @@ public class PhotonMonitor extends Thread {
 		if (creds.length > 2) {
 			this.deviceName = creds[2];
 		}
+		logFileName = Utils.getLogFileName(accountName + "-devices-overview.txt");
 	}
 
 	public void run() {
 		try {
-			logFileName = Utils.getLogFileName(accountName + "_particle_log.txt");
-			logger.info("Logging to " + logFileName);
-			Utils.log(this.accountName + " : PhotonMonitor thread starting up.", logFileName);
+			Utils.logToConsole(this.accountName + " : PhotonMonitor thread starting up.");
 			Cloud c = new Cloud("Bearer " + accessToken, true, false);
 			ArrayList<Device> devices = new ArrayList<Device>();
 			if (this.deviceName != null && !this.deviceName.isEmpty()) {
@@ -69,8 +63,7 @@ public class PhotonMonitor extends Thread {
 				dm.start();
 			}
 		} catch (Exception e) {
-			System.out.println(
-					"run() : " + LocalDateTime.now().toString() + "\t" + e.getClass().getName() + " " + e.getMessage());
+			Utils.logToConsole("run() :\t" + e.getClass().getName() + "\t" + e.getMessage());
 			e.printStackTrace(new PrintStream(System.out));
 		}
 	}

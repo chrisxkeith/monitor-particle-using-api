@@ -43,6 +43,11 @@ public class Utils {
 		}
 	}
 
+	public static void logToConsole(String s) {
+		String d = logDateFormat.format(new java.util.Date());
+		System.out.println(d + "\t" + s);
+	}
+
 	public static void log(String s, String logFileName) {
 		String d = logDateFormat.format(new java.util.Date());
 		logRaw(d + "\t" + s, logFileName);

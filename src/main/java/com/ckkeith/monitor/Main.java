@@ -4,7 +4,6 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.PrintStream;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 
 public class Main {
@@ -42,8 +41,7 @@ public class Main {
 				}
 			}
 		} catch (Exception e) {
-			System.out.println("main() : " + LocalDateTime.now().toString() + "\t" + e.getClass().getName() + " "
-					+ e.getMessage());
+			Utils.logToConsole("main() :\t" + e.getClass().getName() + "\t" + e.getMessage());
 			e.printStackTrace(new PrintStream(System.out));
 		}
 	}
