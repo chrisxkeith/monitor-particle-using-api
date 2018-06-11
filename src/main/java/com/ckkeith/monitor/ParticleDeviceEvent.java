@@ -34,8 +34,7 @@ public class ParticleDeviceEvent extends AnyDeviceEvent {
 		try {
 			Utils.log(toTabbedString(e), logFileName);
 		} catch (Exception ex) {
-			System.out.println(
-					"run() : " + LocalDateTime.now().toString() + "\t" + ex.getClass().getName() + " " + ex.getMessage());
+			Utils.logToConsole("run()\t" + ex.getClass().getName() + "\t" + ex.getMessage());
 			ex.printStackTrace(new PrintStream(System.out));
 		}
 	}
