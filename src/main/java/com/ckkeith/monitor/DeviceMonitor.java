@@ -40,10 +40,11 @@ public class DeviceMonitor extends Thread {
 	}
 
 	public void run() {
+		Utils.log(Utils.padWithSpaces(device.name, 20) + "\tthread started.", logFileName);
 		int retries = 24;
 		try {
 			while (!device.connected && retries > 0) {
-				Utils.log(device.name + " not connected. Will retry in an hour.", logFileName);
+				Utils.log(Utils.padWithSpaces(device.name, 20) + " not connected. Will retry in an hour.", logFileName);
 				sleep(60 * 60 * 1000);
 				device = Device.getDevice(device.id, "Bearer " + accessToken);
 				retries--;
@@ -51,8 +52,9 @@ public class DeviceMonitor extends Thread {
 			if (device.connected) {
 				ParticleDeviceEvent cb = new ParticleDeviceEvent(device);
 				cloud.subscribe(cb);
+				Utils.log(Utils.padWithSpaces(device.name, 20) + "\tsubscribed.", logFileName);
 			} else {
-				Utils.log(device.name + " not connected after 24 hours. Giving up.", logFileName);
+				Utils.log(Utils.padWithSpaces(device.name, 20) + "\tnot connected after 24 hours. Giving up.", logFileName);
 			}
 		} catch (Exception e) {
 			Utils.logToConsole("run() :\t" + e.getClass().getName() + "\t" + e.getMessage());

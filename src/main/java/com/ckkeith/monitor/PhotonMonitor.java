@@ -34,7 +34,7 @@ public class PhotonMonitor extends Thread {
 
 	public void run() {
 		try {
-			Utils.logToConsole(this.accountName + " : PhotonMonitor thread starting up.");
+			Utils.logToConsole(Utils.padWithSpaces(this.accountName, 20) + "\tPhotonMonitor thread starting up.");
 			Cloud c = new Cloud("Bearer " + accessToken, true, false);
 			ArrayList<Device> devices = new ArrayList<Device>();
 			if (this.deviceName != null && !this.deviceName.isEmpty()) {
@@ -57,7 +57,9 @@ public class PhotonMonitor extends Thread {
 				}
 				DeviceMonitor dm = new DeviceMonitor(accessToken, device, c);
 				Utils.log(dm.toTabbedString(), logFileName);
-				deviceMonitors.add(dm);
+				if (device.connected) {
+					deviceMonitors.add(dm);
+				}
 			}
 			for (DeviceMonitor dm: deviceMonitors) {
 				dm.start();
