@@ -1,6 +1,7 @@
 package com.ckkeith.monitor;
 
 import java.io.PrintStream;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Map;
 
@@ -56,7 +57,7 @@ public class PhotonMonitor extends Thread {
 					device = Device.getDevice(device.id, "Bearer " + accessToken);
 				}
 				DeviceMonitor dm = new DeviceMonitor(accessToken, device, c);
-				Utils.log(dm.toTabbedString(), logFileName);
+				Utils.logWithGSheetsDate(LocalDateTime.now(), dm.toTabbedString(), logFileName);
 				if (device.connected) {
 					deviceMonitors.add(dm);
 				}

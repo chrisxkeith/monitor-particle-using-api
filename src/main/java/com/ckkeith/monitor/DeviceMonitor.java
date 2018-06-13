@@ -1,6 +1,7 @@
 package com.ckkeith.monitor;
 
 import java.io.PrintStream;
+import java.time.LocalDateTime;
 
 import nl.infcomtec.jparticle.Cloud;
 import nl.infcomtec.jparticle.Device;
@@ -39,12 +40,18 @@ public class DeviceMonitor extends Thread {
 		return "unknown (no GitHubHash)";
 	}
 
+	private void log(String s) {
+		Utils.logWithGSheetsDate(LocalDateTime.now(),
+				Utils.padWithSpaces(device.name, 20) + "\t" + s,
+				logFileName);
+	}
+
 	public void run() {
-		Utils.log(Utils.padWithSpaces(device.name, 20) + "\tthread started.", logFileName);
+		log("thread started.");
 		int retries = 24;
 		try {
 			while (!device.connected && retries > 0) {
-				Utils.log(Utils.padWithSpaces(device.name, 20) + " not connected. Will retry in an hour.", logFileName);
+				log("not connected. Will retry in an hour.");
 				sleep(60 * 60 * 1000);
 				device = Device.getDevice(device.id, "Bearer " + accessToken);
 				retries--;
@@ -52,9 +59,9 @@ public class DeviceMonitor extends Thread {
 			if (device.connected) {
 				ParticleDeviceEvent cb = new ParticleDeviceEvent(device);
 				cloud.subscribe(cb);
-				Utils.log(Utils.padWithSpaces(device.name, 20) + "\tsubscribed.", logFileName);
+				log("subscribed.");
 			} else {
-				Utils.log(Utils.padWithSpaces(device.name, 20) + "\tnot connected after 24 hours. Giving up.", logFileName);
+				log("not connected after 24 hours. Giving up.");
 			}
 		} catch (Exception e) {
 			Utils.logToConsole("run() :\t" + e.getClass().getName() + "\t" + e.getMessage());

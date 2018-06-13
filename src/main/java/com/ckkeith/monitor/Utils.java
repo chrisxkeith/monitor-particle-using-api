@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.PrintStream;
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 public class Utils {
@@ -53,6 +54,14 @@ public class Utils {
 		logRaw(d + "\t" + s, logFileName);
 	}
 
+	final static private DateTimeFormatter googleSheetsDateFormat =
+			DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
+	public static void logWithGSheetsDate(LocalDateTime ldt, String s, String logFileName) {
+		String d = logDateFormat.format(new java.util.Date());
+		String d2 = googleSheetsDateFormat.format(ldt);
+		logRaw(d + "\t" + d2 + "\t" + s, logFileName);
+	}
+
 	public static String getLogFileName(String fn) throws Exception {
 		String d = Utils.getHomeDir();
 		String path = d + File.separator + "Documents" + File.separator + "tmp";
@@ -64,6 +73,4 @@ public class Utils {
 		return path + File.separator + fn;
 	}
 
-	final static public DateTimeFormatter googleSheetsDateFormat =
-			DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
 }

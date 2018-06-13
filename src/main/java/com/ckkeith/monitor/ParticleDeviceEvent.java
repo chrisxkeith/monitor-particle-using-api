@@ -20,10 +20,7 @@ public class ParticleDeviceEvent extends AnyDeviceEvent {
 	
 	private String toTabbedString(Event e) {
 		StringBuilder sb = new StringBuilder();
-		LocalDateTime ldt = LocalDateTime.ofInstant(e.publishedAt.toInstant(), ZoneId.systemDefault());
-		String d = Utils.googleSheetsDateFormat.format(ldt);
-		sb.append(d).append("\t")
-			.append(e.name).append("\t")
+		sb.append(e.name).append("\t")
 			.append(e.data).append("\t")
 			.append(device.name);
 		return sb.toString();
@@ -32,7 +29,8 @@ public class ParticleDeviceEvent extends AnyDeviceEvent {
 	@Override
 	public void event(Event e) {
 		try {
-			Utils.log(toTabbedString(e), logFileName);
+			LocalDateTime ldt = LocalDateTime.ofInstant(e.publishedAt.toInstant(), ZoneId.systemDefault());
+			Utils.logWithGSheetsDate(ldt, toTabbedString(e), logFileName);
 		} catch (Exception ex) {
 			Utils.logToConsole("run()\t" + ex.getClass().getName() + "\t" + ex.getMessage());
 			ex.printStackTrace(new PrintStream(System.out));
