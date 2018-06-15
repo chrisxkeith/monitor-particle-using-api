@@ -2,7 +2,9 @@ package com.ckkeith.monitor;
 
 import java.io.PrintStream;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Map;
 
 import nl.infcomtec.jparticle.Cloud;
@@ -12,7 +14,6 @@ public class PhotonMonitor extends Thread {
 
 	private String accessToken = null;
 	private String accountName = null;
-	private String deviceName = null;
 	private String logFileName;
 
 	public PhotonMonitor(String credentials) throws Exception {
@@ -27,43 +28,39 @@ public class PhotonMonitor extends Thread {
 		} else {
 			this.accountName = "unknown_account";
 		}
-		if (creds.length > 2) {
-			this.deviceName = creds[2];
-		}
 		logFileName = Utils.getLogFileName(accountName + "-devices-overview.txt");
+	}
+
+	private void sleepUntil(LocalDateTime then) throws Exception {
+		Utils.logToConsole(accountName + "\tAbout to sleep until\t" + then);
+		sleep(ChronoUnit.MILLIS.between(LocalDateTime.now(), then));
 	}
 
 	public void run() {
 		try {
 			Utils.logToConsole(Utils.padWithSpaces(this.accountName, 20) + "\tPhotonMonitor thread starting up.");
 			Cloud c = new Cloud("Bearer " + accessToken, true, false);
-			ArrayList<Device> devices = new ArrayList<Device>();
-			if (this.deviceName != null && !this.deviceName.isEmpty()) {
-				Device d = c.devices.get(this.deviceName);
-				if (d != null) {
-					devices.add(c.devices.get(this.deviceName));
+			Map<String, DeviceMonitor> deviceMonitors = new HashMap<String, DeviceMonitor>();
+			while (true) {
+				ArrayList<DeviceMonitor> newDevices = new ArrayList<DeviceMonitor>();
+				for (Device device : c.devices.values()) {
+					// Get device variables and functions
+					if (device.connected) {
+						device = Device.getDevice(device.id, "Bearer " + accessToken);
+					}
+					DeviceMonitor dm = new DeviceMonitor(accessToken, device, c);
+					Utils.logWithGSheetsDate(LocalDateTime.now(), dm.toTabbedString(), logFileName);
+					if (device.connected && (deviceMonitors.get(device.name) == null)) {
+						deviceMonitors.put(device.name, dm);
+						newDevices.add(dm);
+					}
 				}
-			} else {
-				for (Map.Entry<String, Device> entry : c.devices.entrySet()) {
-					devices.add(entry.getValue());
+				for (DeviceMonitor dm : newDevices) {
+					dm.start();
 				}
-			}
-			
-			// Print overview first, then start threads.
-			ArrayList<DeviceMonitor> deviceMonitors = new ArrayList<DeviceMonitor>();
-			for (Device device : devices) {
-				// Get device variables and functions
-				if (device.connected) {
-					device = Device.getDevice(device.id, "Bearer " + accessToken);
-				}
-				DeviceMonitor dm = new DeviceMonitor(accessToken, device, c);
-				Utils.logWithGSheetsDate(LocalDateTime.now(), dm.toTabbedString(), logFileName);
-				if (device.connected) {
-					deviceMonitors.add(dm);
-				}
-			}
-			for (DeviceMonitor dm: deviceMonitors) {
-				dm.start();
+				// At midnight (local time), check for changes in devices-per-cloud and their statuses.
+				LocalDateTime then = LocalDateTime.now().truncatedTo(ChronoUnit.DAYS).plusDays(1);
+				sleepUntil(then);
 			}
 		} catch (Exception e) {
 			Utils.logToConsole("run() :\t" + e.getClass().getName() + "\t" + e.getMessage());

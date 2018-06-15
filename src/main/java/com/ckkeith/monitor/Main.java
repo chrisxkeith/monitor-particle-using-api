@@ -37,7 +37,7 @@ public class Main {
 			ArrayList<String> creds = readCredentials();
 			for (String c : creds) {
 				if (c != null && !c.startsWith("#")) {
-					(new PhotonMonitor(c)).run();
+					(new PhotonMonitor(c)).start();
 				}
 			}
 		} catch (Exception e) {
