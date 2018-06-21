@@ -32,27 +32,32 @@ public class PhotonMonitor extends Thread {
 	}
 
 	private void sleepUntil(LocalDateTime then) throws Exception {
-		Utils.logToConsole(accountName + "\tAbout to sleep until\t" + then);
+		Utils.logToConsole(accountName + "\tPhotonMonitor : About to sleep until\t" + then);
 		sleep(ChronoUnit.MILLIS.between(LocalDateTime.now(), then));
 	}
 
 	public void run() {
 		try {
-			Utils.logToConsole(Utils.padWithSpaces(this.accountName, 20) + "\tPhotonMonitor thread starting up.");
+			Utils.logToConsole(Utils.padWithSpaces(this.accountName, 20) + "\tPhotonMonitor thread starting.");
 			Cloud c = new Cloud("Bearer " + accessToken, true, false);
 			Map<String, DeviceMonitor> deviceMonitors = new HashMap<String, DeviceMonitor>();
 			while (true) {
 				ArrayList<DeviceMonitor> newDevices = new ArrayList<DeviceMonitor>();
 				for (Device device : c.devices.values()) {
-					// Get device variables and functions
 					if (device.connected) {
-						device = Device.getDevice(device.id, "Bearer " + accessToken);
-					}
-					DeviceMonitor dm = new DeviceMonitor(accessToken, device, c);
-					Utils.logWithGSheetsDate(LocalDateTime.now(), dm.toTabbedString(), logFileName);
-					if (device.connected && (deviceMonitors.get(device.name) == null)) {
-						deviceMonitors.put(device.name, dm);
-						newDevices.add(dm);
+						try {
+							// Get device variables and functions
+							device = Device.getDevice(device.id, "Bearer " + accessToken);
+							DeviceMonitor dm = new DeviceMonitor(accessToken, device, c);
+							Utils.logWithGSheetsDate(LocalDateTime.now(), dm.toTabbedString(), logFileName);
+							if (device.connected && (deviceMonitors.get(device.name) == null)) {
+								deviceMonitors.put(device.name, dm);
+								newDevices.add(dm);
+							}
+						} catch (Exception e) {
+							Utils.logToConsole("run() :\t" + device.name + "\t" + e.getClass().getName() + "\t" + e.getMessage());
+							e.printStackTrace(new PrintStream(System.out));
+						}
 					}
 				}
 				for (DeviceMonitor dm : newDevices) {
@@ -66,5 +71,6 @@ public class PhotonMonitor extends Thread {
 			Utils.logToConsole("run() :\t" + e.getClass().getName() + "\t" + e.getMessage());
 			e.printStackTrace(new PrintStream(System.out));
 		}
+		Utils.logToConsole(Utils.padWithSpaces(this.accountName, 20) + "\tPhotonMonitor thread exiting.");
 	}
 }

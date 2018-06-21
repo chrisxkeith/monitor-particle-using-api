@@ -47,7 +47,7 @@ public class DeviceMonitor extends Thread {
 	}
 
 	public void run() {
-		log("thread started.");
+		log("DeviceMonitor thread started.");
 		int retries = 24;
 		try {
 			while (!device.connected && retries > 0) {
@@ -67,6 +67,7 @@ public class DeviceMonitor extends Thread {
 			Utils.logToConsole("run() :\t" + e.getClass().getName() + "\t" + e.getMessage());
 			e.printStackTrace(new PrintStream(System.out));			
 		}
+		log("DeviceMonitor thread exiting.");
 	}
 	
 }

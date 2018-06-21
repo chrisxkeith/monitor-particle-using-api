@@ -46,4 +46,9 @@ public class ParticleDeviceEvent extends AnyDeviceEvent {
     public String forDeviceName() {
         return device.name;
     }
+
+    @Override
+    public void finalize() {
+		Utils.logToConsole("ParticleDeviceEvent.finalize() called!");
+    }
 }
