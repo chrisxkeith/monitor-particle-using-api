@@ -35,7 +35,11 @@ public class DeviceMonitor extends Thread {
 			return "unknown (no variables)";
 		}
 		if (d.variables.has("GitHubHash")) {
-			return d.readString("GitHubHash", "Bearer " + accessToken);
+			String ret = d.readString("GitHubHash", "Bearer " + accessToken);
+			if (ret == null || ret.isEmpty()) {
+				return "unknown (null or empty value)";
+			}
+			return ret;
 		}
 		return "unknown (no GitHubHash)";
 	}
