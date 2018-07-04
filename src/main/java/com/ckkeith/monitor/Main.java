@@ -38,7 +38,7 @@ public class Main {
 			for (String c : creds) {
 				if (c != null && !c.startsWith("#")) {
 					(new PhotonMonitor(c)).start();
-					(new OvenMonitor(c)).start();
+//					(new OvenMonitor(c)).start();
 				}
 			}
 		} catch (Exception e) {
