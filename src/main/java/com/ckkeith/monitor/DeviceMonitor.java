@@ -30,18 +30,8 @@ public class DeviceMonitor extends Thread {
 		return sb.toString();
 	}
 
-	private String getVersionString(Device d) {		
-		if (d.variables == null) {
-			return "unknown (no variables)";
-		}
-		if (d.variables.has("GitHubHash")) {
-			String ret = d.readString("GitHubHash", "Bearer " + accessToken);
-			if (ret == null || ret.isEmpty()) {
-				return "unknown (null or empty value)";
-			}
-			return ret;
-		}
-		return "unknown (no GitHubHash)";
+	private String getVersionString(Device d) {
+		return Utils.getVariable(accessToken, d, "GitHubHash");
 	}
 
 	private void log(String s) {

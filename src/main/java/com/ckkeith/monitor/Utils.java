@@ -6,6 +6,9 @@ import java.io.PrintStream;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
+
+import nl.infcomtec.jparticle.Device;
 
 public class Utils {
 	public static String getHomeDir() throws Exception {
@@ -72,5 +75,26 @@ public class Utils {
 		// Append to existing log file to get better long term data.
 		return path + File.separator + fn;
 	}
+
+	public static void sleepUntil(String msg, LocalDateTime then) throws Exception {
+		Utils.logToConsole(msg + "\tAbout to sleep until\t" + then);
+		Thread.sleep(ChronoUnit.MILLIS.between(LocalDateTime.now(), then));
+	}
+
+	public static String getVariable(String accessToken, Device d, String variableName) {
+		if (d.variables == null) {
+			return "unknown (no variables)";
+		}
+		if (d.variables.has(variableName)) {
+			String ret = d.readString(variableName, "Bearer " + accessToken);
+			if (ret == null || ret.isEmpty()) {
+				return "unknown (null or empty value)";
+			}
+			return ret;
+		}
+		return "unknown (no " + variableName + ")";
+	}
+
+
 
 }

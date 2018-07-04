@@ -31,11 +31,6 @@ public class PhotonMonitor extends Thread {
 		logFileName = Utils.getLogFileName(accountName + "-devices-overview.txt");
 	}
 
-	private void sleepUntil(LocalDateTime then) throws Exception {
-		Utils.logToConsole(accountName + "\tPhotonMonitor : About to sleep until\t" + then);
-		sleep(ChronoUnit.MILLIS.between(LocalDateTime.now(), then));
-	}
-
 	public void run() {
 		try {
 			Utils.logToConsole(Utils.padWithSpaces(this.accountName, 20) + "\tPhotonMonitor thread starting.");
@@ -65,7 +60,7 @@ public class PhotonMonitor extends Thread {
 				}
 				// At midnight (local time), check for changes in devices-per-cloud and their statuses.
 				LocalDateTime then = LocalDateTime.now().truncatedTo(ChronoUnit.DAYS).plusDays(1);
-				sleepUntil(then);
+				Utils.sleepUntil("PhotonMonitor\t" + accountName, then);
 			}
 		} catch (Exception e) {
 			Utils.logToConsole("run() :\t" + e.getClass().getName() + "\t" + e.getMessage());
