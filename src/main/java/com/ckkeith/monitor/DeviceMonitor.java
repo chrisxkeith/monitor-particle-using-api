@@ -24,6 +24,7 @@ public class DeviceMonitor extends Thread {
 	
 	public String toTabbedString() {
 		StringBuffer sb = new StringBuffer();
+		sb.append(Utils.padWithSpaces(accountName, 20)).append("\t");
 		sb.append(Utils.padWithSpaces(device.name, 20)).append("\t");
 		sb.append(device.id).append("\t");
 		sb.append(device.connected).append("\t");
