@@ -11,13 +11,15 @@ public class DeviceMonitor extends Thread {
 	private String accessToken;
 	private Device device;
 	private Cloud cloud;
+	private String accountName;
 	private String logFileName;
 
-	public DeviceMonitor(String accessToken, Device device, Cloud cloud) throws Exception {
+	public DeviceMonitor(String accountName, String accessToken, Device device, Cloud cloud) throws Exception {
 		this.accessToken = accessToken;
 		this.device = device;
 		this.cloud = cloud;
-		logFileName = Utils.getLogFileName(device.name + "_particle_log.txt");
+		this.accountName = accountName;
+		logFileName = Utils.getLogFileName(accountName, device.name + "_particle_log.txt");
 	}
 	
 	public String toTabbedString() {
@@ -51,7 +53,7 @@ public class DeviceMonitor extends Thread {
 				retries--;
 			}
 			if (device.connected) {
-				ParticleDeviceEvent cb = new ParticleDeviceEvent(device);
+				ParticleDeviceEvent cb = new ParticleDeviceEvent(accountName, device);
 				cloud.subscribe(cb);
 				log("subscribed.");
 			} else {

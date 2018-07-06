@@ -28,7 +28,7 @@ public class PhotonMonitor extends Thread {
 		} else {
 			this.accountName = "unknown_account";
 		}
-		logFileName = Utils.getLogFileName(accountName + "-devices-overview.txt");
+		logFileName = Utils.getLogFileName(accountName, "devices-overview.txt");
 	}
 
 	public void run() {
@@ -43,7 +43,7 @@ public class PhotonMonitor extends Thread {
 						try {
 							// Get device variables and functions
 							device = Device.getDevice(device.id, "Bearer " + accessToken);
-							DeviceMonitor dm = new DeviceMonitor(accessToken, device, c);
+							DeviceMonitor dm = new DeviceMonitor(accountName, accessToken, device, c);
 							Utils.logWithGSheetsDate(LocalDateTime.now(), dm.toTabbedString(), logFileName);
 							if (device.connected && (deviceMonitors.get(device.name) == null)) {
 								deviceMonitors.put(device.name, dm);

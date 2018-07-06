@@ -13,9 +13,9 @@ public class ParticleDeviceEvent extends AnyDeviceEvent {
 	private Device device;
 	private String logFileName;
 
-	public ParticleDeviceEvent(Device device) throws Exception {
+	public ParticleDeviceEvent(String accountName, Device device) throws Exception {
 		this.device = device;
-		logFileName = Utils.getLogFileName(device.name + "_particle_log.txt");
+		logFileName = Utils.getLogFileName(accountName, device.name + "_particle_log.txt");
 	}
 	
 	private String toTabbedString(Event e) {

@@ -65,9 +65,19 @@ public class Utils {
 		logRaw(d + "\t" + d2 + "\t" + s, logFileName);
 	}
 
-	public static String getLogFileName(String fn) throws Exception {
+	public static String getLogFileName(String accountName, String fn) throws Exception {
 		String d = Utils.getHomeDir();
-		String path = d + File.separator + "Documents" + File.separator + "tmp";
+		String safeName = accountName.replaceAll("\\W+", "-");
+		String acctId;
+		if (safeName.length() > 24) {
+			acctId = safeName.substring(0, 11)
+					+ "--"
+					+ safeName.substring(safeName.length() - 12);
+		} else {
+			acctId = safeName;
+		}
+		String path = d + File.separator + "Documents" + File.separator
+				+ "tmp" + File.separator + acctId.toLowerCase();
 		File dir = new File(path);
 		if (!dir.exists()) {
 			throw new IllegalArgumentException("No such directory for log files : " + path);
