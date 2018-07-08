@@ -54,7 +54,13 @@ public class DeviceMonitor extends Thread {
 				retries--;
 			}
 			if (device.connected) {
-				ParticleDeviceEvent cb = new ParticleDeviceEvent(accountName, device);
+				ParticleDeviceEvent cb;
+				if (accountName.equals("chris.keith@gmail.com") &&
+						device.name.equals("thermistor-test")) {
+					cb = new ParticleDeviceEvent(accountName, device);
+				} else {
+					cb = new StoveThermistorEvent(accountName, device);
+				}
 				cloud.subscribe(cb);
 				log("subscribed.");
 			} else {

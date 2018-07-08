@@ -10,12 +10,14 @@ import nl.infcomtec.jparticle.Event;
 
 public class ParticleDeviceEvent extends AnyDeviceEvent {
 
-	private Device device;
-	private String logFileName;
+	protected Device device;
+	protected String accountName;
+	protected String logFileName;
 
 	public ParticleDeviceEvent(String accountName, Device device) throws Exception {
 		this.device = device;
-		logFileName = Utils.getLogFileName(accountName, device.name + "_particle_log.txt");
+		this.accountName = accountName;
+		this.logFileName = Utils.getLogFileName(accountName, device.name + "_particle_log.txt");
 	}
 	
 	private String toTabbedString(Event e) {
@@ -26,11 +28,15 @@ public class ParticleDeviceEvent extends AnyDeviceEvent {
 		return sb.toString();
 	}
 	
+	public void handleEvent(Event e) {
+		LocalDateTime ldt = LocalDateTime.ofInstant(e.publishedAt.toInstant(), ZoneId.systemDefault());
+		Utils.logWithGSheetsDate(ldt, toTabbedString(e), logFileName);
+	}
+
 	@Override
 	public void event(Event e) {
 		try {
-			LocalDateTime ldt = LocalDateTime.ofInstant(e.publishedAt.toInstant(), ZoneId.systemDefault());
-			Utils.logWithGSheetsDate(ldt, toTabbedString(e), logFileName);
+			handleEvent(e);
 		} catch (Exception ex) {
 			Utils.logToConsole("run()\t" + ex.getClass().getName() + "\t" + ex.getMessage());
 			ex.printStackTrace(new PrintStream(System.out));
