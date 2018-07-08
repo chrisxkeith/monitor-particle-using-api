@@ -1,12 +1,15 @@
 package com.ckkeith.monitor;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.PrintStream;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
 
 import nl.infcomtec.jparticle.Device;
 
@@ -105,6 +108,24 @@ public class Utils {
 		return "unknown (no " + variableName + ")";
 	}
 
-
+	public static ArrayList<String> readParameterFile(String fileName) throws Exception {
+		String parameterFilePath = getHomeDir() + File.separator + "Documents" + File.separator + fileName;
+		File f = new File(parameterFilePath);
+		if (!f.exists()) {
+			System.out.println("No parameter file : " + parameterFilePath);
+			System.exit(-7);
+		}
+		ArrayList<String> creds = new ArrayList<String>(10);
+		BufferedReader br = new BufferedReader(new FileReader(parameterFilePath));
+		try {
+			String s;
+			while ((s = br.readLine()) != null) {
+				creds.add(s);
+			}
+		} finally {
+			br.close();
+		}
+		return creds;
+	}
 
 }

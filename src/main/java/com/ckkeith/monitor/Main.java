@@ -1,44 +1,15 @@
 package com.ckkeith.monitor;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
 import java.io.PrintStream;
 import java.util.ArrayList;
 
 public class Main {
-
-	private static String getCredentialsFileName() throws Exception {
-		return Utils.getHomeDir() + File.separator + "Documents" + File.separator + "particle-tokens.txt";
-	}
-
-	private static ArrayList<String> readCredentials() throws Exception {
-		String credentialsFileName = getCredentialsFileName();
-		File f = new File(credentialsFileName);
-		if (!f.exists()) {
-			System.out.println("No credentials file : " + credentialsFileName);
-			System.exit(-7);
-		}
-		ArrayList<String> creds = new ArrayList<String>(10);
-		BufferedReader br = new BufferedReader(new FileReader(credentialsFileName));
-		try {
-			String s;
-			while ((s = br.readLine()) != null) {
-				creds.add(s);
-			}
-		} finally {
-			br.close();
-		}
-		return creds;
-	}
-
 	public static void main(String[] args) {
 		try {
-			ArrayList<String> creds = readCredentials();
-			for (String c : creds) {
+			ArrayList<String> params = Utils.readParameterFile("particle-tokens.txt");
+			for (String c : params) {
 				if (c != null && !c.startsWith("#")) {
 					(new PhotonMonitor(c)).start();
-//					(new OvenMonitor(c)).start();
 				}
 			}
 		} catch (Exception e) {
