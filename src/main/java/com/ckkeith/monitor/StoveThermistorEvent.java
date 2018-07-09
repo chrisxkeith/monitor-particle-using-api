@@ -16,13 +16,13 @@ public class StoveThermistorEvent extends ParticleDeviceEvent {
 		int degreesInF = Integer.MIN_VALUE;
 		
 		ThermistorData(String data) {
-			String fields[] = data.split("\t");
+			String fields[] = data.split("\\|");
 			deviceTime = LocalDateTime.parse(fields[1], logDateFormat);
 			degreesInF = Integer.parseInt(fields[2]);
 		}
 	}
 	
-	private final int temperatureLimit = 75; // degrees F
+	private final int temperatureLimit = 80; // degrees F
 	private final int timeLimit = 30; // minutes before alert is logged (or, eventually, emailed).
 
 	ThermistorData lastDataSeen = null;
@@ -41,9 +41,9 @@ public class StoveThermistorEvent extends ParticleDeviceEvent {
 					lastDataOverLimit = t;
 				} else {
 					if (Duration.between(lastDataOverLimit.deviceTime,
-							lastDataOverLimit.deviceTime).toMinutes() > timeLimit) {
+							t.deviceTime).toMinutes() > timeLimit) {
 						Utils.logWithGSheetsDate(LocalDateTime.now(),
-								"Temperature has been over " + temperatureLimit + " from " +
+								"Warning\tTemperature has been over " + temperatureLimit + " from " +
 								lastDataOverLimit.deviceTime + " to " + t.deviceTime,
 								logFileName);						
 					}
