@@ -11,6 +11,30 @@
             <artifactId>json</artifactId>
             <version>20170516</version>
         </dependency>
+	    <dependency>
+	      <groupId>com.google.api-client</groupId>
+	      <artifactId>google-api-client</artifactId>
+	      <version>1.23.0</version>
+	      <scope>compile</scope>
+	    </dependency>
+	    <dependency>
+	      <groupId>com.google.oauth-client</groupId>
+	      <artifactId>google-oauth-client-jetty</artifactId>
+	      <version>1.23.0</version>
+	      <scope>compile</scope>
+	    </dependency>
+	    <dependency>
+	      <groupId>com.google.apis</groupId>
+	      <artifactId>google-api-services-gmail</artifactId>
+	      <version>v1-rev83-1.23.0</version>
+	      <scope>compile</scope>
+	    </dependency>
+	    <dependency>
+	      <groupId>javax.mail</groupId>
+	      <artifactId>mail</artifactId>
+	      <version>1.4.1</version>
+	      <scope>compile</scope>
+	    </dependency>
     </dependencies>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

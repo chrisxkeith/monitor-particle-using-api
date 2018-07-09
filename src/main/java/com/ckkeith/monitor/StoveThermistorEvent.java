@@ -1,5 +1,7 @@
 package com.ckkeith.monitor;
 
+import java.io.FileWriter;
+import java.io.PrintStream;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -22,6 +24,8 @@ public class StoveThermistorEvent extends ParticleDeviceEvent {
 		}
 	}
 	
+	private final DateTimeFormatter googleSheetsDateFormat = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
+
 	private final int temperatureLimit = 80; // degrees F
 	private final int timeLimit = 30; // minutes before alert is logged (or, eventually, emailed).
 
@@ -30,6 +34,28 @@ public class StoveThermistorEvent extends ParticleDeviceEvent {
 	
 	public StoveThermistorEvent(String accountName, Device device) throws Exception {
 		super(accountName, device);
+	}
+
+	@SuppressWarnings("unused")
+	private String writeEmailFile(String subject, String body) {
+		String emailFilePath = null;
+		try {
+			emailFilePath = Utils.getLogFileName(accountName, "warning.eml");
+			FileWriter fstream = new FileWriter(emailFilePath, false);
+
+			fstream.write("From : chris.keith@gmail.com" + System.getProperty("line.separator"));
+			fstream.write("Subject : " + subject + System.getProperty("line.separator"));
+			fstream.write("To : chris.keith@gmail.com" + System.getProperty("line.separator"));
+			fstream.write(System.getProperty("line.separator"));
+			fstream.write(body);
+			fstream.flush();
+			fstream.close();
+			Utils.logToConsole("Finished writing : " + emailFilePath);
+		} catch (Exception e) {
+			System.out.println("Error writing email file : " + emailFilePath + "\t" + e.toString());
+			e.printStackTrace(new PrintStream(System.out));
+		}
+		return emailFilePath;
 	}
 
 	public void handleEvent(Event e) {
@@ -42,10 +68,12 @@ public class StoveThermistorEvent extends ParticleDeviceEvent {
 				} else {
 					if (Duration.between(lastDataOverLimit.deviceTime,
 							t.deviceTime).toMinutes() > timeLimit) {
+						String warn = "Temperature has been over " + temperatureLimit + " from " +
+								googleSheetsDateFormat.format(lastDataOverLimit.deviceTime) + 
+								" to " + googleSheetsDateFormat.format(t.deviceTime);
 						Utils.logWithGSheetsDate(LocalDateTime.now(),
-								"Warning\tTemperature has been over " + temperatureLimit + " from " +
-								lastDataOverLimit.deviceTime + " to " + t.deviceTime,
-								logFileName);						
+								"Warning\t" + warn, logFileName);
+//						GMailer.sendMail(writeEmailFile(warn, e.data));
 					}
 				}
 			} else {
