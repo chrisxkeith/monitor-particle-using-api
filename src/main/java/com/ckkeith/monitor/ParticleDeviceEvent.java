@@ -54,7 +54,8 @@ public class ParticleDeviceEvent extends AnyDeviceEvent {
     }
 
     @Override
-    public void finalize() {
+    public void finalize() throws Throwable {
+		super.finalize();
 		Utils.logToConsole("ParticleDeviceEvent.finalize() called!");
     }
 }

@@ -36,7 +36,6 @@ public class StoveThermistorEvent extends ParticleDeviceEvent {
 		super(accountName, device);
 	}
 
-	@SuppressWarnings("unused")
 	private String writeEmailFile(String subject, String body) {
 		String emailFilePath = null;
 		try {
@@ -73,6 +72,7 @@ public class StoveThermistorEvent extends ParticleDeviceEvent {
 								" to " + googleSheetsDateFormat.format(t.deviceTime);
 						Utils.logWithGSheetsDate(LocalDateTime.now(),
 								"Warning\t" + warn, logFileName);
+						writeEmailFile(warn, e.data);
 //						GMailer.sendMail(writeEmailFile(warn, e.data));
 					}
 				}
