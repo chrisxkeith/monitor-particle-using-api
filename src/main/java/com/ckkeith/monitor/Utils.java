@@ -52,7 +52,7 @@ public class Utils {
 
 	public static void logToConsole(String s) {
 		String d = logDateFormat.format(new java.util.Date());
-		System.out.println(d + "\t" + s);
+		System.out.println(d + "\t" + s + "\t" + getHostName());
 	}
 
 	public static void log(String s, String logFileName) {
@@ -128,4 +128,14 @@ public class Utils {
 		return creds;
 	}
 
+	public static String getHostName() {
+		String serverName = System.getenv("COMPUTERNAME");
+		if (serverName == null || serverName.isEmpty()) {
+			serverName = System.getenv("HOSTNAME");
+		}
+		if (serverName == null || serverName.isEmpty()) {
+			serverName = "unknown-host";
+		}
+		return serverName;
+	}
 }

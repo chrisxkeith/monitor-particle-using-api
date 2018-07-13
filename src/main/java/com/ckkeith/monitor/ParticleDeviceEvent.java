@@ -24,7 +24,8 @@ public class ParticleDeviceEvent extends AnyDeviceEvent {
 		StringBuilder sb = new StringBuilder();
 		sb.append(e.name).append("\t")
 			.append(e.data).append("\t")
-			.append(device.name);
+			.append(device.name).append("\t")
+			.append(Utils.getHostName());
 		return sb.toString();
 	}
 	

@@ -69,7 +69,7 @@ public class StoveThermistorEvent extends ParticleDeviceEvent {
 							t.deviceTime).toMinutes() > timeLimit) {
 						String warn = "Temperature has been over " + temperatureLimit + " from " +
 								googleSheetsDateFormat.format(lastDataOverLimit.deviceTime) + 
-								" to " + googleSheetsDateFormat.format(t.deviceTime);
+								" to " + googleSheetsDateFormat.format(t.deviceTime) + "\t" + Utils.getHostName();
 						Utils.logWithGSheetsDate(LocalDateTime.now(),
 								"Warning\t" + warn, logFileName);
 						writeEmailFile(warn, e.data);

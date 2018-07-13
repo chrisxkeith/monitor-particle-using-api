@@ -29,7 +29,8 @@ public class DeviceMonitor extends Thread {
 		sb.append(device.id).append("\t");
 		sb.append(device.connected).append("\t");
 		sb.append(device.lastHeard).append("\t");
-		sb.append(getVersionString(device));
+		sb.append(getVersionString(device)).append("\t");
+		sb.append(Utils.getHostName());
 		return sb.toString();
 	}
 
@@ -39,7 +40,7 @@ public class DeviceMonitor extends Thread {
 
 	private void log(String s) {
 		Utils.logWithGSheetsDate(LocalDateTime.now(),
-				Utils.padWithSpaces(device.name, 20) + "\t" + s,
+				Utils.padWithSpaces(device.name, 20) + "\t" + s + "\t" + Utils.getHostName(),
 				logFileName);
 	}
 
