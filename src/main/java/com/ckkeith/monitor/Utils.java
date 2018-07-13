@@ -5,6 +5,8 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.PrintStream;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -132,6 +134,14 @@ public class Utils {
 		String serverName = System.getenv("COMPUTERNAME");
 		if (serverName == null || serverName.isEmpty()) {
 			serverName = System.getenv("HOSTNAME");
+		}
+		if (serverName == null || serverName.isEmpty()) {
+			try {
+				serverName = InetAddress.getLocalHost().getHostName();
+			} catch (UnknownHostException e) {
+				System.out.println("Error on InetAddress.getLocalHost().getHostName()\t" + e.toString());
+				e.printStackTrace(new PrintStream(System.out));
+			}
 		}
 		if (serverName == null || serverName.isEmpty()) {
 			serverName = "unknown-host";
