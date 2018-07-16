@@ -57,8 +57,9 @@ public class StoveThermistorEvent extends ParticleDeviceEvent {
 		return emailFilePath;
 	}
 
-	public void handleEvent(Event e) {
-		super.handleEvent(e);
+	// public for automated testing only.
+	public String checkStoveLeftOn(Event e) {
+		String warn = "";
 		if (e.name.equals("Thermistor 01 sensor:")) {
 			ThermistorData t = new ThermistorData(e.data);
 			if (t.degreesInF > this.temperatureLimit) {
@@ -67,13 +68,13 @@ public class StoveThermistorEvent extends ParticleDeviceEvent {
 				} else {
 					if (Duration.between(lastDataOverLimit.deviceTime,
 							t.deviceTime).toMinutes() > timeLimit) {
-						String warn = "Temperature has been over " + temperatureLimit + " from " +
+						warn = "Temperature has been over " + temperatureLimit + " from " +
 								googleSheetsDateFormat.format(lastDataOverLimit.deviceTime) + 
 								" to " + googleSheetsDateFormat.format(t.deviceTime) + "\t" + Utils.getHostName();
 						Utils.logWithGSheetsDate(LocalDateTime.now(),
 								"Warning\t" + warn, logFileName);
 						writeEmailFile(warn, e.data);
-//						GMailer.sendMail(writeEmailFile(warn, e.data));
+	//					GMailer.sendMail(writeEmailFile(warn, e.data));
 					}
 				}
 			} else {
@@ -81,5 +82,11 @@ public class StoveThermistorEvent extends ParticleDeviceEvent {
 			}
 			lastDataSeen = t;
 		}
+		return warn;
+	}
+
+	public void handleEvent(Event e) {
+		super.handleEvent(e);
+		checkStoveLeftOn(e);
 	}
 }
