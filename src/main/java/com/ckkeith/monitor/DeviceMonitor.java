@@ -1,6 +1,7 @@
 package com.ckkeith.monitor;
 
 import java.io.PrintStream;
+import java.time.Duration;
 import java.time.LocalDateTime;
 
 import nl.infcomtec.jparticle.Cloud;
@@ -13,6 +14,7 @@ public class DeviceMonitor extends Thread {
 	private Cloud cloud;
 	private String accountName;
 	private String logFileName;
+	private LocalDateTime lastEventTime;
 
 	public DeviceMonitor(String accountName, String accessToken, Device device, Cloud cloud) throws Exception {
 		this.accessToken = accessToken;
@@ -44,28 +46,63 @@ public class DeviceMonitor extends Thread {
 				logFileName);
 	}
 
+	private boolean ableToConnect() throws Exception {
+		int retries = 24;
+		while (!device.connected && retries > 0) {
+			log("not connected. Will retry in an hour.");
+			sleep(60 * 60 * 1000);
+			device = Device.getDevice(device.id, "Bearer " + accessToken);
+			retries--;
+		}
+		if (!device.connected) {
+			log("not connected after 24 hours.");
+		}
+		return device.connected;
+	}
+
+    public synchronized void setLastEventTime(LocalDateTime d) {
+        this.lastEventTime = d;
+    }
+
+    private synchronized LocalDateTime getLastEventTime() {
+        return lastEventTime;
+    }
+
+    private boolean shouldConnect() {
+		if (getLastEventTime() == null) {
+			return true;
+		}
+		// Sometimes the Event subscribers stop recording events,
+		// for no reason that I can determine.
+		// If no event has come in the last hour, create another Event subscriber.
+		return Duration.between(getLastEventTime(),
+				LocalDateTime.now()).toMinutes() > 60;
+    }
+
+    private void subscribe() throws Exception {
+		ParticleDeviceEvent cb;
+		if (device.name.contains("thermistor")) {
+			cb = new StoveThermistorEvent(accountName, device, this);
+		} else {
+			cb = new ParticleDeviceEvent(accountName, device, this);
+		}
+		cloud.subscribe(cb);
+    }
+
 	public void run() {
 		log("DeviceMonitor thread started.");
-		int retries = 24;
 		try {
-			while (!device.connected && retries > 0) {
-				log("not connected. Will retry in an hour.");
-				sleep(60 * 60 * 1000);
-				device = Device.getDevice(device.id, "Bearer " + accessToken);
-				retries--;
-			}
-			if (device.connected) {
-				ParticleDeviceEvent cb;
-				if (accountName.equals("chris.keith@gmail.com") &&
-						device.name.equals("thermistor-test")) {
-					cb = new StoveThermistorEvent(accountName, device);
-				} else {
-					cb = new ParticleDeviceEvent(accountName, device);
+			Integer connectionCount = 0;
+			while (true) {
+				if (shouldConnect() && ableToConnect()) {
+					subscribe();
+					if (connectionCount == 0) {
+						log(connectionCount++ + " : subscribed.");
+					} else {
+						log(connectionCount++ + " : resubscribed.");
+					}
+					sleep(60 * 60 * 1000);
 				}
-				cloud.subscribe(cb);
-				log("subscribed.");
-			} else {
-				log("not connected after 24 hours. Giving up.");
 			}
 		} catch (Exception e) {
 			Utils.logToConsole("run() :\t" + e.getClass().getName() + "\t" + e.getMessage());

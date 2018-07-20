@@ -32,8 +32,8 @@ public class StoveThermistorEvent extends ParticleDeviceEvent {
 	ThermistorData lastDataSeen = null;
 	ThermistorData lastDataOverLimit = null;
 	
-	public StoveThermistorEvent(String accountName, Device device) throws Exception {
-		super(accountName, device);
+	public StoveThermistorEvent(String accountName, Device device, DeviceMonitor deviceMonitor) throws Exception {
+		super(accountName, device, deviceMonitor);
 	}
 
 	private String writeEmailFile(String subject, String body) {

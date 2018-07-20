@@ -12,11 +12,13 @@ public class ParticleDeviceEvent extends AnyDeviceEvent {
 
 	protected Device device;
 	protected String accountName;
+	protected DeviceMonitor deviceMonitor;
 	protected String logFileName;
 
-	public ParticleDeviceEvent(String accountName, Device device) throws Exception {
+	public ParticleDeviceEvent(String accountName, Device device, DeviceMonitor deviceMonitor) throws Exception {
 		this.device = device;
 		this.accountName = accountName;
+		this.deviceMonitor = deviceMonitor;
 		this.logFileName = Utils.getLogFileName(accountName, device.name + "_particle_log.txt");
 	}
 	
@@ -32,6 +34,9 @@ public class ParticleDeviceEvent extends AnyDeviceEvent {
 	public void handleEvent(Event e) {
 		LocalDateTime ldt = LocalDateTime.ofInstant(e.publishedAt.toInstant(), ZoneId.systemDefault());
 		Utils.logWithGSheetsDate(ldt, toTabbedString(e), logFileName);
+		if (deviceMonitor != null) {
+			deviceMonitor.setLastEventTime(ldt);
+		}
 	}
 
 	@Override
