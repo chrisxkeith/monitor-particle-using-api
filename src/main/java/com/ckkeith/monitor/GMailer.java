@@ -24,6 +24,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -31,7 +32,7 @@ import javax.mail.internet.*;
 import javax.mail.*;
 import java.util.Properties;
 
-public class GmailQuickstart {
+public class GMailer {
 	private static final String APPLICATION_NAME = "Gmail API Java Quickstart";
 	private static final JsonFactory JSON_FACTORY = JacksonFactory.getDefaultInstance();
 	private static final String CREDENTIALS_FOLDER = "credentials"; // Directory to store user credentials.
@@ -56,7 +57,7 @@ public class GmailQuickstart {
 	 */
 	private static Credential getCredentials(final NetHttpTransport HTTP_TRANSPORT) throws IOException {
 		// Load client secrets.
-		InputStream in = GmailQuickstart.class.getResourceAsStream(CLIENT_SECRET_DIR);
+		InputStream in = GMailer.class.getResourceAsStream(CLIENT_SECRET_DIR);
 		GoogleClientSecrets clientSecrets = GoogleClientSecrets.load(JSON_FACTORY, new InputStreamReader(in));
 
 		// Build flow and trigger user authorization request.
@@ -194,12 +195,20 @@ public class GmailQuickstart {
 		sendMessage(service, "me", createEmail(from, to, subject, body));
 	}
 
-	public static void sendMail(String fn) throws Exception {
-		// Build a new authorized API client service.
-		final NetHttpTransport HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
-		Gmail service = new Gmail.Builder(HTTP_TRANSPORT, JSON_FACTORY, getCredentials(HTTP_TRANSPORT))
-				.setApplicationName(APPLICATION_NAME).build();
-		printOneLabel(service); // to verify connection
-		readAndSend(service, fn);
+	public static void sendMail(String fn) {
+		System.out.println("Sending email not fully implemented yet. " + fn);
+/*
+		try {
+			// Build a new authorized API client service.
+			final NetHttpTransport HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
+			Gmail service = new Gmail.Builder(HTTP_TRANSPORT, JSON_FACTORY, getCredentials(HTTP_TRANSPORT))
+					.setApplicationName(APPLICATION_NAME).build();
+			printOneLabel(service); // to verify connection
+			readAndSend(service, fn);
+		} catch (Throwable e) {
+			System.out.println("Error sending : " + fn + " : " + e.getMessage());
+			e.printStackTrace(new PrintStream(System.out));
+		}
+*/
 	}
 }

@@ -16,14 +16,14 @@ public class StoveThermistorEvent extends ParticleDeviceEvent {
 
 		LocalDateTime deviceTime = null;
 		int degreesInF = Integer.MIN_VALUE;
-		
+
 		ThermistorData(String data) {
 			String fields[] = data.split("\\|");
 			deviceTime = LocalDateTime.parse(fields[1], logDateFormat);
 			degreesInF = Integer.parseInt(fields[2]);
 		}
 	}
-	
+
 	private final DateTimeFormatter googleSheetsDateFormat = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
 
 	private final int temperatureLimit = 80; // degrees F
@@ -31,7 +31,7 @@ public class StoveThermistorEvent extends ParticleDeviceEvent {
 
 	ThermistorData lastDataSeen = null;
 	ThermistorData lastDataOverLimit = null;
-	
+
 	public StoveThermistorEvent(String accountName, Device device, DeviceMonitor deviceMonitor) throws Exception {
 		super(accountName, device, deviceMonitor);
 	}
@@ -57,6 +57,23 @@ public class StoveThermistorEvent extends ParticleDeviceEvent {
 		return emailFilePath;
 	}
 
+	private final int SEND_INTERVAL_IN_MINUTES = 30;
+	private LocalDateTime lastSent = null;
+
+	private void sendEmail(String warn, Event e) {
+		String fn = writeEmailFile(warn, e.data);
+		if (fn != null) {
+			if (lastSent == null
+					|| Duration.between(lastSent, LocalDateTime.now()).toMinutes() > SEND_INTERVAL_IN_MINUTES) {
+				// For the future : Is there any case to be made for turning off the email at some point?
+				// E.g., a sensor going bad?
+
+				GMailer.sendMail(fn);
+				lastSent = LocalDateTime.now();
+			}
+		}
+	}
+
 	// public for automated testing only.
 	public String checkStoveLeftOn(Event e) {
 		String warn = "";
@@ -66,19 +83,18 @@ public class StoveThermistorEvent extends ParticleDeviceEvent {
 				if (lastDataOverLimit == null) {
 					lastDataOverLimit = t;
 				} else {
-					if (Duration.between(lastDataOverLimit.deviceTime,
-							t.deviceTime).toMinutes() > timeLimit) {
-						warn = "Temperature has been over " + temperatureLimit + " from " +
-								googleSheetsDateFormat.format(lastDataOverLimit.deviceTime) + 
-								" to " + googleSheetsDateFormat.format(t.deviceTime) + "\t" + Utils.getHostName();
-						Utils.logWithGSheetsDate(LocalDateTime.now(),
-								"Warning\t" + warn, logFileName);
-						writeEmailFile(warn, e.data);
-	//					GMailer.sendMail(writeEmailFile(warn, e.data));
+					long minutes = Duration.between(lastDataOverLimit.deviceTime, t.deviceTime).toMinutes();
+					if (minutes > timeLimit) {
+						warn = "Temperature has been over " + temperatureLimit + " degrees F for " + minutes
+								+ " minutes (from " + googleSheetsDateFormat.format(lastDataOverLimit.deviceTime)
+								+ " to " + googleSheetsDateFormat.format(t.deviceTime) + ")\t" + Utils.getHostName();
+						Utils.logWithGSheetsDate(LocalDateTime.now(), "Warning\t" + warn, logFileName);
+						sendEmail(warn, e);
 					}
 				}
 			} else {
 				lastDataOverLimit = null;
+				lastSent = null;
 			}
 			lastDataSeen = t;
 		}
