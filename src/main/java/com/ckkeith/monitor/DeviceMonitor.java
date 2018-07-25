@@ -1,7 +1,6 @@
 package com.ckkeith.monitor;
 
 import java.io.PrintStream;
-import java.time.Duration;
 import java.time.LocalDateTime;
 
 import nl.infcomtec.jparticle.Cloud;
@@ -14,7 +13,6 @@ public class DeviceMonitor extends Thread {
 	private Cloud cloud;
 	private String accountName;
 	private String logFileName;
-	private LocalDateTime lastEventTime;
 
 	public DeviceMonitor(String accountName, String accessToken, Device device, Cloud cloud) throws Exception {
 		this.accessToken = accessToken;
@@ -23,7 +21,7 @@ public class DeviceMonitor extends Thread {
 		this.accountName = accountName;
 		logFileName = Utils.getLogFileName(accountName, device.name + "_particle_log.txt");
 	}
-	
+
 	public String toTabbedString() {
 		StringBuffer sb = new StringBuffer();
 		sb.append(Utils.padWithSpaces(accountName, 20)).append("\t");
@@ -42,8 +40,7 @@ public class DeviceMonitor extends Thread {
 
 	private void log(String s) {
 		Utils.logWithGSheetsDate(LocalDateTime.now(),
-				Utils.padWithSpaces(device.name, 20) + "\t" + s + "\t" + Utils.getHostName(),
-				logFileName);
+				Utils.padWithSpaces(device.name, 20) + "\t" + s + "\t" + Utils.getHostName(), logFileName);
 	}
 
 	private boolean ableToConnect() throws Exception {
@@ -60,55 +57,29 @@ public class DeviceMonitor extends Thread {
 		return device.connected;
 	}
 
-    public synchronized void setLastEventTime(LocalDateTime d) {
-        this.lastEventTime = d;
-    }
-
-    private synchronized LocalDateTime getLastEventTime() {
-        return lastEventTime;
-    }
-
-    private boolean shouldConnect() {
-		if (getLastEventTime() == null) {
-			return true;
-		}
-		// Sometimes the Event subscribers stop recording events,
-		// for no reason that I can determine.
-		// If no event has come in the last hour, create another Event subscriber.
-		return Duration.between(getLastEventTime(),
-				LocalDateTime.now()).toMinutes() > 60;
-    }
-
-    private void subscribe() throws Exception {
+	private void subscribe() throws Exception {
 		ParticleDeviceEvent cb;
 		if (device.name.contains("thermistor")) {
-			cb = new StoveThermistorEvent(accountName, device, this);
+			cb = new StoveThermistorEvent(accountName, device);
 		} else {
-			cb = new ParticleDeviceEvent(accountName, device, this);
+			cb = new ParticleDeviceEvent(accountName, device);
 		}
 		cloud.subscribe(cb);
-    }
+	}
 
 	public void run() {
 		log("DeviceMonitor thread started.");
 		try {
-			Integer connectionCount = 0;
-			while (true) {
-				if (shouldConnect() && ableToConnect()) {
-					subscribe();
-					if (connectionCount == 0) {
-						log(connectionCount++ + " : subscribed.");
-					} else {
-						log(connectionCount++ + " : resubscribed.");
-					}
-					sleep(60 * 60 * 1000);
-				}
+			if (ableToConnect()) {
+				subscribe();
+				log("subscribed.");
+				sleep(60 * 60 * 1000);
 			}
 		} catch (Exception e) {
 			Utils.logToConsole("run() :\t" + e.getClass().getName() + "\t" + e.getMessage());
-			e.printStackTrace(new PrintStream(System.out));			
+			e.printStackTrace(new PrintStream(System.out));
 		}
 		log("DeviceMonitor thread exiting.");
 	}
-	
+
 }
