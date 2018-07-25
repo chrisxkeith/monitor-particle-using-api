@@ -73,7 +73,6 @@ public class DeviceMonitor extends Thread {
 			if (ableToConnect()) {
 				subscribe();
 				log("subscribed.");
-				sleep(60 * 60 * 1000);
 			}
 		} catch (Exception e) {
 			Utils.logToConsole("run() :\t" + e.getClass().getName() + "\t" + e.getMessage());
