@@ -24,7 +24,6 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -36,6 +35,8 @@ public class GMailer {
 	private static final String APPLICATION_NAME = "Gmail API Java Quickstart";
 	private static final JsonFactory JSON_FACTORY = JacksonFactory.getDefaultInstance();
 	private static final String CREDENTIALS_FOLDER = "credentials"; // Directory to store user credentials.
+	private static NetHttpTransport HTTP_TRANSPORT;
+	private static Gmail service;
 
 	/**
 	 * Global instance of the scopes required by this quickstart. If modifying these
@@ -155,60 +156,86 @@ public class GMailer {
 		return lines;
 	}
 
-	private static void printOneLabel(Gmail service) throws Exception {
-		ListLabelsResponse listResponse = service.users().labels().list("me").execute();
-		List<Label> labels = listResponse.getLabels();
-		if (labels.isEmpty()) {
-			System.out.println("No labels found.");
-		} else {
-			System.out.printf("first label : %s\n", labels.get(0).getName());
+	private static Gmail getService() throws Exception {
+		if (service == null) {
+			// Build a new authorized API client service.
+			HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
+			service = new Gmail.Builder(HTTP_TRANSPORT, JSON_FACTORY, getCredentials(HTTP_TRANSPORT))
+					.setApplicationName(APPLICATION_NAME).build();
+
 		}
+		return service;
 	}
 
-	private static void readAndSend(Gmail service, String fn) throws Exception {
+	public static String printOneLabel() throws Exception {
+		return "Not implemented yet.";
+//		ListLabelsResponse listResponse = getService().users().labels().list("me").execute();
+//		List<Label> labels = listResponse.getLabels();
+//		if (labels.isEmpty()) {
+//			return "No labels found.";
+//		}
+//		return "first label : " + labels.get(0).getName();
+	}
+
+	private static String rebuild(String[] strings) {
+		StringBuilder sb = new StringBuilder();
+		for (int i = 1; i < strings.length; i++) {
+			if (i > 1) {
+				sb.append(":");
+			}
+			sb.append(" ").append(strings[i]);
+		}
+		return sb.toString();
+	}
+
+	public static String sendMail(String fn) {
 		String subject = "No input mail file specified.";
 		String body = "No body";
 		String from = "chris.keith@gmail.com";
 		String to = "chris.keith@gmail.com";
-		try {
-			subject = "No subject line specified.";
-			body = "";
-			ArrayList<String> lines = readFile(fn);
-			for (String s : lines) {
-				String[] fields = s.split(":");
-				if (fields.length > 1) {
-					String headerType = fields[0].trim();
-					if (headerType.equalsIgnoreCase("To")) {
-						to = fields[1];
-					} else if (headerType.equalsIgnoreCase("From")) {
-						from = fields[1];
-					} else if (headerType.equalsIgnoreCase("Subject")) {
-						subject = fields[1];
+		if (fn != null && (!fn.isEmpty())) {
+			try {
+				subject = "No subject line specified.";
+				body = "No body specified.";
+				ArrayList<String> lines = readFile(fn);
+				for (String s : lines) {
+					String[] fields = s.split(":");
+					if (fields.length > 1) {
+						String headerType = fields[0].trim();
+						if (headerType.equalsIgnoreCase("To")) {
+							to = rebuild(fields);
+						} else if (headerType.equalsIgnoreCase("From")) {
+							from = rebuild(fields);
+						} else if (headerType.equalsIgnoreCase("Subject")) {
+							subject = rebuild(fields);
+						} else {
+							body += (" " + s);
+						}
+					} else {
+						body += (" " + s);
 					}
-				} else {
-					body += (" " + s);
 				}
+			} catch (Throwable e) {
+				subject = "Error reading : " + fn + " : " + e.getMessage();
 			}
-		} catch (Throwable e) {
-			subject = "Error reading : " + fn + " : " + e.getMessage();
 		}
-		sendMessage(service, "me", createEmail(from, to, subject, body));
+		return sendMessageX(from, to, subject, body);
 	}
 
-	public static void sendMail(String fn) {
-		System.out.println("Sending email not fully implemented yet. " + fn);
-/*
-		try {
-			// Build a new authorized API client service.
-			final NetHttpTransport HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
-			Gmail service = new Gmail.Builder(HTTP_TRANSPORT, JSON_FACTORY, getCredentials(HTTP_TRANSPORT))
-					.setApplicationName(APPLICATION_NAME).build();
-			printOneLabel(service); // to verify connection
-			readAndSend(service, fn);
-		} catch (Throwable e) {
-			System.out.println("Error sending : " + fn + " : " + e.getMessage());
-			e.printStackTrace(new PrintStream(System.out));
-		}
-*/
+	public static String sendMessageX(String from, String to, String subject, String body) {
+		return "Not implemented yet.";
+//		String ret;
+//		try {
+//			ret = sendMessage(getService(), "me", createEmail(from, to, subject, body)).toPrettyString();
+//		} catch (Exception e) {
+//			System.out.println("Error sending email : " + subject + "\t" + e.toString());
+//			e.printStackTrace();
+//			ret = e.getMessage();
+//		}
+//		return ret;
+	}
+
+	public static String sendSubjectLine(String subject) {
+		return sendMessageX("chris.keith@gmail.com", "chris.keith@gmail.com", subject, subject);
 	}
 }
