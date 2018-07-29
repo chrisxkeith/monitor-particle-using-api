@@ -52,6 +52,10 @@ public class Utils {
 		}
 	}
 
+	public static String nowInLogFormat() {
+		return logDateFormat.format(new java.util.Date());
+	}
+
 	public static void logToConsole(String s) {
 		String d = logDateFormat.format(new java.util.Date());
 		System.out.println(d + "\t" + s + "\t" + getHostName());

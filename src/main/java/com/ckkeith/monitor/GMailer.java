@@ -139,9 +139,7 @@ public class GMailer {
 	public static Message sendMessage(Gmail service, String userId, MimeMessage emailContent)
 			throws MessagingException, IOException {
 		Message message = createMessageWithEmail(emailContent);
-		message = service.users().messages().send(userId, message).execute();
-		System.out.println(message.toPrettyString());
-		return message;
+		return service.users().messages().send(userId, message).execute();
 	}
 
 	private static ArrayList<String> readFile(String fn) throws Exception {
@@ -168,13 +166,12 @@ public class GMailer {
 	}
 
 	public static String printOneLabel() throws Exception {
-		return "Not implemented yet.";
-//		ListLabelsResponse listResponse = getService().users().labels().list("me").execute();
-//		List<Label> labels = listResponse.getLabels();
-//		if (labels.isEmpty()) {
-//			return "No labels found.";
-//		}
-//		return "first label : " + labels.get(0).getName();
+		ListLabelsResponse listResponse = getService().users().labels().list("me").execute();
+		List<Label> labels = listResponse.getLabels();
+		if (labels.isEmpty()) {
+			return "No labels found.";
+		}
+		return "first label : " + labels.get(0).getName();
 	}
 
 	private static String rebuild(String[] strings) {
@@ -223,16 +220,15 @@ public class GMailer {
 	}
 
 	public static String sendMessageX(String from, String to, String subject, String body) {
-		return "Not implemented yet.";
-//		String ret;
-//		try {
-//			ret = sendMessage(getService(), "me", createEmail(from, to, subject, body)).toPrettyString();
-//		} catch (Exception e) {
-//			System.out.println("Error sending email : " + subject + "\t" + e.toString());
-//			e.printStackTrace();
-//			ret = e.getMessage();
-//		}
-//		return ret;
+		String ret;
+		try {
+			ret = sendMessage(getService(), "me", createEmail(from, to, subject, body)).toPrettyString();
+		} catch (Exception e) {
+			System.out.println("Error sending email : " + subject + "\t" + e.toString());
+			e.printStackTrace();
+			ret = e.getMessage();
+		}
+		return ret;
 	}
 
 	public static String sendSubjectLine(String subject) {

@@ -13,7 +13,7 @@ public class Main {
 					(new PhotonMonitor(c)).start();
 				}
 			}
-			GMailer.sendSubjectLine("Particle Monitor server started on " + Utils.getHostName());
+			Utils.logToConsole(GMailer.sendSubjectLine(Utils.nowInLogFormat() + " " + "Particle Monitor server started on " + Utils.getHostName()));
 		} catch (Exception e) {
 			Utils.logToConsole("main() :\t" + e.getClass().getName() + "\t" + e.getMessage());
 			e.printStackTrace(new PrintStream(System.out));

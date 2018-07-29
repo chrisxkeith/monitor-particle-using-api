@@ -28,7 +28,7 @@ public class EmailTester extends TestCase {
 		String[] emlFileLines = {
 				"To : chris.keith@gmail.com",
 				"From : chris.keith@gmail.com",
-				"Subject : Test running at " + LocalDateTime.now() + " from " + Utils.getHostName(),
+				"Subject : Test running at " + LocalDateTime.now() + " from " + Utils.getHostName() + " : " + getClass().getCanonicalName(),
 				"",
 				temp.getName(),
 		};
