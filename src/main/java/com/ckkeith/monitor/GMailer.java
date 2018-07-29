@@ -183,7 +183,7 @@ public class GMailer {
 			if (i > 1) {
 				sb.append(":");
 			}
-			sb.append(" ").append(strings[i]);
+			sb.append(strings[i]);
 		}
 		return sb.toString();
 	}
