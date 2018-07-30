@@ -1,5 +1,21 @@
 package com.ckkeith.monitor;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Properties;
+
+import javax.mail.MessagingException;
+import javax.mail.Multipart;
+import javax.mail.Session;
+import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeBodyPart;
+import javax.mail.internet.MimeMessage;
+import javax.mail.internet.MimeMultipart;
+
 import com.google.api.client.auth.oauth2.Credential;
 import com.google.api.client.extensions.java6.auth.oauth2.AuthorizationCodeInstalledApp;
 import com.google.api.client.extensions.jetty.auth.oauth2.LocalServerReceiver;
@@ -16,20 +32,6 @@ import com.google.api.services.gmail.GmailScopes;
 import com.google.api.services.gmail.model.Label;
 import com.google.api.services.gmail.model.ListLabelsResponse;
 import com.google.api.services.gmail.model.Message;
-
-import java.io.BufferedReader;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import javax.mail.internet.*;
-import javax.mail.*;
-import java.util.Properties;
 
 public class GMailer {
 	private static final String APPLICATION_NAME = "Gmail API Java Quickstart";
@@ -142,18 +144,6 @@ public class GMailer {
 		return service.users().messages().send(userId, message).execute();
 	}
 
-	private static ArrayList<String> readFile(String fn) throws Exception {
-		ArrayList<String> lines = new ArrayList<String>();
-		String st;
-
-		BufferedReader br = new BufferedReader(new FileReader(new File(fn)));
-		while ((st = br.readLine()) != null) {
-			lines.add(st);
-		}
-		br.close();
-		return lines;
-	}
-
 	private static Gmail getService() throws Exception {
 		if (service == null) {
 			// Build a new authorized API client service.
@@ -172,51 +162,6 @@ public class GMailer {
 			return "No labels found.";
 		}
 		return "first label : " + labels.get(0).getName();
-	}
-
-	private static String rebuild(String[] strings) {
-		StringBuilder sb = new StringBuilder();
-		for (int i = 1; i < strings.length; i++) {
-			if (i > 1) {
-				sb.append(":");
-			}
-			sb.append(strings[i]);
-		}
-		return sb.toString();
-	}
-
-	public static String sendMail(String fn) {
-		String subject = "No input mail file specified.";
-		String body = "No body";
-		String from = "chris.keith@gmail.com";
-		String to = "chris.keith@gmail.com";
-		if (fn != null && (!fn.isEmpty())) {
-			try {
-				subject = "No subject line specified.";
-				body = "No body specified.";
-				ArrayList<String> lines = readFile(fn);
-				for (String s : lines) {
-					String[] fields = s.split(":");
-					if (fields.length > 1) {
-						String headerType = fields[0].trim();
-						if (headerType.equalsIgnoreCase("To")) {
-							to = rebuild(fields);
-						} else if (headerType.equalsIgnoreCase("From")) {
-							from = rebuild(fields);
-						} else if (headerType.equalsIgnoreCase("Subject")) {
-							subject = rebuild(fields);
-						} else {
-							body += (" " + s);
-						}
-					} else {
-						body += (" " + s);
-					}
-				}
-			} catch (Throwable e) {
-				subject = "Error reading : " + fn + " : " + e.getMessage();
-			}
-		}
-		return sendMessageX(from, to, subject, body);
 	}
 
 	public static String sendMessageX(String from, String to, String subject, String body) {

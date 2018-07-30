@@ -36,41 +36,17 @@ public class StoveThermistorEvent extends ParticleDeviceEvent {
 		super(accountName, device);
 	}
 
-	private String writeEmailFile(String subject, String body) {
-		String emailFilePath = null;
-		try {
-			emailFilePath = Utils.getLogFileName(accountName, "warning.eml");
-			FileWriter fstream = new FileWriter(emailFilePath, false);
-
-			fstream.write("From : chris.keith@gmail.com" + System.getProperty("line.separator"));
-			fstream.write("Subject : " + subject + System.getProperty("line.separator"));
-			fstream.write("To : chris.keith@gmail.com" + System.getProperty("line.separator"));
-			fstream.write(System.getProperty("line.separator"));
-			fstream.write(body);
-			fstream.flush();
-			fstream.close();
-			Utils.logToConsole("Finished writing : " + emailFilePath);
-		} catch (Exception e) {
-			System.out.println("Error writing email file : " + emailFilePath + "\t" + e.toString());
-			e.printStackTrace(new PrintStream(System.out));
-		}
-		return emailFilePath;
-	}
-
 	private final int SEND_INTERVAL_IN_MINUTES = 30;
 	private LocalDateTime lastSent = null;
 
 	private void sendEmail(String warn, Event e) {
-		String fn = writeEmailFile(warn, e.data);
-		if (fn != null) {
-			if (lastSent == null
-					|| Duration.between(lastSent, LocalDateTime.now()).toMinutes() > SEND_INTERVAL_IN_MINUTES) {
-				// For the future : Is there any case to be made for turning off the email at some point?
-				// E.g., a sensor going bad?
+		if (lastSent == null
+				|| Duration.between(lastSent, LocalDateTime.now()).toMinutes() > SEND_INTERVAL_IN_MINUTES) {
+			// For the future : Is there any case to be made for turning off the email at some point?
+			// E.g., a sensor going bad?
 
-				GMailer.sendMail(fn);
-				lastSent = LocalDateTime.now();
-			}
+			GMailer.sendMessageX("chris.keith@gmail.com", "chris.keith@gmail.com", warn, e.data);
+			lastSent = LocalDateTime.now();
 		}
 	}
 
