@@ -1,6 +1,5 @@
 package com.ckkeith.monitor;
 
-import java.io.FileWriter;
 import java.io.PrintStream;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
@@ -32,38 +31,24 @@ public class PhotonMonitor extends Thread {
 		logFileName = Utils.getLogFileName(accountName, "devices-overview.txt");
 	}
 
-	private void writeTable(FileWriter fstream, ArrayList<String> bodyLines) throws Exception {
-		fstream.write("<table border=\"1\">");
+	private void writeTable(StringBuilder sb, ArrayList<String> bodyLines) throws Exception {
+		sb.append("<table border=\"1\">");
 		for (String s : bodyLines) {
-			StringBuilder sb = new StringBuilder("<tr>");
+			sb.append("<tr>");
 			for (String f : s.split("\t")) {
 				sb.append("<td style=\"text-align:left\">").append(f).append("</td>");
 			}
 			sb.append("</tr>");
-			fstream.write(sb.toString() + System.getProperty("line.separator"));
 		}
-		fstream.write("</table>");
+		sb.append("</table>");
 	}
 
-	private void writeEmailFile(ArrayList<String> bodyLines) throws Exception {
-		String emailFileName = Utils.getLogFileName(accountName, "devices-overview.eml");
-		try {
-			FileWriter fstream = new FileWriter(emailFileName, false);
-
-			fstream.write("From : chris.keith@gmail.com" + System.getProperty("line.separator"));
-			fstream.write("Subject : " + accountName + " : Particle device status" + System.getProperty("line.separator"));
-			fstream.write("To : chris.keith@gmail.com" + System.getProperty("line.separator"));
-			fstream.write("" + System.getProperty("line.separator"));
-			fstream.write("<!DOCTYPE HTML><html><body>");
-			writeTable(fstream, bodyLines);
-			fstream.write("</body></html>");
-			fstream.flush();
-			fstream.close();
-		} catch (Exception e) {
-			System.out.println("Error writing email file : " + emailFileName + "\t" + e.toString());
-			e.printStackTrace(new PrintStream(System.out));
-		}
-		Utils.logToConsole("Finished writing : " + emailFileName);
+	private void sendEmail(ArrayList<String> bodyLines) throws Exception {
+		StringBuilder sb = new StringBuilder("<!DOCTYPE HTML><html><body>");
+		writeTable(sb, bodyLines);
+		sb.append("</body></html>");
+		String subject = Utils.nowInLogFormat() + " : " + accountName + " : Particle device status";
+		GMailer.sendMessageX("chris.keith@gmail.com", "chris.keith@gmail.com", subject, sb.toString());
 	}
 
 	public void run() {
@@ -94,7 +79,7 @@ public class PhotonMonitor extends Thread {
 						}
 					}
 				}
-				writeEmailFile(statuses);
+				sendEmail(statuses);
 				for (DeviceMonitor dm : newDevices) {
 					dm.start();
 				}

@@ -1,7 +1,5 @@
 package com.ckkeith.monitor;
 
-import java.io.FileWriter;
-import java.io.PrintStream;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
