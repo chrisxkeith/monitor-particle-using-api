@@ -4,9 +4,9 @@ import java.time.LocalDateTime;
 
 import junit.framework.TestCase;
 
-public class EmailTester extends TestCase {
+public class EmailTest extends TestCase {
 
-	public EmailTester(String testName) {
+	public EmailTest(String testName) {
 		super(testName);
 	}
 
