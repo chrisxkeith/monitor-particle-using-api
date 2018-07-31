@@ -31,5 +31,7 @@ git clone https://github.com/Walter-Stroebel/JParticle.git				; if [ $? -ne 0 ] 
 git clone https://github.com/chrisxkeith/monitor-particle-using-api.git	; if [ $? -ne 0 ] ; then exit -6 ; fi
 cp -R JParticle/src/* monitor-particle-using-api/src/					; if [ $? -ne 0 ] ; then exit -6 ; fi
 cd ~/Documents/Github/monitor-particle-using-api	  					; if [ $? -ne 0 ] ; then exit -6 ; fi
+mkdir -p src/main/resources/com/ckkeith/monitor/	  					; if [ $? -ne 0 ] ; then exit -6 ; fi
 
-mvn clean install exec:java -Dexec.mainClass="com.ckkeith.monitor.Main"	; if [ $? -ne 0 ] ; then exit -6 ; fi
+echo "Now copy your GCP client_secret.json file into rc/main/resources/com/ckkeith/monitor/"
+echo Then run : mvn clean install exec:java -Dexec.mainClass=\"com.ckkeith.monitor.Main\""
