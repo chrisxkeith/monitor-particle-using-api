@@ -31,7 +31,7 @@ public class PhotonMonitor extends Thread {
 		logFileName = Utils.getLogFileName(accountName, "devices-overview.txt");
 	}
 
-	private void writeTable(StringBuilder sb, String[] headers, ArrayList<String> bodyLines) throws Exception {
+	private void writeTable(StringBuilder sb, String[] headers, Integer[] columns, ArrayList<String> bodyLines) throws Exception {
 		sb.append("<table border=\"1\">");
 		sb.append("<tr>");
 		for (int i = 0; i < headers.length; i++) {
@@ -40,8 +40,9 @@ public class PhotonMonitor extends Thread {
 		sb.append("</tr>");
 		for (String s : bodyLines) {
 			sb.append("<tr>");
-			for (String f : s.split("\t")) {
-				sb.append("<td style=\"text-align:left\">").append(f).append("</td>");
+			String[] f = s.split("\t");
+			for (int i = 0; i < columns.length; i++) {
+				sb.append("<td style=\"text-align:left\">").append(f[columns[i]]).append("</td>");
 			}
 			sb.append("</tr>");
 		}
@@ -50,10 +51,11 @@ public class PhotonMonitor extends Thread {
 
 	private void sendEmail(ArrayList<String> bodyLines) throws Exception {
 		StringBuilder sb = new StringBuilder("<!DOCTYPE HTML><html><body>");
-		String[] headers = {"account", "photon name", "photon id", "connected", "lastheard", "code version", "monitoring server"};
-		writeTable(sb, headers, bodyLines);
+		String[] headers = {"photon name", "connected", "lastheard"};
+		Integer[] columns = {1, 3, 4};
+		writeTable(sb, headers, columns, bodyLines);
 		sb.append("</body></html>");
-		String subject = Utils.nowInLogFormat() + " : " + accountName + " : Particle device status";
+		String subject = accountName + " : Particle device status from " + Utils.getHostName();
 		GMailer.sendMessageX("chris.keith@gmail.com", "chris.keith@gmail.com", subject, sb.toString());
 	}
 
