@@ -8,4 +8,6 @@ You will need to create and install a Google Cloud Platform credential file (e.g
 
 See https://github.com/chrisxkeith/monitor-particle-using-api/blob/master/bootstrap.sh for build steps. If you want to run the script directly, copy it into a temporary directory and run from that directory using Git Bash.
 
+Email addresses (To: and From:) are currently hardcoded. You will need to find them (search for chris.keith@gmail.com) and change them.
+
 If you want to convert 'one sensor data point point row' to 'multiple sensors data points per row' you can try https://github.com/chrisxkeith/pivot-table-sort-of .
