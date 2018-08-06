@@ -68,23 +68,21 @@ public class PhotonMonitor extends Thread {
 				ArrayList<String> statuses = new ArrayList<String>();
 				ArrayList<DeviceMonitor> newDevices = new ArrayList<DeviceMonitor>();
 				for (Device device : c.devices.values()) {
-					if (device.connected) {
-						try {
-							// Get device variables and functions
-							device = Device.getDevice(device.id, "Bearer " + accessToken);
-							DeviceMonitor dm = new DeviceMonitor(accountName, accessToken, device, c);
-							Utils.logWithGSheetsDate(LocalDateTime.now(), dm.toTabbedString(), logFileName);
-							statuses.add(dm.toTabbedString());
-							if (device.connected && (deviceMonitors.get(device.name) == null)) {
-								deviceMonitors.put(device.name, dm);
-								newDevices.add(dm);
-							}
-						} catch (Exception e) {
-							String err = "run() :\t" + device.name + "\t" + e.getClass().getName() + "\t" + e.getMessage();
-							Utils.logToConsole(err);
-							statuses.add(err);
-							e.printStackTrace(new PrintStream(System.out));
+					try {
+						// Get device variables and functions
+						device = Device.getDevice(device.id, "Bearer " + accessToken);
+						DeviceMonitor dm = new DeviceMonitor(accountName, accessToken, device, c);
+						Utils.logWithGSheetsDate(LocalDateTime.now(), dm.toTabbedString(), logFileName);
+						statuses.add(dm.toTabbedString());
+						if (device.connected && (deviceMonitors.get(device.name) == null)) {
+							deviceMonitors.put(device.name, dm);
+							newDevices.add(dm);
 						}
+					} catch (Exception e) {
+						String err = "run() :\t" + device.name + "\t" + e.getClass().getName() + "\t" + e.getMessage();
+						Utils.logToConsole(err);
+						statuses.add(err);
+						e.printStackTrace(new PrintStream(System.out));
 					}
 				}
 				sendEmail(statuses);
