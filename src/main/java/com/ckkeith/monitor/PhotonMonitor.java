@@ -6,6 +6,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import nl.infcomtec.jparticle.Cloud;
 import nl.infcomtec.jparticle.Device;
@@ -15,6 +16,7 @@ public class PhotonMonitor extends Thread {
 	private String accessToken = null;
 	private String accountName = null;
 	private String logFileName;
+	private Map<String, ParticleDeviceEvent> eventSubscribers = new HashMap<String, ParticleDeviceEvent>();
 
 	public PhotonMonitor(String credentials) throws Exception {
 		String[] creds = credentials.split("\t");
@@ -71,7 +73,7 @@ public class PhotonMonitor extends Thread {
 					try {
 						// Get device variables and functions
 						device = Device.getDevice(device.id, "Bearer " + accessToken);
-						DeviceMonitor dm = new DeviceMonitor(accountName, accessToken, device, c);
+						DeviceMonitor dm = new DeviceMonitor(accountName, accessToken, device, c, this);
 						Utils.logWithGSheetsDate(LocalDateTime.now(), dm.toTabbedString(), logFileName);
 						statuses.add(dm.toTabbedString());
 						if (device.connected && (deviceMonitors.get(device.name) == null)) {
@@ -89,8 +91,8 @@ public class PhotonMonitor extends Thread {
 				for (DeviceMonitor dm : newDevices) {
 					dm.start();
 				}
-				// At midnight (local time), check for changes in devices-per-cloud and their statuses.
-				LocalDateTime then = LocalDateTime.now().truncatedTo(ChronoUnit.DAYS).plusDays(1);
+				// At 1 a.m. (local time), check for changes in devices-per-cloud and their statuses.
+				LocalDateTime then = LocalDateTime.now().truncatedTo(ChronoUnit.DAYS).plusDays(1).withHour(1);
 				Utils.sleepUntil("PhotonMonitor\t" + accountName, then);
 			}
 		} catch (Exception e) {
@@ -98,5 +100,30 @@ public class PhotonMonitor extends Thread {
 			e.printStackTrace(new PrintStream(System.out));
 		}
 		Utils.logToConsole(Utils.padWithSpaces(this.accountName, 20) + "\tPhotonMonitor thread exiting.");
+	}
+
+	public void emailMostRecentEvents() {
+		StringBuilder sb = new StringBuilder("<!DOCTYPE HTML><html><body>");
+		sb.append("<table border=\"1\">");
+		sb.append("<tr>");
+		sb.append("<th style=\"text-align:left\">").append("Name").append("</th>");
+		sb.append("<th style=\"text-align:left\">").append("Event").append("</th>");
+		sb.append("</tr>");
+		for (Entry<String, ParticleDeviceEvent> e : eventSubscribers.entrySet()) {
+			sb.append("<tr>");
+			sb.append("<td>").append(e.getKey()).append("</td>");
+			sb.append("<td>").append(e.getValue().getMostRecentEvent()).append("</td>");
+			sb.append("</tr>");
+		}
+		sb.append("</table>");
+		sb.append("</body></html>");
+		String subject = accountName + " : Particle device most recent entries from " + Utils.getHostName();
+		GMailer.sendMessageX("chris.keith@gmail.com", "chris.keith@gmail.com", subject, sb.toString());
+	}
+
+	public void addEventSubscriber(String name, ParticleDeviceEvent cb) {
+		synchronized(eventSubscribers) {
+			eventSubscribers.put(name, cb);
+		}
 	}
 }

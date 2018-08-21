@@ -13,6 +13,7 @@ public class ParticleDeviceEvent extends AnyDeviceEvent {
 	protected Device device;
 	protected String accountName;
 	protected String logFileName;
+	private Event mostRecentEvent;
 
 	public ParticleDeviceEvent(String accountName, Device device) throws Exception {
 		this.device = device;
@@ -32,6 +33,7 @@ public class ParticleDeviceEvent extends AnyDeviceEvent {
 	public void handleEvent(Event e) {
 		LocalDateTime ldt = LocalDateTime.ofInstant(e.publishedAt.toInstant(), ZoneId.systemDefault());
 		Utils.logWithGSheetsDate(ldt, toTabbedString(e), logFileName);
+		mostRecentEvent = e;
 	}
 
 	@Override
@@ -59,4 +61,11 @@ public class ParticleDeviceEvent extends AnyDeviceEvent {
 		super.finalize();
 		Utils.logToConsole("ParticleDeviceEvent.finalize() called!");
     }
+
+	public String getMostRecentEvent() {
+		if (mostRecentEvent == null) {
+			return "No mostRecentEvent";
+		}
+		return toTabbedString(mostRecentEvent);
+	}
 }

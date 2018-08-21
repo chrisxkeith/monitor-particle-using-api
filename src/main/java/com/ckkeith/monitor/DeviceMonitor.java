@@ -13,12 +13,14 @@ public class DeviceMonitor extends Thread {
 	private Cloud cloud;
 	private String accountName;
 	private String logFileName;
+	private PhotonMonitor photonMonitor;
 
-	public DeviceMonitor(String accountName, String accessToken, Device device, Cloud cloud) throws Exception {
+	public DeviceMonitor(String accountName, String accessToken, Device device, Cloud cloud, PhotonMonitor photonMonitor) throws Exception {
 		this.accessToken = accessToken;
 		this.device = device;
 		this.cloud = cloud;
 		this.accountName = accountName;
+		this.photonMonitor = photonMonitor;
 		logFileName = Utils.getLogFileName(accountName, device.name + "_particle_log.txt");
 	}
 
@@ -65,6 +67,7 @@ public class DeviceMonitor extends Thread {
 			cb = new ParticleDeviceEvent(accountName, device);
 		}
 		cloud.subscribe(cb);
+		photonMonitor.addEventSubscriber(device.name, cb);
 	}
 
 	public void run() {
