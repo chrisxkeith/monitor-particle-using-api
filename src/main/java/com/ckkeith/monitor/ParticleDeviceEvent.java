@@ -68,4 +68,11 @@ public class ParticleDeviceEvent extends AnyDeviceEvent {
 		}
 		return toTabbedString(mostRecentEvent);
 	}
+	public String getMostRecentEventDateTime() {
+		if (mostRecentEvent == null) {
+			return "No mostRecentEventDateTime";
+		}
+		LocalDateTime ldt = LocalDateTime.ofInstant(mostRecentEvent.publishedAt.toInstant(), ZoneId.systemDefault());
+		return Utils.googleSheetsDateFormat.format(ldt);
+	}
 }

@@ -107,11 +107,13 @@ public class PhotonMonitor extends Thread {
 		sb.append("<table border=\"1\">");
 		sb.append("<tr>");
 		sb.append("<th style=\"text-align:left\">").append("Name").append("</th>");
+		sb.append("<th style=\"text-align:left\">").append("PublishedAt").append("</th>");
 		sb.append("<th style=\"text-align:left\">").append("Event").append("</th>");
 		sb.append("</tr>");
 		for (Entry<String, ParticleDeviceEvent> e : eventSubscribers.entrySet()) {
 			sb.append("<tr>");
 			sb.append("<td>").append(e.getKey()).append("</td>");
+			sb.append("<td>").append(e.getValue().getMostRecentEventDateTime()).append("</td>");
 			sb.append("<td>").append(e.getValue().getMostRecentEvent()).append("</td>");
 			sb.append("</tr>");
 		}

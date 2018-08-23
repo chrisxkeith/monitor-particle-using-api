@@ -66,7 +66,7 @@ public class Utils {
 		logRaw(d + "\t" + s, logFileName);
 	}
 
-	final static private DateTimeFormatter googleSheetsDateFormat =
+	final static public DateTimeFormatter googleSheetsDateFormat =
 			DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
 	public static void logWithGSheetsDate(LocalDateTime ldt, String s, String logFileName) {
 		String d = logDateFormat.format(new java.util.Date());

@@ -27,7 +27,7 @@ public class Main {
 			Utils.logToConsole(GMailer.sendSubjectLine(Utils.nowInLogFormat() + " " + "Particle Monitor server started on " + Utils.getHostName()));
 
 			// At midnight (local time), shut down. Task Scheduler (on Windows) will start a new instance at 12:05.
-			// This is to get around the issue where PhotonMonitors randomly stop logging events.
+			// This is to get around the issue where PhotonMonitors randomly stop logging events after a few days.
 //			LocalDateTime then = LocalDateTime.now().plusMinutes(6); // for testing self-shutdown only.
 
 			LocalDateTime then = LocalDateTime.now().withHour(23).withMinute(59).withSecond(0);
