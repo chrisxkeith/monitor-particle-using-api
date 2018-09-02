@@ -66,6 +66,7 @@ public class PhotonMonitor extends Thread {
 			Utils.logToConsole(Utils.padWithSpaces(this.accountName, 20) + "\tPhotonMonitor thread starting.");
 			Map<String, DeviceMonitor> deviceMonitors = new HashMap<String, DeviceMonitor>();
 			while (true) {
+				Utils.logToConsole(Utils.padWithSpaces(this.accountName, 20) + "\tPhotonMonitor checking devices.");
 				Cloud c = new Cloud("Bearer " + accessToken, true, false);
 				ArrayList<String> statuses = new ArrayList<String>();
 				ArrayList<DeviceMonitor> newDevices = new ArrayList<DeviceMonitor>();

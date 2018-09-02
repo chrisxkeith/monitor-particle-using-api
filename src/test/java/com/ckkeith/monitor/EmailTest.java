@@ -24,7 +24,8 @@ public class EmailTest extends TestCase {
 	public void testSendEmail() {
 		try {
 			String response = GMailer.sendMessageX("chris.keith@gmail.com", "chris.keith@gmail.com", "Test running at "
-					+ LocalDateTime.now() + " from " + Utils.getHostName() + " : " + getClass().getCanonicalName(), "... body text ...");
+					+ LocalDateTime.now() + " : " + getClass().getCanonicalName() + " from " + Utils.getHostName(),
+					"... body text ...");
 			System.out.println(response);
 			assertTrue(response.contains("id"));
 		} catch (Exception e) {
