@@ -23,6 +23,7 @@ if [ -d ~/Documents/Github/monitor-particle-using-api ] ; then
 fi
 
 set -x
+mkdir -p ~/Documents/tmp/
 mkdir -p ~/Documents/Github												; if [ $? -ne 0 ] ; then exit -6 ; fi
 cd ~/Documents/Github													; if [ $? -ne 0 ] ; then exit -6 ; fi
 rm -rf JParticle/														; if [ $? -ne 0 ] ; then exit -6 ; fi
@@ -34,4 +35,5 @@ cd ~/Documents/Github/monitor-particle-using-api	  					; if [ $? -ne 0 ] ; then
 mkdir -p src/main/resources/com/ckkeith/monitor/	  					; if [ $? -ne 0 ] ; then exit -6 ; fi
 
 echo "Now copy your GCP client_secret.json file into src/main/resources/com/ckkeith/monitor/"
+echo Then create Particle account subdirectory/ies in ~/Documents/tmp/
 echo Then run : mvn clean install exec:java -Dexec.mainClass=\""com.ckkeith.monitor.Main\""
