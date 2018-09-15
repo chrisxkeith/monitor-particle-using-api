@@ -1,4 +1,4 @@
-rem ----- Could be called from Task Scheduler, but need to figure out permissions and environment issues first.
+rem ------ Could be called from Task Scheduler, but need to figure out permissions and environment issues first.
 
 set h=%HOMEDRIVE%%HOMEPATH%
 mkdir %h%\Documents\tmp\
