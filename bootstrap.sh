@@ -34,4 +34,4 @@ cd ~/Documents/Github/monitor-particle-using-api	  					; if [ $? -ne 0 ] ; then
 mkdir -p src/main/resources/com/ckkeith/monitor/	  					; if [ $? -ne 0 ] ; then exit -6 ; fi
 
 echo "Now copy your GCP client_secret.json file into rc/main/resources/com/ckkeith/monitor/"
-echo Then run : mvn clean install exec:java -Dexec.mainClass=\"com.ckkeith.monitor.Main\""
+echo Then run : mvn clean install exec:java -Dexec.mainClass=\""com.ckkeith.monitor.Main\""
