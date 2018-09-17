@@ -35,4 +35,4 @@ echo Then create Particle account subdirectory/ies in ~/Documents/tmp/
 echo Then run : mvn clean install exec:java -Dexec.mainClass=\""com.ckkeith.monitor.Main\""
 echo After a couple of minutes, you should see output something like:
 echo 2018-07-10T12:27:52-07  someone@somewhere.io     PhotonMonitor thread starting.
-echo Use Ctrl-C (Cmd-C? on mac) to quit.
+echo "Use Ctrl-C (Cmd-C? on mac) to quit."
