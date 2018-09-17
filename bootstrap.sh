@@ -1,9 +1,5 @@
 #! /bin/bash
 # Select all, copy to temporary shell script in temporary directory, then run it.
-# After a couple of minutes, you should see output something like:
-# 2018-07-10T12:27:52-07  someone@somewhere.io     PhotonMonitor thread starting.
-# ...
-# Use Ctrl-C (Cmd-C? on mac) to quit.
 
 mvn --version
 if [ $? -ne 0 ] ; then
@@ -37,3 +33,6 @@ mkdir -p src/main/resources/com/ckkeith/monitor/	  					; if [ $? -ne 0 ] ; then
 echo "Now copy your GCP client_secret.json file into src/main/resources/com/ckkeith/monitor/"
 echo Then create Particle account subdirectory/ies in ~/Documents/tmp/
 echo Then run : mvn clean install exec:java -Dexec.mainClass=\""com.ckkeith.monitor.Main\""
+echo After a couple of minutes, you should see output something like:
+echo 2018-07-10T12:27:52-07  someone@somewhere.io     PhotonMonitor thread starting.
+echo Use Ctrl-C (Cmd-C? on mac) to quit.
