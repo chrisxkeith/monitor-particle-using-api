@@ -17,15 +17,20 @@ public class StoveThermistorEvent extends ParticleDeviceEvent {
 
 		ThermistorData(String data) {
 			String fields[] = data.split("\\|");
-			deviceTime = LocalDateTime.parse(fields[1], logDateFormat);
-			degreesInF = Integer.parseInt(fields[2]);
+			if (fields.length == 1) {
+				deviceTime = LocalDateTime.now(); // Figure out a better value for this, or is this just bad data?
+				degreesInF = Integer.parseInt(fields[0]);
+			} else if (fields.length >= 3) {
+				deviceTime = LocalDateTime.parse(fields[1], logDateFormat);
+				degreesInF = Integer.parseInt(fields[2]);
+			}
 		}
 	}
 
 	private final DateTimeFormatter googleSheetsDateFormat = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
 
 	private final int temperatureLimit = 80; // degrees F
-	private final int timeLimit = 30; // minutes before alert is logged (or, eventually, emailed).
+	private final int timeLimit = 30; // minutes before alert is logged.
 
 	ThermistorData lastDataSeen = null;
 	ThermistorData lastDataOverLimit = null;
