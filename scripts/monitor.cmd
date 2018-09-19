@@ -1,7 +1,8 @@
-rem ------ Could be called from Task Scheduler, but need to figure out permissions and environment issues first.
+rem ----- You may have to copy this script to a directory that is public to all users
+rem ----- to make sure that it can be executed by Task Scheduler
+rem ----- TODO : create tmp/ and put ret.ret file into it.
 
 set h=%HOMEDRIVE%%HOMEPATH%
-mkdir %h%\Documents\tmp\
 set r=%h%\Documents\tmp\ret.ret
 date < %r%
 time < %r%
