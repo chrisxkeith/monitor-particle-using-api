@@ -13,16 +13,16 @@ public class StoveThermistorEvent extends ParticleDeviceEvent {
 		final private DateTimeFormatter logDateFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssX");
 
 		LocalDateTime deviceTime = null;
-		int degreesInF = Integer.MIN_VALUE;
+		double degreesInF = Double.MIN_VALUE;
 
 		ThermistorData(String data) {
 			String fields[] = data.split("\\|");
 			if (fields.length == 1) {
 				deviceTime = LocalDateTime.now(); // TODO : Figure out a better value for this, or is this just bad data?
-				degreesInF = Integer.parseInt(fields[0]);
+				degreesInF = Double.parseDouble(fields[0]);
 			} else if (fields.length >= 3) {
 				deviceTime = LocalDateTime.parse(fields[1], logDateFormat);
-				degreesInF = Integer.parseInt(fields[2]);
+				degreesInF = Double.parseDouble(fields[2]);
 			}
 		}
 	}
