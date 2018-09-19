@@ -30,9 +30,9 @@ public class StoveThermistorTester extends TestCase {
 			eventJson = new JSONObject("{ coreid : 'fubar', "
 					+ "data : '|2018-07-06T22:35:00Z|85|85|853|85|8|0.022000',"
 					+ "published_at : '2018-07-06 22:35:00.000Z', ttl : 1 }");
-			e = new Event("Thermistor 01 sensor:", eventJson);
+			e = new Event("This is just a test", eventJson);
 			warn = stoveThermistorEvent.checkStoveLeftOn(e);
-			assertTrue(warn.contains("Temperature"));
+			assertTrue(warn.contains("temperature"));
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
