@@ -1,5 +1,6 @@
 rem ----- You may have to copy this script to a directory that is public to all users
-rem ----- to make sure that it can be executed by Task Scheduler
+rem ----- to make sure that it can be executed by Task Scheduler.
+ren ----- Or you might have to replace %HOMEDRIVE%%HOMEPATH% with hardcoded values.
 rem ----- TODO : create tmp/ and put ret.ret file into it.
 
 set h=%HOMEDRIVE%%HOMEPATH%
