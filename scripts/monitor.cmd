@@ -11,4 +11,4 @@ set o=%h%\Documents\tmp\monitor.log
 set >> %o% 2>&1
 where mvn >> %o% 2>&1 
 cd %h%\Documents\Github\monitor-particle-using-api >> %o% 2>&1 
-mvn clean install exec:java -Dexec.mainClass="com.ckkeith.monitor.Main" >> %o% 2>&1 
+mvn clean install exec:java -Dmaven.test.skip=true -Dexec.mainClass="com.ckkeith.monitor.Main" >> %o% 2>&1
