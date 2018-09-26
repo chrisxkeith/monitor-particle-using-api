@@ -114,13 +114,21 @@ public class Utils {
 		return "unknown (no " + variableName + ")";
 	}
 
+	public static String getParamFileDirectory() throws Exception {
+		return getHomeDir() + File.separator + "Documents" + File.separator;
+	}
+
 	public static ArrayList<String> readParameterFile(String fileName) throws Exception {
-		String parameterFilePath = getHomeDir() + File.separator + "Documents" + File.separator + fileName;
+		String parameterFilePath =  getParamFileDirectory() + fileName;
 		File f = new File(parameterFilePath);
 		if (!f.exists()) {
 			System.out.println("No parameter file : " + parameterFilePath);
 			System.exit(-7);
 		}
+		return readTextFileIntoArray(parameterFilePath);
+	}
+
+	public static ArrayList<String> readTextFileIntoArray(String parameterFilePath) throws Exception {
 		ArrayList<String> creds = new ArrayList<String>(10);
 		BufferedReader br = new BufferedReader(new FileReader(parameterFilePath));
 		try {

@@ -21,7 +21,8 @@ public class EmailTest extends TestCase {
 		}
 	}
 
-	public void testSendEmail() {
+	// Only run manually when necessary.
+	public void xtestSendEmail() {
 		try {
 			String response = GMailer.sendMessageX("chris.keith@gmail.com", "chris.keith@gmail.com", "Test running at "
 					+ LocalDateTime.now() + " : " + getClass().getCanonicalName() + " from " + Utils.getHostName(),
