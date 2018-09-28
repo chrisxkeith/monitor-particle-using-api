@@ -28,4 +28,8 @@ public class RunParams {
 		}
 		return rp;
 	}
+
+	public String toString() {
+		return "RunParams : shutdown = " + shutDown;
+	}
 }

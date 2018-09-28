@@ -7,7 +7,7 @@ import java.util.ArrayList;
 
 public class Main {
 	private static ArrayList<PhotonMonitor> monitors = new ArrayList<PhotonMonitor>();
-	private static RunParams runParams = RunParams.load("monitor-run-params");
+	private static RunParams runParams;
 
 	private static void emailMostRecentEvents() {
 		for (PhotonMonitor m : monitors) {
@@ -17,6 +17,9 @@ public class Main {
 
 	public static void main(String[] args) {
 		try {
+			runParams = RunParams.load("monitor-run-params");
+			Utils.logToConsole(runParams.toString());
+
 			ArrayList<String> accountTokens = Utils.readParameterFile("particle-tokens.txt");
 			for (String c : accountTokens) {
 				if (c != null && !c.startsWith("#")) {
