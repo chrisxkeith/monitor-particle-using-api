@@ -17,7 +17,7 @@ public class Main {
 
 	public static void main(String[] args) {
 		try {
-			runParams = RunParams.load("monitor-run-params");
+			runParams = RunParams.load("monitor-run-params.txt");
 			Utils.logToConsole(runParams.toString());
 
 			ArrayList<String> accountTokens = Utils.readParameterFile("particle-tokens.txt");
