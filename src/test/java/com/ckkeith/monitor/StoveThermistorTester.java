@@ -26,7 +26,7 @@ public class StoveThermistorTester extends TestCase {
 					+ "published_at : '2018-07-06 21:30:00.000Z', ttl : 1 }");
 			Event e = new Event("Thermistor 01 sensor:", eventJson);
 			String warn = stoveThermistorEvent.checkStoveLeftOn(e);
-			assertTrue(warn.isEmpty());
+			assertTrue(warn.equals("subject line : no message yet"));
 			eventJson = new JSONObject("{ coreid : 'fubar', "
 					+ "data : '|2018-07-06T22:35:00Z|85|85|853|85|8|0.022000',"
 					+ "published_at : '2018-07-06 22:35:00.000Z', ttl : 1 }");
@@ -35,6 +35,7 @@ public class StoveThermistorTester extends TestCase {
 			assertTrue(warn.contains("temperature"));
 		} catch (Exception e) {
 			e.printStackTrace();
+			fail();
 		}
 	}
 }

@@ -15,15 +15,9 @@ public class StoveThermistorEvent extends ParticleDeviceEvent {
 		LocalDateTime deviceTime = null;
 		double degreesInF = Double.MIN_VALUE;
 
-		ThermistorData(String data) {
-			String fields[] = data.split("\\|");
-			if (fields.length == 1) {
-				deviceTime = LocalDateTime.now(); // TODO : Figure out a better value for this, or is this just bad data?
-				degreesInF = Double.parseDouble(fields[0]);
-			} else if (fields.length >= 3) {
-				deviceTime = LocalDateTime.parse(fields[1], logDateFormat);
-				degreesInF = Double.parseDouble(fields[2]);
-			}
+		ThermistorData(String fields[]) {
+			deviceTime = LocalDateTime.parse(fields[1], logDateFormat);
+			degreesInF = Double.parseDouble(fields[2]);
 		}
 	}
 
@@ -55,27 +49,36 @@ public class StoveThermistorEvent extends ParticleDeviceEvent {
 
 	// public for automated testing only.
 	public String checkStoveLeftOn(Event e) {
-		String subjectLine = "";
-		ThermistorData t = new ThermistorData(e.data);
-		if (t.degreesInF > this.temperatureLimit) {
-			if (lastDataOverLimit == null) {
-				lastDataOverLimit = t;
+		String subjectLine = "subject line : no message yet";
+		try {
+			String fields[] = e.data.split("\\|");
+			if (fields.length < 3) {
+				subjectLine = "No sensor data : " + e.data;
 			} else {
-				long minutes = Duration.between(lastDataOverLimit.deviceTime, t.deviceTime).toMinutes();
-				if (minutes > timeLimit) {
-					subjectLine = "Warning: stove top temperature has been over " + temperatureLimit + " degrees F for "
-							+ minutes + " minutes starting at " + dateFormatter.format(lastDataOverLimit.deviceTime);
-					String body = "Sent from sensor '" + e.name + "' on Photon '" + e.coreId +  "' by server '" + Utils.getHostName()
-							+ "'. Raw data: " + e.data;
-					Utils.logWithGSheetsDate(LocalDateTime.now(), subjectLine, logFileName);
-					sendEmail(subjectLine, body);
+				ThermistorData t = new ThermistorData(fields);
+				if (t.degreesInF > this.temperatureLimit) {
+					if (lastDataOverLimit == null) {
+						lastDataOverLimit = t;
+					} else {
+						long minutes = Duration.between(lastDataOverLimit.deviceTime, t.deviceTime).toMinutes();
+						if (minutes > timeLimit) {
+							subjectLine = "Warning: stove top temperature has been over " + temperatureLimit + " degrees F for "
+									+ minutes + " minutes starting at " + dateFormatter.format(lastDataOverLimit.deviceTime);
+							String body = "Sent from sensor '" + e.name + "' on Photon '" + e.coreId +  "' by server '" + Utils.getHostName()
+									+ "'. Raw data: " + e.data;
+							Utils.logWithGSheetsDate(LocalDateTime.now(), subjectLine, logFileName);
+							sendEmail(subjectLine, body);
+						}
+					}
+				} else {
+					lastDataOverLimit = null;
+					lastSent = null;
 				}
+				lastDataSeen = t;
 			}
-		} else {
-			lastDataOverLimit = null;
-			lastSent = null;
+		} catch (Exception ex) {
+			subjectLine = ex.getMessage();
 		}
-		lastDataSeen = t;
 		return subjectLine;
 	}
 
