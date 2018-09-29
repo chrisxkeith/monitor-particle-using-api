@@ -11,14 +11,14 @@ import java.util.Map.Entry;
 import nl.infcomtec.jparticle.Cloud;
 import nl.infcomtec.jparticle.Device;
 
-public class PhotonMonitor extends Thread {
+public class AccountMonitor extends Thread {
 
-	private String accessToken = null;
-	private String accountName = null;
+	String accessToken = null;
+	String accountName = null;
 	private String logFileName;
 	private Map<String, ParticleDeviceEvent> eventSubscribers = new HashMap<String, ParticleDeviceEvent>();
 
-	public PhotonMonitor(String credentials) throws Exception {
+	public AccountMonitor(String credentials) throws Exception {
 		String[] creds = credentials.split("\t");
 		if (creds.length > 0) {
 			this.accessToken = creds[0];
@@ -74,7 +74,7 @@ public class PhotonMonitor extends Thread {
 					try {
 						// Get device variables and functions
 						device = Device.getDevice(device.id, "Bearer " + accessToken);
-						DeviceMonitor dm = new DeviceMonitor(accountName, accessToken, device, c, this);
+						DeviceMonitor dm = new DeviceMonitor(this, device, c);
 						Utils.logWithGSheetsDate(LocalDateTime.now(), dm.toTabbedString(), logFileName);
 						statuses.add(dm.toTabbedString());
 						if (device.connected && (deviceMonitors.get(device.name) == null)) {

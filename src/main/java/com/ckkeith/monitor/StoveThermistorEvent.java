@@ -28,8 +28,8 @@ public class StoveThermistorEvent extends ParticleDeviceEvent {
 	ThermistorData lastDataSeen = null;
 	ThermistorData lastDataOverLimit = null;
 
-	public StoveThermistorEvent(String accountName, Device device) throws Exception {
-		super(accountName, device);
+	public StoveThermistorEvent(AccountMonitor accountMonitor, Device device) throws Exception {
+		super(accountMonitor, device);
 	}
 
 	private LocalDateTime lastSent = null;

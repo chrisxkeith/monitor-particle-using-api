@@ -6,11 +6,11 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 
 public class Main {
-	private static ArrayList<PhotonMonitor> monitors = new ArrayList<PhotonMonitor>();
+	private static ArrayList<AccountMonitor> monitors = new ArrayList<AccountMonitor>();
 	private static RunParams runParams;
 
 	private static void emailMostRecentEvents() {
-		for (PhotonMonitor m : monitors) {
+		for (AccountMonitor m : monitors) {
 			m.emailMostRecentEvents();
 		}
 	}
@@ -23,7 +23,7 @@ public class Main {
 			ArrayList<String> accountTokens = Utils.readParameterFile("particle-tokens.txt");
 			for (String c : accountTokens) {
 				if (c != null && !c.startsWith("#")) {
-					PhotonMonitor m = new PhotonMonitor(c);
+					AccountMonitor m = new AccountMonitor(c);
 					m.start();
 					monitors.add(m);
 				}

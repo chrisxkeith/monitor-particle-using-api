@@ -11,14 +11,14 @@ import nl.infcomtec.jparticle.Event;
 public class ParticleDeviceEvent extends AnyDeviceEvent {
 
 	protected Device device;
-	protected String accountName;
+	protected AccountMonitor accountMonitor;
 	protected String logFileName;
 	private Event mostRecentEvent;
 
-	public ParticleDeviceEvent(String accountName, Device device) throws Exception {
+	public ParticleDeviceEvent(AccountMonitor accountMonitor, Device device) throws Exception {
 		this.device = device;
-		this.accountName = accountName;
-		this.logFileName = Utils.getLogFileName(accountName, device.name + "_particle_log.txt");
+		this.accountMonitor = accountMonitor;
+		this.logFileName = Utils.getLogFileName(accountMonitor.accountName, device.name + "_particle_log.txt");
 	}
 	
 	private String toTabbedString(Event e) {

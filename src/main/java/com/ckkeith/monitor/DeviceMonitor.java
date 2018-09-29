@@ -11,22 +11,19 @@ public class DeviceMonitor extends Thread {
 	private String accessToken;
 	private Device device;
 	private Cloud cloud;
-	private String accountName;
 	private String logFileName;
-	private PhotonMonitor photonMonitor;
+	private AccountMonitor accountMonitor;
 
-	public DeviceMonitor(String accountName, String accessToken, Device device, Cloud cloud, PhotonMonitor photonMonitor) throws Exception {
-		this.accessToken = accessToken;
+	public DeviceMonitor(AccountMonitor accountMonitor, Device device, Cloud cloud) throws Exception {
 		this.device = device;
 		this.cloud = cloud;
-		this.accountName = accountName;
-		this.photonMonitor = photonMonitor;
-		logFileName = Utils.getLogFileName(accountName, device.name + "_particle_log.txt");
+		this.accountMonitor = accountMonitor;
+		logFileName = Utils.getLogFileName(accountMonitor.accountName, device.name + "_particle_log.txt");
 	}
 
 	public String toTabbedString() {
 		StringBuffer sb = new StringBuffer();
-		sb.append(Utils.padWithSpaces(accountName, 20)).append("\t");
+		sb.append(Utils.padWithSpaces(accountMonitor.accountName, 20)).append("\t");
 		sb.append(Utils.padWithSpaces(device.name, 20)).append("\t");
 		sb.append(device.id).append("\t");
 		sb.append(device.connected).append("\t");
@@ -62,12 +59,12 @@ public class DeviceMonitor extends Thread {
 	private void subscribe() throws Exception {
 		ParticleDeviceEvent cb;
 		if (device.name.contains("thermistor")) {
-			cb = new StoveThermistorEvent(accountName, device);
+			cb = new StoveThermistorEvent(accountMonitor, device);
 		} else {
-			cb = new ParticleDeviceEvent(accountName, device);
+			cb = new ParticleDeviceEvent(accountMonitor, device);
 		}
 		cloud.subscribe(cb);
-		photonMonitor.addEventSubscriber(device.name, cb);
+		accountMonitor.addEventSubscriber(device.name, cb);
 	}
 
 	public void run() {

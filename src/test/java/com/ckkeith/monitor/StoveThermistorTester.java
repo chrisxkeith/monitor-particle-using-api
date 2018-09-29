@@ -20,7 +20,8 @@ public class StoveThermistorTester extends TestCase {
 					+ "connected : true, last_heard : '2018-01-01 00:00:00.000Z', "
 					+ "name : 'yowza', last_ip_address : '0.0.0.0' }");
 			Device d = new Device(deviceJson);
-			StoveThermistorEvent stoveThermistorEvent = new StoveThermistorEvent("chris.keith@gmail.com", d);
+			AccountMonitor accountMonitor = new AccountMonitor("junk	chris.keith@gmail.com");
+			StoveThermistorEvent stoveThermistorEvent = new StoveThermistorEvent(accountMonitor, d);
 			JSONObject eventJson = new JSONObject("{ coreid : 'fubar', "
 					+ "data : '|2018-07-06T21:30:00Z|85|85|853|85|8|0.022000',"
 					+ "published_at : '2018-07-06 21:30:00.000Z', ttl : 1 }");
