@@ -15,6 +15,7 @@ public class AccountMonitor extends Thread {
 
 	String accessToken = null;
 	String accountName = null;
+	Integer eventCount = 0;
 	private String logFileName;
 	private Map<String, ParticleDeviceEvent> eventSubscribers = new HashMap<String, ParticleDeviceEvent>();
 
@@ -51,21 +52,22 @@ public class AccountMonitor extends Thread {
 		sb.append("</table>");
 	}
 
-	private void sendEmail(ArrayList<String> bodyLines) throws Exception {
+	private void sendEmail(ArrayList<String> bodyLines, String msg) throws Exception {
 		StringBuilder sb = new StringBuilder("<!DOCTYPE HTML><html><body>");
 		String[] headers = {"photon name", "connected", "lastheard"};
 		Integer[] columns = {1, 3, 4};
 		writeTable(sb, headers, columns, bodyLines);
+		sb.append(msg);
 		sb.append("</body></html>");
 		String subject = accountName + " : Particle device status from " + Utils.getHostName();
 		GMailer.sendMessageX("chris.keith@gmail.com", "chris.keith@gmail.com", subject, sb.toString());
 	}
 
 	public void run() {
-		try {
-			Utils.logToConsole(Utils.padWithSpaces(this.accountName, 20) + "\tPhotonMonitor thread starting.");
+		Utils.logToConsole(Utils.padWithSpaces(this.accountName, 20) + "\tPhotonMonitor thread starting.");
+		while (true) {
 			Map<String, DeviceMonitor> deviceMonitors = new HashMap<String, DeviceMonitor>();
-			while (true) {
+			try {
 				Utils.logToConsole(Utils.padWithSpaces(this.accountName, 20) + "\tPhotonMonitor checking devices.");
 				Cloud c = new Cloud("Bearer " + accessToken, true, false);
 				ArrayList<String> statuses = new ArrayList<String>();
@@ -88,19 +90,20 @@ public class AccountMonitor extends Thread {
 						e.printStackTrace(new PrintStream(System.out));
 					}
 				}
-				sendEmail(statuses);
+				sendEmail(statuses, "AccountMontor.eventCount : " + eventCount);
 				for (DeviceMonitor dm : newDevices) {
 					dm.start();
 				}
-				// At 1 a.m. (local time), check for changes in devices-per-cloud and their statuses.
+				// At 1 a.m. (local time), check for changes in devices-per-account.
 				LocalDateTime then = LocalDateTime.now().truncatedTo(ChronoUnit.DAYS).plusDays(1).withHour(1);
 				Utils.sleepUntil("PhotonMonitor\t" + accountName, then);
+				Utils.logToConsole("AccountMontor.eventCount : " + eventCount);
+			} catch (Exception e) {
+				Utils.logToConsole("run() :\t" + e.getClass().getName() + "\t" + e.getMessage());
+				e.printStackTrace(new PrintStream(System.out));
+				// ... and keep thread going ...
 			}
-		} catch (Exception e) {
-			Utils.logToConsole("run() :\t" + e.getClass().getName() + "\t" + e.getMessage());
-			e.printStackTrace(new PrintStream(System.out));
 		}
-		Utils.logToConsole(Utils.padWithSpaces(this.accountName, 20) + "\tPhotonMonitor thread exiting.");
 	}
 
 	public void emailMostRecentEvents() {
@@ -127,6 +130,12 @@ public class AccountMonitor extends Thread {
 	public void addEventSubscriber(String name, ParticleDeviceEvent cb) {
 		synchronized(eventSubscribers) {
 			eventSubscribers.put(name, cb);
+		}
+	}
+
+	public void incrementEventCount() {
+		synchronized(eventCount) {
+			eventCount++;
 		}
 	}
 }
