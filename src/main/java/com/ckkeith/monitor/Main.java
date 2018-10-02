@@ -36,11 +36,11 @@ public class Main {
 				emailMostRecentEvents();
 
 				if (runParams.shutDown) {
-					// Just before midnight (local time), shut down.
-					// Task Scheduler (on Windows) will start a new instance at 12:05.
-					// This is to get around the issue where PhotonMonitors randomly stop logging events
-					// after a few days.
-					then = LocalDateTime.now().withHour(23).withMinute(59).withSecond(0);
+					// Shut self down at specified time (currently 3 a.m. tomorrow).
+					// You should create a Scheduled Task (on Windows) to restart 5 minutes (or so) afterwards.
+					// This is a hack to get around an issue where PhotonMonitors randomly stop logging events
+					// after a couple of days.
+					then = LocalDateTime.now().plusDays(1).withHour(3).withMinute(0).withSecond(0);
 					Utils.sleepUntil("MonitorParticle main - waiting to System.exit(0).", then);
 					Utils.logToConsole("main() :\t" + "About to System.exit(0)");
 					System.exit(0);

@@ -6,9 +6,9 @@ import junit.framework.TestCase;
 import nl.infcomtec.jparticle.Device;
 import nl.infcomtec.jparticle.Event;
 
-public class StoveThermistorTester extends TestCase {
+public class StoveThermistorTest extends TestCase {
 
-	public StoveThermistorTester(String testName) {
+	public StoveThermistorTest(String testName) {
 		super(testName);
 	}
 
