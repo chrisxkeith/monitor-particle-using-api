@@ -24,6 +24,14 @@ public class Utils {
 		return d;
 	}
 
+	public static String getHomeURLPath() throws Exception {
+		String d = getHomeDir();
+		if (d.charAt(1) == ':') {
+			d = d.replaceAll("\\\\", "/");
+		}
+		return d;
+	}
+
 	public static final boolean isDebug = java.lang.management.ManagementFactory.getRuntimeMXBean().getInputArguments()
 			.toString().indexOf("jdwp") >= 0;
 

@@ -34,7 +34,7 @@ public class ParticleDeviceEvent extends AnyDeviceEvent {
 		LocalDateTime ldt = LocalDateTime.ofInstant(e.publishedAt.toInstant(), ZoneId.systemDefault());
 		Utils.logWithGSheetsDate(ldt, toTabbedString(e), logFileName);
 		mostRecentEvent = e;
-		accountMonitor.incrementEventCount();
+		accountMonitor.addDataPoint(ldt, e.name, e.data);
 	}
 
 	@Override

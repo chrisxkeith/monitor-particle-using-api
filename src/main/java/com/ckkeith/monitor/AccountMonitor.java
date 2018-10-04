@@ -18,6 +18,7 @@ public class AccountMonitor extends Thread {
 	Integer eventCount = 0;
 	private String logFileName;
 	private Map<String, ParticleDeviceEvent> eventSubscribers = new HashMap<String, ParticleDeviceEvent>();
+	private HtmlFileDataWriter htmlFileDataWriter;
 
 	public AccountMonitor(String credentials) throws Exception {
 		String[] creds = credentials.split("\t");
@@ -94,6 +95,10 @@ public class AccountMonitor extends Thread {
 				for (DeviceMonitor dm : newDevices) {
 					dm.start();
 				}
+				if (htmlFileDataWriter == null && accountName.equals("chris-keith-gmail-com")) {
+//					htmlFileDataWriter = new HtmlFileDataWriter(this);
+//					htmlFileDataWriter.start();
+				}
 				// At 1 a.m. (local time), check for changes in devices-per-account.
 				LocalDateTime then = LocalDateTime.now().truncatedTo(ChronoUnit.DAYS).plusDays(1).withHour(1);
 				Utils.sleepUntil("PhotonMonitor\t" + accountName, then);
@@ -133,7 +138,10 @@ public class AccountMonitor extends Thread {
 		}
 	}
 
-	public void incrementEventCount() {
+	public void addDataPoint(LocalDateTime ldt, String event, String data) {
+		if ((htmlFileDataWriter != null) && event.contains("ensor")) {
+			this.htmlFileDataWriter.addData(new SensorDataPoint(ldt, event, data));
+		}
 		synchronized(eventCount) {
 			eventCount++;
 		}
