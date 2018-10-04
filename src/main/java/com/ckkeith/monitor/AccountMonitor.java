@@ -95,9 +95,9 @@ public class AccountMonitor extends Thread {
 				for (DeviceMonitor dm : newDevices) {
 					dm.start();
 				}
-				if (htmlFileDataWriter == null && accountName.equals("chris-keith-gmail-com")) {
-//					htmlFileDataWriter = new HtmlFileDataWriter(this);
-//					htmlFileDataWriter.start();
+				if (htmlFileDataWriter == null && accountName.equals("chris.keith@gmail.com")) {
+					htmlFileDataWriter = new HtmlFileDataWriter(this);
+					htmlFileDataWriter.start();
 				}
 				// At 1 a.m. (local time), check for changes in devices-per-account.
 				LocalDateTime then = LocalDateTime.now().truncatedTo(ChronoUnit.DAYS).plusDays(1).withHour(1);

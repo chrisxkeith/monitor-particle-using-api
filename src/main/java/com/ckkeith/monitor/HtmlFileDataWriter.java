@@ -181,9 +181,12 @@ public class HtmlFileDataWriter extends Thread {
 	}
 	
 	public void run() {
+		Utils.logToConsole("HtmlFileDataWriter thread starting.");
 		try {
-			Thread.sleep(htmlWriteIntervalInSeconds * 1000);
-//			writeHtml();
+			while (true) {
+				Thread.sleep(htmlWriteIntervalInSeconds * 1000);
+				writeHtml();
+			}
 		} catch (Exception e) {
 			Utils.logToConsole(e.getMessage());
 			e.printStackTrace();
