@@ -55,7 +55,6 @@ public class Utils {
 
 	private static void logRaw(String s, String logFileName) {
 		try {
-			System.out.println(s);
 			FileWriter fstream = new FileWriter(logFileName, true);
 			fstream.write(s + System.getProperty("line.separator"));
 			fstream.flush();
@@ -77,15 +76,18 @@ public class Utils {
 
 	public static void log(String s, String logFileName) {
 		String d = logDateFormat.format(new java.util.Date());
+		System.out.println(d + "\t" + s);
 		logRaw(d + "\t" + s, logFileName);
 	}
 
 	final static public DateTimeFormatter googleSheetsDateFormat =
 			DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
-	public static void logWithGSheetsDate(LocalDateTime ldt, String s, String logFileName) {
+	public static String logWithGSheetsDate(LocalDateTime ldt, String s, String logFileName) {
 		String d = logDateFormat.format(new java.util.Date());
 		String d2 = googleSheetsDateFormat.format(ldt);
-		logRaw(d + "\t" + d2 + "\t" + s, logFileName);
+		String logString = d + "\t" + d2 + "\t" + s;
+		logRaw(logString, logFileName);
+		return logString;
 	}
 
 	public static String getLogFileName(String accountName, String fn) throws Exception {
