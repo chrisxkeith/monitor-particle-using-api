@@ -7,7 +7,7 @@ import java.util.ArrayList;
 
 public class Main {
 	private static ArrayList<AccountMonitor> monitors = new ArrayList<AccountMonitor>();
-	private static RunParams runParams;
+	static RunParams runParams;
 
 	private static void emailMostRecentEvents() {
 		for (AccountMonitor m : monitors) {

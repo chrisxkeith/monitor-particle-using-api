@@ -17,8 +17,6 @@ public class HtmlFileDataWriter extends Thread {
 	
 	private ConcurrentSkipListMap<LocalDateTime, ConcurrentSkipListMap<String, String>> sensorData = new ConcurrentSkipListMap<LocalDateTime, ConcurrentSkipListMap<String, String>>();
 	private ConcurrentSkipListMap<String, String> sensorNames = new ConcurrentSkipListMap<String, String>();
-	private int dataIntervalInMinutes = 10; // TODO : add to RunParams
-	private int htmlWriteIntervalInSeconds = 5; // TODO : add to RunParams
 
 	public HtmlFileDataWriter(AccountMonitor accountMonitor) {
 		this.accountMonitor = accountMonitor;
@@ -114,7 +112,7 @@ public class HtmlFileDataWriter extends Thread {
 					line = line.replace("_fileIndexGoesHere_", nextFileNumber)
 							.replace("_homePathGoesHere_", Utils.getHomeURLPath())
 							.replace("_writeIntervalGoesHere_",
-									new Integer(htmlWriteIntervalInSeconds).toString());
+									new Integer(Main.runParams.htmlWriteIntervalInSeconds).toString());
 				}
 				writeln(htmlStream, line);
 			}
@@ -122,18 +120,17 @@ public class HtmlFileDataWriter extends Thread {
 	}
 
 	int nextFileNumber = 0;
-	final static int MAX_FILE_NUMBER = 1;
 
 	String getNextFileNumber() {
 		nextFileNumber++;
-		if (nextFileNumber > MAX_FILE_NUMBER) {
+		if (nextFileNumber > Main.runParams.nHtmlFiles) {
 			nextFileNumber = 0;
 		}
 		return String.format("%03d", nextFileNumber);
 	}
 
 	void deleteOldData() {
-		LocalDateTime start = LocalDateTime.now().minusMinutes(dataIntervalInMinutes);
+		LocalDateTime start = LocalDateTime.now().minusMinutes(Main.runParams.dataIntervalInMinutes);
 		Set<LocalDateTime> keys = sensorData.keySet();
 		Iterator<LocalDateTime> itr = keys.iterator();
 		while (itr.hasNext()) {
@@ -146,23 +143,23 @@ public class HtmlFileDataWriter extends Thread {
 	
 	void writeHtml() throws Exception {
 		synchronized (this) {
-			deleteOldData();
-			String fileName = Utils.getLogFileName(accountMonitor.accountName, "allNNN.html");
-			String dir = new File(fileName).getParent();
-			File tempFile = File.createTempFile("tmp", ".html", new File(dir));
-			FileWriter htmlStream = new FileWriter(tempFile.getCanonicalPath(), false);
-			int thisFileNumber = nextFileNumber;
+			String thisFileName = "not yet specified";
 			int nDataPoints = 0;
 			try {
-				appendFromFileToFile(htmlStream, "src/main/resources/prefix.html", getNextFileNumber());
-				nDataPoints = writeJson(htmlStream);
-				appendFromFileToFile(htmlStream, "src/main/resources/suffix.html", "junk");
-			} finally {
-				htmlStream.close();
-			}
-			String thisFileName = fileName.replace("NNN", String.format("%03d", thisFileNumber));
-			File thisFile = new File(thisFileName);
-			try {
+				deleteOldData();
+				String fileName = Utils.getLogFileName(accountMonitor.accountName, "allNNN.html");
+				String dir = new File(fileName).getParent();
+				File tempFile = File.createTempFile("tmp", ".html", new File(dir));
+				FileWriter htmlStream = new FileWriter(tempFile.getCanonicalPath(), false);
+				try {
+					appendFromFileToFile(htmlStream, "src/main/resources/prefix.html", getNextFileNumber());
+					nDataPoints = writeJson(htmlStream);
+					appendFromFileToFile(htmlStream, "src/main/resources/suffix.html", "junk");
+				} finally {
+					htmlStream.close();
+				}
+				thisFileName = fileName.replace("NNN", String.format("%03d", nextFileNumber));
+				File thisFile = new File(thisFileName);
 				try {
 					thisFile.delete();
 				} catch (Exception ex) {
@@ -175,7 +172,7 @@ public class HtmlFileDataWriter extends Thread {
 			} catch (Exception e) {
 				Utils.logToConsole("FAILED to write : " + thisFileName + " : # data points : "
 						+ new Integer(nDataPoints).toString());
-				throw e;
+				// If there's any failure, continue and write the next file at the appropriate time.
 			}
 		}
 	}
@@ -184,7 +181,7 @@ public class HtmlFileDataWriter extends Thread {
 		Utils.logToConsole("HtmlFileDataWriter thread starting.");
 		try {
 			while (true) {
-				Thread.sleep(htmlWriteIntervalInSeconds * 1000);
+				Thread.sleep(Main.runParams.htmlWriteIntervalInSeconds * 1000);
 				writeHtml();
 			}
 		} catch (Exception e) {
