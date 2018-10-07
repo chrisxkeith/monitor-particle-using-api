@@ -7,7 +7,10 @@ import java.io.FileWriter;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentSkipListMap;
 
@@ -141,6 +144,44 @@ public class HtmlFileDataWriter extends Thread {
 		}
 	}
 	
+	// If/when move to Java 9, could use ProcessHandle to remove some Windows-specific code:
+	// https://stackoverflow.com/questions/54686/how-to-get-a-list-of-current-open-windows-process-with-java
+	boolean chomeIsRunning() {
+		try {
+			String p[] = { "tasklist.exe", "/v"};
+			String output = Utils.runCommandForOutput(Arrays.asList(p));
+			String outputLines[] = output.split(System.getProperty("line.separator"));
+			for (String s : outputLines) {
+				if (s.contains("chrome")) {
+					Utils.logToConsole("String from tasklist : " + s);
+					if (s.contains("all") && s.contains("html")) {
+						return true;
+					}
+				}
+			}
+		} catch (Exception e) {
+			Utils.logToConsole("Running tasklist failed, currently only works on Windows. " + e.getMessage());
+			e.printStackTrace();
+			return true; // Don't run extra instances of Chrome.
+		}
+		return false;
+	}
+
+	void startChromeIfNecessary(String fn) {
+		if (! chomeIsRunning()) {
+		    try {
+				List<String> params = new ArrayList<String>();
+				params.add("c:/Program Files (x86)/Google/Chrome/Application/chrome.exe");
+				params.add(fn);
+			    ProcessBuilder pb = new ProcessBuilder(params);
+				pb.start();
+			} catch (Exception e) {
+				Utils.logToConsole("Running chrome failed, currently only works on Windows. " + e.getMessage());
+				e.printStackTrace();
+			}
+		}
+	}
+
 	void writeHtml() throws Exception {
 		synchronized (this) {
 			String thisFileName = "not yet specified";
@@ -148,6 +189,7 @@ public class HtmlFileDataWriter extends Thread {
 			try {
 				deleteOldData();
 				String fileName = Utils.getLogFileName(accountMonitor.accountName, "allNNN.html");
+				thisFileName = fileName.replace("NNN", String.format("%03d", nextFileNumber));
 				String dir = new File(fileName).getParent();
 				File tempFile = File.createTempFile("tmp", ".html", new File(dir));
 				FileWriter htmlStream = new FileWriter(tempFile.getCanonicalPath(), false);
@@ -158,7 +200,6 @@ public class HtmlFileDataWriter extends Thread {
 				} finally {
 					htmlStream.close();
 				}
-				thisFileName = fileName.replace("NNN", String.format("%03d", nextFileNumber));
 				File thisFile = new File(thisFileName);
 				try {
 					thisFile.delete();
@@ -169,6 +210,7 @@ public class HtmlFileDataWriter extends Thread {
 				Files.move(tempFile.toPath(), thisFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
 				Utils.logToConsole(
 						"Wrote " + thisFileName + " : # data points : " + new Integer(nDataPoints).toString());
+// TODO :				startChromeIfNecessary(thisFileName);
 			} catch (Exception e) {
 				Utils.logToConsole("FAILED to write : " + thisFileName + " : # data points : "
 						+ new Integer(nDataPoints).toString());

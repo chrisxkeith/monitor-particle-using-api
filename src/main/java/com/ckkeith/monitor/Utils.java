@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
+import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -12,14 +13,19 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.List;
+import java.util.StringJoiner;
 
 import nl.infcomtec.jparticle.Device;
 
 public class Utils {
 	public static String getHomeDir() throws Exception {
 		String d = System.getProperty("user.home");
-		if (d == null || d.length() == 0) {
-			throw new Exception("Unable to determine user.home directory from System.getProperty(\"user.home\")");
+		if (d == null || d.isEmpty()) {
+			d = System.getProperty("HOMEDRIVE") + System.getProperty("HOMEPATH");
+		}
+		if (d == null || d.isEmpty()) {
+			throw new Exception("Unable to determine home directory from System.getProperty(\"user.home\")");
 		}
 		return d;
 	}
@@ -167,5 +173,25 @@ public class Utils {
 			serverName = "unknown-host";
 		}
 		return serverName;
+	}
+
+	public static String runCommandForOutput(List<String> params) {
+	    ProcessBuilder pb = new ProcessBuilder(params);
+	    Process p;
+	    String result = "";
+	    try {
+	        p = pb.start();
+	        final BufferedReader reader = new BufferedReader(new InputStreamReader(p.getInputStream()));
+
+	        StringJoiner sj = new StringJoiner(System.getProperty("line.separator"));
+	        reader.lines().iterator().forEachRemaining(sj::add);
+	        result = sj.toString();
+
+	        p.waitFor();
+	        p.destroy();
+	    } catch (Exception e) {
+	        e.printStackTrace();
+	    }
+	    return result;
 	}
 }
