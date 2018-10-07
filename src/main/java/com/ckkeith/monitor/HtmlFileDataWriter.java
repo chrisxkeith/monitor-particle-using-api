@@ -167,8 +167,6 @@ public class HtmlFileDataWriter extends Thread {
 		return false;
 	}
 
-	// This won't work unless I can figure out a way to either make it faster
-	// (or some other way of 'synchronizing' this executable and the browser).
 	@SuppressWarnings("unused")
 	private void startChromeIfNecessary(String fn) {
 		if (! chomeIsRunning()) {
@@ -213,6 +211,8 @@ public class HtmlFileDataWriter extends Thread {
 				Files.move(tempFile.toPath(), thisFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
 				Utils.logToConsole(
 						"Wrote " + thisFileName + " : # data points : " + new Integer(nDataPoints).toString());
+// This won't work unless I can figure out a way to either make it faster,
+// or some other way of 'synchronizing' this executable and the browser.
 //				startChromeIfNecessary(thisFileName);
 			} catch (Exception e) {
 				Utils.logToConsole("FAILED to write : " + thisFileName + " : # data points : "
