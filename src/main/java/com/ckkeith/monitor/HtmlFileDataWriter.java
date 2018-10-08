@@ -116,6 +116,11 @@ public class HtmlFileDataWriter extends Thread {
 							.replace("_homePathGoesHere_", Utils.getHomeURLPath())
 							.replace("_writeIntervalGoesHere_",
 									new Integer(Main.runParams.htmlWriteIntervalInSeconds).toString());
+				} else if (line.contains("_suggestedTimeMin_")) {
+					LocalDateTime then = LocalDateTime.now().minusMinutes(Main.runParams.dataIntervalInMinutes);
+					line = line.replace("_suggestedTimeMin_", Utils.googleSheetsDateFormat.format(then));
+				} else if (line.contains("_suggestedTimeMax_")) {
+					line = line.replace("_suggestedTimeMax_", Utils.googleSheetsDateFormat.format(LocalDateTime.now()));
 				}
 				writeln(htmlStream, line);
 			}
@@ -216,7 +221,8 @@ public class HtmlFileDataWriter extends Thread {
 //				startChromeIfNecessary(thisFileName);
 			} catch (Exception e) {
 				Utils.logToConsole("FAILED to write : " + thisFileName + " : # data points : "
-						+ new Integer(nDataPoints).toString());
+						+ new Integer(nDataPoints).toString() + " : " + e.getMessage());
+				e.printStackTrace();
 				// If there's any failure, continue and write the next file at the appropriate time.
 			}
 		}
