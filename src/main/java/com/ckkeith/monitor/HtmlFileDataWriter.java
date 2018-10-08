@@ -149,38 +149,16 @@ public class HtmlFileDataWriter extends Thread {
 		}
 	}
 	
-	// If/when move to Java 9, could use ProcessHandle to remove some Windows-specific code:
-	// https://stackoverflow.com/questions/54686/how-to-get-a-list-of-current-open-windows-process-with-java
-	boolean chomeIsRunning() {
-		try {
-			String p[] = { "tasklist.exe", "/v"};
-			String output = Utils.runCommandForOutput(Arrays.asList(p));
-			String outputLines[] = output.split(System.getProperty("line.separator"));
-			for (String s : outputLines) {
-				if (s.contains("chrome")) {
-					Utils.logToConsole("String from tasklist : " + s);
-					if (s.contains("all") && s.contains("html")) {
-						return true;
-					}
-				}
-			}
-		} catch (Exception e) {
-			Utils.logToConsole("Running tasklist failed, currently only works on Windows. " + e.getMessage());
-			e.printStackTrace();
-			return true; // Don't run extra instances of Chrome.
-		}
-		return false;
-	}
-
-	@SuppressWarnings("unused")
-	private void startChromeIfNecessary(String fn) {
-		if (! chomeIsRunning()) {
+	private boolean chromeStarted = false;
+	private void startChrome(String fn) {
+		if (! chromeStarted) {
 		    try {
 				List<String> params = new ArrayList<String>();
 				params.add("c:/Program Files (x86)/Google/Chrome/Application/chrome.exe");
 				params.add(fn);
 			    ProcessBuilder pb = new ProcessBuilder(params);
 				pb.start();
+				chromeStarted = true;
 			} catch (Exception e) {
 				Utils.logToConsole("Running chrome failed, currently only works on Windows. " + e.getMessage());
 				e.printStackTrace();
@@ -216,9 +194,7 @@ public class HtmlFileDataWriter extends Thread {
 				Files.move(tempFile.toPath(), thisFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
 				Utils.logToConsole(
 						"Wrote " + thisFileName + " : # data points : " + new Integer(nDataPoints).toString());
-// This won't work unless I can figure out a way to either make it faster,
-// or some other way of 'synchronizing' this executable and the browser.
-//				startChromeIfNecessary(thisFileName);
+				startChrome(thisFileName);
 			} catch (Exception e) {
 				Utils.logToConsole("FAILED to write : " + thisFileName + " : # data points : "
 						+ new Integer(nDataPoints).toString() + " : " + e.getMessage());
