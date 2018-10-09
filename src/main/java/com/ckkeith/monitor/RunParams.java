@@ -5,7 +5,7 @@ import java.util.ArrayList;
 
 public class RunParams {
 	boolean	shutDown = true;
-	int		nHtmlFiles = 3;
+	int		nHtmlFiles = 2;
 	int		dataIntervalInMinutes = 10;
 	int		htmlWriteIntervalInSeconds = 5;
 	

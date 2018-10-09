@@ -8,7 +8,6 @@ import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -131,7 +130,7 @@ public class HtmlFileDataWriter extends Thread {
 
 	String getNextFileNumber() {
 		nextFileNumber++;
-		if (nextFileNumber > Main.runParams.nHtmlFiles) {
+		if (nextFileNumber >= Main.runParams.nHtmlFiles) {
 			nextFileNumber = 0;
 		}
 		return String.format("%03d", nextFileNumber);
