@@ -39,6 +39,9 @@ public class RunParams {
 	}
 
 	public String toString() {
-		return "RunParams : shutdown = " + shutDown;
+		return "RunParams : shutdown = " + shutDown
+				+ ", nHtmlFiles = " + nHtmlFiles
+				+ ", dataIntervalInMinutes = " + dataIntervalInMinutes
+				+ ", htmlWriteIntervalInSeconds = " + htmlWriteIntervalInSeconds;
 	}
 }

@@ -1,3 +1,4 @@
+set -x
 cd ~/Documents/Github/monitor-particle-using-api/
 															  if [ $? -ne 0 ] ; then exit -6 ; fi
 account=chris-keith-gmail-com
