@@ -196,4 +196,26 @@ public class Utils {
 	    }
 	    return result;
 	}
+
+	private static void writeTableHeader(StringBuilder sb, String[] headers) {
+		sb.append("<table border=\"1\">");
+		sb.append("<tr>");
+		for (int i = 0; i < headers.length; i++) {
+			sb.append("<th style=\"text-align:left\">").append(headers[i]).append("</th>");
+		}
+		sb.append("</tr>");
+	}
+
+	public static void writeTable(StringBuilder sb, String[] headers, Integer[] columns, ArrayList<String> bodyLines) {
+		writeTableHeader(sb, headers);
+		for (String s : bodyLines) {
+			sb.append("<tr>");
+			String[] f = s.split("\t");
+			for (int i = 0; i < columns.length; i++) {
+				sb.append("<td style=\"text-align:left\">").append(f[columns[i]]).append("</td>");
+			}
+			sb.append("</tr>");
+		}
+		sb.append("</table>");
+	}
 }

@@ -35,35 +35,6 @@ public class AccountMonitor extends Thread {
 		logFileName = Utils.getLogFileName(accountName, "devices-overview.txt");
 	}
 
-	private void writeTable(StringBuilder sb, String[] headers, Integer[] columns, ArrayList<String> bodyLines) throws Exception {
-		sb.append("<table border=\"1\">");
-		sb.append("<tr>");
-		for (int i = 0; i < headers.length; i++) {
-			sb.append("<th style=\"text-align:left\">").append(headers[i]).append("</th>");
-		}
-		sb.append("</tr>");
-		for (String s : bodyLines) {
-			sb.append("<tr>");
-			String[] f = s.split("\t");
-			for (int i = 0; i < columns.length; i++) {
-				sb.append("<td style=\"text-align:left\">").append(f[columns[i]]).append("</td>");
-			}
-			sb.append("</tr>");
-		}
-		sb.append("</table>");
-	}
-
-	private void sendEmail(ArrayList<String> bodyLines, String msg) throws Exception {
-		StringBuilder sb = new StringBuilder("<!DOCTYPE HTML><html><body>");
-		String[] headers = {"photon name", "connected", "lastheard"};
-		Integer[] columns = {1, 3, 4};
-		writeTable(sb, headers, columns, bodyLines);
-		sb.append(msg);
-		sb.append("</body></html>");
-		String subject = accountName + " : Particle device status from " + Utils.getHostName();
-		GMailer.sendMessageX("chris.keith@gmail.com", "chris.keith@gmail.com", subject, sb.toString());
-	}
-
 	public void run() {
 		Utils.logToConsole(Utils.padWithSpaces(this.accountName, 20) + "\tPhotonMonitor thread starting.");
 		while (true) {
@@ -91,7 +62,6 @@ public class AccountMonitor extends Thread {
 						e.printStackTrace(new PrintStream(System.out));
 					}
 				}
-				sendEmail(statuses, "AccountMontor.eventCount : " + eventCount);
 				for (DeviceMonitor dm : newDevices) {
 					dm.start();
 				}
@@ -113,20 +83,15 @@ public class AccountMonitor extends Thread {
 
 	public void emailMostRecentEvents() {
 		StringBuilder sb = new StringBuilder("<!DOCTYPE HTML><html><body>");
-		sb.append("<table border=\"1\">");
-		sb.append("<tr>");
-		sb.append("<th style=\"text-align:left\">").append("Name").append("</th>");
-		sb.append("<th style=\"text-align:left\">").append("PublishedAt").append("</th>");
-		sb.append("<th style=\"text-align:left\">").append("Event").append("</th>");
-		sb.append("</tr>");
+		String headers[] = {"Name", "PublishedAt", "Event"};
+		Integer columns[] = {0, 1, 2};
+		ArrayList<String> lines = new ArrayList<String>(eventSubscribers.size());
 		for (Entry<String, ParticleDeviceEvent> e : eventSubscribers.entrySet()) {
-			sb.append("<tr>");
-			sb.append("<td>").append(e.getKey()).append("</td>");
-			sb.append("<td>").append(e.getValue().getMostRecentEventDateTime()).append("</td>");
-			sb.append("<td>").append(e.getValue().getMostRecentEvent()).append("</td>");
-			sb.append("</tr>");
+			String s = new String(e.getKey());
+			s.concat("\t").concat(e.getValue().getMostRecentEventDateTime())
+			 .concat("\t").concat(e.getValue().getMostRecentEvent());
 		}
-		sb.append("</table>");
+		Utils.writeTable(sb, headers, columns, lines);
 		sb.append("</body></html>");
 		String subject = accountName + " : Particle device most recent entries from " + Utils.getHostName();
 		GMailer.sendMessageX("chris.keith@gmail.com", "chris.keith@gmail.com", subject, sb.toString());
