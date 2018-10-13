@@ -90,6 +90,7 @@ public class AccountMonitor extends Thread {
 			String s = new String(e.getKey());
 			s.concat("\t").concat(e.getValue().getMostRecentEventDateTime())
 			 .concat("\t").concat(e.getValue().getMostRecentEvent());
+			lines.add(s);
 		}
 		Utils.writeTable(sb, headers, columns, lines);
 		sb.append("</body></html>");
