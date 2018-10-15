@@ -8,17 +8,15 @@ rem https://stackoverflow.com/questions/796476/displaying-windows-command-prompt
 
 set userhome=%HOMEDRIVE%%HOMEPATH%
 set log=%userhome%\Documents\tmp\monitor.log
-set file_containing_return=%userhome%\Documents\tmp\ret.ret
 set account=chris-keith-gmail-com
 
 rem Put timestamp in log
-date < %file_containing_return% >> %log% 2>&1
-time < %file_containing_return% >> %log% 2>&1
-set >> %log% 2>&1
-echo powershell "where mvn 2>&1 | tee -Append %log%"
+echo %DATE% %TIME% >> %log%
+set >> %log%
+powershell "where mvn 2>&1 | tee -Append %log%"
 
-echo powershell "del /f /q %userhome%\Documents\tmp\%account%\*.html 2>&1 | tee -Append %log%"
+del /f /q %userhome%\Documents\tmp\%account%\*.html
 
 pushd %userhome%\Documents\Github\monitor-particle-using-api
-echo powershell ".\mvn clean install exec:java -Dmaven.test.skip=true -Dexec.mainClass="com.ckkeith.monitor.Main" 2>&1 | tee -Append %log%"
+powershell "mvn clean install exec:java -D maven.test.skip=true -D exec.mainClass="com.ckkeith.monitor.Main" 2>&1 | tee -Append %log%"
 popd
