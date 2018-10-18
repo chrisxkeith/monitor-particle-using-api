@@ -2,17 +2,17 @@ rem ----- You may have to copy this script to a directory that is public to all 
 rem ----- to make sure that it can be executed by Task Scheduler.
 rem ----- Or you might have to replace %HOMEDRIVE%%HOMEPATH% with hard coded values.
 rem
-rem How to use powershell to make a tee
-rem https://stackoverflow.com/questions/796476/displaying-windows-command-prompt-output-and-redirecting-it-to-a-file
+rem ----- How to use powershell to make a tee
+rem ----- https://stackoverflow.com/questions/796476/displaying-windows-command-prompt-output-and-redirecting-it-to-a-file
 
 set userhome=%HOMEDRIVE%%HOMEPATH%
 set log=%userhome%\Documents\tmp\monitor.log
 set account=chris-keith-gmail-com
 
-rem Put timestamp in log
+rem ----- Put timestamp in log
 echo %DATE% %TIME% >> %log%
 set >> %log%
-powershell "where mvn 2>&1 | tee -Append %log%"
+where mvn >> %log%
 
 del /f /q %userhome%\Documents\tmp\%account%\*.html
 
