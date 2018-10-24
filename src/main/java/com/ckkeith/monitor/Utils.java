@@ -71,7 +71,7 @@ public class Utils {
 
 	public static void logToConsole(String s) {
 		String d = logDateFormat.format(new java.util.Date());
-		System.out.println(d + "\t" + s + "\t" + getHostName());
+		System.out.println(d + "\t" + s + "\t");
 	}
 
 	public static void log(String s, String logFileName) {

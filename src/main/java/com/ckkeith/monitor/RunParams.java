@@ -8,6 +8,7 @@ public class RunParams {
 	int		nHtmlFiles = 2;
 	int		dataIntervalInMinutes = 10;
 	int		htmlWriteIntervalInSeconds = 5;
+	int		expectedEventRateInSeconds = 5;
 	
 	static RunParams load(String filename) {
 		RunParams rp = new RunParams();
@@ -18,9 +19,9 @@ public class RunParams {
 				for (String s : params) {
 					String p[] = s.split("=");
 					if (p.length > 1) {
-						String key = p[0].trim();
+						String key = p[0].trim().toLowerCase();
 						String val = p[1].trim();
-						if (key.toLowerCase().equals("shutdown")) {
+						if (key.equals("shutdown")) {
 							rp.shutDown = Boolean.valueOf(val);
 						} else if (key.equals("nhtmlfiles")) {
 							rp.nHtmlFiles = Integer.valueOf(val);
@@ -28,6 +29,8 @@ public class RunParams {
 							rp.dataIntervalInMinutes = Integer.valueOf(val);
 						} else if (key.equals("htmlwriteintervalinseconds")) {
 							rp.htmlWriteIntervalInSeconds = Integer.valueOf(val);
+						} else if (key.equals("expectedeventrateinseconds")) {
+							rp.expectedEventRateInSeconds = Integer.valueOf(val);
 						}
 					}
 				}				

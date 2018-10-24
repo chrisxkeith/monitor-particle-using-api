@@ -40,7 +40,6 @@ public class AccountMonitor extends Thread {
 		while (true) {
 			Map<String, DeviceMonitor> deviceMonitors = new HashMap<String, DeviceMonitor>();
 			try {
-				Utils.logToConsole(Utils.padWithSpaces(this.accountName, 20) + "\tPhotonMonitor checking devices.");
 				Cloud c = new Cloud("Bearer " + accessToken, true, false);
 				ArrayList<String> statuses = new ArrayList<String>();
 				ArrayList<DeviceMonitor> newDevices = new ArrayList<DeviceMonitor>();
@@ -66,13 +65,20 @@ public class AccountMonitor extends Thread {
 					dm.start();
 				}
 				if (htmlFileDataWriter == null && accountName.equals("chris.keith@gmail.com")) {
-					htmlFileDataWriter = new HtmlFileDataWriter(this);
-					htmlFileDataWriter.start();
+//					htmlFileDataWriter = new HtmlFileDataWriter(this);
+//					htmlFileDataWriter.start();
 				}
-				// At 1 a.m. (local time), check for changes in devices-per-account.
-				LocalDateTime then = LocalDateTime.now().truncatedTo(ChronoUnit.DAYS).plusDays(1).withHour(1);
-				Utils.sleepUntil("PhotonMonitor\t" + accountName, then);
-				Utils.logToConsole("AccountMontor.eventCount : " + eventCount);
+				int previousEventCount = eventCount;
+				LocalDateTime then = LocalDateTime.now().plusSeconds(Main.runParams.expectedEventRateInSeconds);
+				Thread.sleep(ChronoUnit.MILLIS.between(LocalDateTime.now(), then));
+				if (previousEventCount == eventCount) {
+					// Got no new events in the expected interval.
+					// Restart all DeviceMonitors to try to get data from Particle cloud.
+					// This may cause memory leaks,
+					// but will (I hope) kludge around the mysterious data drop issue.
+					Utils.log("Restarting DeviceMonitors.", logFileName);
+					deviceMonitors.clear();
+				}
 			} catch (Exception e) {
 				Utils.logToConsole("run() :\t" + e.getClass().getName() + "\t" + e.getMessage());
 				e.printStackTrace(new PrintStream(System.out));
