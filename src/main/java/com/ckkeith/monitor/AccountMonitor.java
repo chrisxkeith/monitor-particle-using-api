@@ -35,39 +35,48 @@ public class AccountMonitor extends Thread {
 		logFileName = Utils.getLogFileName(accountName, "devices-overview.txt");
 	}
 
+	void startDeviceMonitors(Map<String, DeviceMonitor> deviceMonitors) {
+		Cloud c = new Cloud("Bearer " + accessToken, true, false);
+		ArrayList<String> statuses = new ArrayList<String>();
+		ArrayList<DeviceMonitor> newDevices = new ArrayList<DeviceMonitor>();
+		for (Device device : c.devices.values()) {
+			try {
+				// Get device variables and functions
+				device = Device.getDevice(device.id, "Bearer " + accessToken);
+				DeviceMonitor dm = new DeviceMonitor(this, device, c);
+				Utils.logWithGSheetsDate(LocalDateTime.now(), dm.toTabbedString(), logFileName);
+				statuses.add(dm.toTabbedString());
+				if (device.connected && (deviceMonitors.get(device.name) == null)) {
+					deviceMonitors.put(device.name, dm);
+					newDevices.add(dm);
+				}
+			} catch (Exception e) {
+				String err = "run() :\t" + device.name + "\t" + e.getClass().getName() + "\t" + e.getMessage();
+				Utils.logToConsole(err);
+				statuses.add(err);
+				e.printStackTrace(new PrintStream(System.out));
+			}
+		}
+		for (DeviceMonitor dm : newDevices) {
+			dm.start();
+		}
+		if (htmlFileDataWriter == null && accountName.equals("chris.keith@gmail.com")) {
+//			htmlFileDataWriter = new HtmlFileDataWriter(this);
+//			htmlFileDataWriter.start();
+		}
+
+	}
+
 	public void run() {
 		Utils.logToConsole(Utils.padWithSpaces(this.accountName, 20) + "\tPhotonMonitor thread starting.");
 		while (true) {
 			Map<String, DeviceMonitor> deviceMonitors = new HashMap<String, DeviceMonitor>();
+			boolean checkDevices = true;
 			try {
-				Cloud c = new Cloud("Bearer " + accessToken, true, false);
-				ArrayList<String> statuses = new ArrayList<String>();
-				ArrayList<DeviceMonitor> newDevices = new ArrayList<DeviceMonitor>();
-				for (Device device : c.devices.values()) {
-					try {
-						// Get device variables and functions
-						device = Device.getDevice(device.id, "Bearer " + accessToken);
-						DeviceMonitor dm = new DeviceMonitor(this, device, c);
-						Utils.logWithGSheetsDate(LocalDateTime.now(), dm.toTabbedString(), logFileName);
-						statuses.add(dm.toTabbedString());
-						if (device.connected && (deviceMonitors.get(device.name) == null)) {
-							deviceMonitors.put(device.name, dm);
-							newDevices.add(dm);
-						}
-					} catch (Exception e) {
-						String err = "run() :\t" + device.name + "\t" + e.getClass().getName() + "\t" + e.getMessage();
-						Utils.logToConsole(err);
-						statuses.add(err);
-						e.printStackTrace(new PrintStream(System.out));
-					}
+				if (checkDevices) {
+					startDeviceMonitors(deviceMonitors);
 				}
-				for (DeviceMonitor dm : newDevices) {
-					dm.start();
-				}
-				if (htmlFileDataWriter == null && accountName.equals("chris.keith@gmail.com")) {
-//					htmlFileDataWriter = new HtmlFileDataWriter(this);
-//					htmlFileDataWriter.start();
-				}
+				checkDevices = false;
 				int previousEventCount = eventCount;
 				LocalDateTime then = LocalDateTime.now().plusSeconds(Main.runParams.expectedEventRateInSeconds);
 				Thread.sleep(ChronoUnit.MILLIS.between(LocalDateTime.now(), then));
@@ -78,6 +87,7 @@ public class AccountMonitor extends Thread {
 					// but will (I hope) kludge around the mysterious data drop issue.
 					Utils.log("Restarting DeviceMonitors.", logFileName);
 					deviceMonitors.clear();
+					checkDevices = true;
 				}
 			} catch (Exception e) {
 				Utils.logToConsole("run() :\t" + e.getClass().getName() + "\t" + e.getMessage());

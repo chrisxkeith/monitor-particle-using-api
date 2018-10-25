@@ -8,7 +8,7 @@ public class RunParams {
 	int		nHtmlFiles = 2;
 	int		dataIntervalInMinutes = 10;
 	int		htmlWriteIntervalInSeconds = 5;
-	int		expectedEventRateInSeconds = 5;
+	int		expectedEventRateInSeconds = 60 * 20;
 	
 	static RunParams load(String filename) {
 		RunParams rp = new RunParams();
