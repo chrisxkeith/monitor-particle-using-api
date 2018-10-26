@@ -25,7 +25,7 @@ public class Utils {
 			d = System.getProperty("HOMEDRIVE") + System.getProperty("HOMEPATH");
 		}
 		if (d == null || d.isEmpty()) {
-			throw new Exception("Unable to determine home directory from System.getProperty(\"user.home\")");
+			throw new Exception("Unable to determine home directory from environment variables.");
 		}
 		return d;
 	}
@@ -90,23 +90,37 @@ public class Utils {
 		return logString;
 	}
 
-	public static String getLogFileName(String accountName, String fn) throws Exception {
-		String d = Utils.getHomeDir();
-		String safeName = accountName.replaceAll("\\W+", "-");
-		String acctId;
+	private static String getSafeName(String s) {
+		String safeName = s.replaceAll("\\W+", "-");
 		if (safeName.length() > 24) {
-			acctId = safeName.substring(0, 11)
+			safeName = safeName.substring(0, 11)
 					+ "--"
 					+ safeName.substring(safeName.length() - 12);
-		} else {
-			acctId = safeName;
 		}
-		String path = d + File.separator + "Documents" + File.separator
-				+ "tmp" + File.separator + acctId.toLowerCase();
+		return safeName.toLowerCase();
+	}
+
+	private static void mkdir(String path) {
 		File dir = new File(path);
 		if (!dir.exists()) {
-			throw new IllegalArgumentException("No such directory for log files : " + path);
+			try {
+				dir.mkdir();
+			} catch (Exception e) {
+				System.out.println("Unable to create directory : " + path);
+				throw e;
+			}
 		}
+	}
+
+	public static String getLogFileName(String accountName, String fn) throws Exception {
+		String d = Utils.getHomeDir();
+		String acctId = getSafeName(accountName);
+		String machineName = getSafeName(getHostName());
+		String path = d + File.separator + "Documents" + File.separator
+				+ "tmp" + File.separator + machineName;
+		mkdir(path);	// looks like mkdir will only create a directory at one level.
+		path += File.separator + acctId;
+		mkdir(path);
 		// Append to existing log file to get better long term data.
 		return path + File.separator + fn;
 	}
