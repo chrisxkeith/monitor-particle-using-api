@@ -17,7 +17,7 @@ public class Main {
 
 	public static void main(String[] args) {
 		try {
-			// TODO : make this per-account, rather than per-executable-instance.
+			// TODO : separate account-specific-settings into a different file.
 			runParams = RunParams.load("monitor-run-params.txt");
 			Utils.logToConsole(runParams.toString());
 
