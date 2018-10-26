@@ -7,14 +7,13 @@ rem ----- https://stackoverflow.com/questions/796476/displaying-windows-command-
 
 set userhome=%HOMEDRIVE%%HOMEPATH%
 set log=%userhome%\Documents\tmp\monitor.log
-set account=chris-keith-gmail-com
 
 rem ----- Put timestamp in log
 echo %DATE% %TIME% >> %log%
 set >> %log%
 where mvn >> %log%
 
-del /f /q %userhome%\Documents\tmp\%account%\*.html
+del /f /q %userhome%\Documents\tmp\chris-keith-gmail-com\*.html
 
 pushd %userhome%\Documents\Github\monitor-particle-using-api
 powershell "mvn clean install exec:java -D maven.test.skip=true -D exec.mainClass="com.ckkeith.monitor.Main" 2>&1 | tee -Append %log%"
