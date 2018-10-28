@@ -226,7 +226,13 @@ public class Utils {
 			sb.append("<tr>");
 			String[] f = s.split("\t");
 			for (int i = 0; i < columns.length; i++) {
-				sb.append("<td style=\"text-align:left\">").append(f[columns[i]]).append("</td>");
+				String str = "Bad data in line : '" + s + "'";
+				try {
+					str = f[columns[i]];
+				} catch (Throwable t) {
+					// show error, don't throw.
+				}
+				sb.append("<td style=\"text-align:left\">").append(str).append("</td>");
 			}
 			sb.append("</tr>");
 		}
