@@ -2,7 +2,6 @@ package com.ckkeith.monitor;
 
 import java.io.PrintStream;
 import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -79,15 +78,18 @@ public class AccountMonitor extends Thread {
 				checkDevices = false;
 				int previousEventCount = eventCount;
 				LocalDateTime then = LocalDateTime.now().plusSeconds(Main.runParams.expectedEventRateInSeconds);
-				Thread.sleep(ChronoUnit.MILLIS.between(LocalDateTime.now(), then));
+				Utils.sleepUntil("AccountMonitor sleeping until event count check", then);
 				if (previousEventCount == eventCount) {
 					// Got no new events in the expected interval.
 					// Restart all DeviceMonitors to try to get data from Particle cloud.
 					// This may cause memory leaks,
 					// but will (I hope) kludge around the mysterious data drop issue.
-					Utils.log("Restarting DeviceMonitors.", logFileName);
+					Utils.log("Server restarting DeviceMonitors.", logFileName);
 					deviceMonitors.clear();
+					eventCount = 0;
 					checkDevices = true;
+				} else if (previousEventCount == 0) {
+					emailMostRecentEvents();
 				}
 			} catch (Exception e) {
 				Utils.logToConsole("run() :\t" + e.getClass().getName() + "\t" + e.getMessage());
@@ -99,14 +101,14 @@ public class AccountMonitor extends Thread {
 
 	public void emailMostRecentEvents() {
 		StringBuilder sb = new StringBuilder("<!DOCTYPE HTML><html><body>");
-		String headers[] = {"Name", "PublishedAt", "Event"};
-		Integer columns[] = {0, 1, 2};
+		String headers[] = {"Device Name", "PublishedAt", "Event Name", "Event Data"};
+		Integer columns[] = {0, 1, 2, 3}; // event is retured as tabbed string.
 		ArrayList<String> lines = new ArrayList<String>(eventSubscribers.size());
 		for (Entry<String, ParticleDeviceEvent> e : eventSubscribers.entrySet()) {
-			String s = new String(e.getKey());
-			s.concat("\t").concat(e.getValue().getMostRecentEventDateTime())
-			 .concat("\t").concat(e.getValue().getMostRecentEvent());
-			lines.add(s);
+			StringBuilder s = new StringBuilder(e.getKey());
+			s.append("\t").append(e.getValue().getMostRecentEventDateTime())
+			 .append("\t").append(e.getValue().getMostRecentEvent());
+			lines.add(s.toString());
 		}
 		Utils.writeTable(sb, headers, columns, lines);
 		sb.append("</body></html>");

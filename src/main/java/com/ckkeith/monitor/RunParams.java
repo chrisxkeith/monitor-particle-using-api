@@ -8,13 +8,17 @@ public class RunParams {
 	int		nHtmlFiles = 2;
 	int		dataIntervalInMinutes = 10;
 	int		htmlWriteIntervalInSeconds = 5;
-	int		expectedEventRateInSeconds = 60 * 20;
+	int		expectedEventRateInSeconds = 60 * 2;
 	
 	static RunParams load(String filename) {
 		RunParams rp = new RunParams();
 		try {
-			File f = new File(Utils.getParamFileDirectory() + filename);
-			if (f.exists()) {
+			String fn = Utils.getParamFileDirectory() + filename;
+			File f = new File(fn);
+			if (!f.exists()) {
+				Utils.logToConsole("No param file, using defaults : " + fn);
+			} else {
+				Utils.logToConsole("Reading param file : " + fn);
 				ArrayList<String> params = Utils.readParameterFile(filename);
 				for (String s : params) {
 					String p[] = s.split("=");
@@ -45,6 +49,7 @@ public class RunParams {
 		return "RunParams : shutdown = " + shutDown
 				+ ", nHtmlFiles = " + nHtmlFiles
 				+ ", dataIntervalInMinutes = " + dataIntervalInMinutes
-				+ ", htmlWriteIntervalInSeconds = " + htmlWriteIntervalInSeconds;
+				+ ", htmlWriteIntervalInSeconds = " + htmlWriteIntervalInSeconds
+				+ ", expectedEventRateInSeconds = " + expectedEventRateInSeconds;
 	}
 }
