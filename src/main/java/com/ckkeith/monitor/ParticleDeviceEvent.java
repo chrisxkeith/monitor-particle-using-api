@@ -68,7 +68,7 @@ public class ParticleDeviceEvent extends AnyDeviceEvent {
 
 	public String getMostRecentEvent() {
 		if (mostRecentEvent == null) {
-			return "No mostRecentEvent";
+			return "No mostRecentEvent\tn/a";
 		}
 		return toTabbedString(mostRecentEvent);
 	}
