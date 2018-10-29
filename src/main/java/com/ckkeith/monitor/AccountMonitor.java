@@ -49,6 +49,9 @@ public class AccountMonitor extends Thread {
 					deviceMonitors.put(device.name, dm);
 					newDevices.add(dm);
 				}
+				// Server returned HTTP response code: 502 for URL: https://api.particle.io/v1/devices/4b0050001151373331333230
+				LocalDateTime then = LocalDateTime.now().plusSeconds(5);
+				Utils.sleepUntil("AccountMonitor.startDeviceMonitors() sleeping to try to avoid \"Too many requests\" (http 502) error", then);
 			} catch (Exception e) {
 				String err = "run() :\t" + device.name + "\t" + e.getClass().getName() + "\t" + e.getMessage();
 				Utils.logToConsole(err);
