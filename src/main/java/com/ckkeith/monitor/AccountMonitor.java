@@ -50,7 +50,7 @@ public class AccountMonitor extends Thread {
 					newDevices.add(dm);
 				}
 				// Server returned HTTP response code: 502 for URL: https://api.particle.io/v1/devices/4b0050001151373331333230
-				LocalDateTime then = LocalDateTime.now().plusSeconds(5);
+				LocalDateTime then = LocalDateTime.now().plusSeconds(2);
 				Utils.sleepUntil("AccountMonitor.startDeviceMonitors() sleeping to try to avoid \"Too many requests\" (http 502) error", then);
 			} catch (Exception e) {
 				String err = "run() :\t" + device.name + "\t" + e.getClass().getName() + "\t" + e.getMessage();
@@ -105,7 +105,7 @@ public class AccountMonitor extends Thread {
 	public void emailMostRecentEvents() {
 		StringBuilder sb = new StringBuilder("<!DOCTYPE HTML><html><body>");
 		String headers[] = {"Device Name", "PublishedAt", "Event Name", "Event Data"};
-		Integer columns[] = {0, 1, 2, 3}; // event is retured as tabbed string.
+		Integer columns[] = {0, 1, 2, 3}; // event is returned as tabbed string.
 		ArrayList<String> lines = new ArrayList<String>(eventSubscribers.size());
 		for (Entry<String, ParticleDeviceEvent> e : eventSubscribers.entrySet()) {
 			StringBuilder s = new StringBuilder(e.getKey());

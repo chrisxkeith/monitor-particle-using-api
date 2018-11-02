@@ -38,8 +38,9 @@ public class DeviceMonitor extends Thread {
 	}
 
 	private void log(String s) {
-		Utils.logWithGSheetsDate(LocalDateTime.now(),
-				Utils.padWithSpaces(device.name, 20) + "\t" + s + "\t" + Utils.getHostName(), logFileName);
+		String msg = Utils.padWithSpaces(device.name, 20) + "\t" + s + "\t" + Utils.getHostName();
+		Utils.logWithGSheetsDate(LocalDateTime.now(), msg, logFileName);
+		Utils.logToConsole(msg);
 	}
 
 	private boolean ableToConnect() throws Exception {
@@ -58,7 +59,7 @@ public class DeviceMonitor extends Thread {
 
 	private void subscribe() throws Exception {
 		ParticleDeviceEvent cb;
-		if (device.name.contains("thermistor") && "chris-keith-gmail-com".equals(accountMonitor.accountName)) {
+		if (device.name.contains("thermistor") && "chris.keith@gmail.com".equals(accountMonitor.accountName)) {
 			cb = new StoveThermistorEvent(accountMonitor, device);
 		} else {
 			cb = new ParticleDeviceEvent(accountMonitor, device);
