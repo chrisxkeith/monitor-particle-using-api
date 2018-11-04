@@ -1,5 +1,7 @@
 package com.ckkeith.monitor;
 
+import java.io.File;
+import java.io.FileWriter;
 import java.io.PrintStream;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -69,28 +71,46 @@ public class AccountMonitor extends Thread {
 
 	}
 
+	public void executeRestartScript() throws Exception {
+		// Write restart script to disk and execute it.
+		// This will (I hope) kludge around the mysterious data drop issue.
+		String parentDirName = (new File(logFileName)).getParent();
+		String scriptName = parentDirName + File.separator + "restart.cmd";
+		String cd = "cd " + Utils.getHomeDir()
+				+ File.separator + "Documents"
+				+ File.separator + "Github"
+				+ File.separator + "monitor-particle-using-api";
+		String mvn = "mvn clean install exec:java -D maven.test.skip=true "
+				+ "-D exec.mainClass=\"com.ckkeith.monitor.Main\" 2>&1 >> "
+				+ Utils.getHomeDir()
+				+ File.separator + "Documents"
+				+ File.separator + "tmp"
+				+ File.separator + "monitor.log";
+		FileWriter fstream = new FileWriter(scriptName, true);
+		fstream.write(cd + System.getProperty("line.separator"));
+		fstream.write(mvn + System.getProperty("line.separator"));
+		fstream.flush();
+		fstream.close();
+		String exec = "cmd /c " + scriptName;
+		Utils.log("Executing restart script : " + scriptName, logFileName);
+		Runtime.getRuntime().exec(exec);
+		Thread.sleep(10 * 1000);
+		Utils.log("About to System.exit(0)", logFileName);
+		System.exit(0);
+	}
+
 	public void run() {
 		Utils.logToConsole(Utils.padWithSpaces(this.accountName, 20) + "\tPhotonMonitor thread starting.");
+		Map<String, DeviceMonitor> deviceMonitors = new HashMap<String, DeviceMonitor>();
+		startDeviceMonitors(deviceMonitors);
 		while (true) {
-			Map<String, DeviceMonitor> deviceMonitors = new HashMap<String, DeviceMonitor>();
-			boolean checkDevices = true;
 			try {
-				if (checkDevices) {
-					startDeviceMonitors(deviceMonitors);
-				}
-				checkDevices = false;
 				int previousEventCount = eventCount;
 				LocalDateTime then = LocalDateTime.now().plusSeconds(Main.runParams.expectedEventRateInSeconds);
 				Utils.sleepUntil("AccountMonitor sleeping until event count check", then);
 				if (previousEventCount == eventCount) {
 					// Got no new events in the expected interval.
-					// Restart all DeviceMonitors to try to get data from Particle cloud.
-					// This may cause memory leaks,
-					// but will (I hope) kludge around the mysterious data drop issue.
-					Utils.log("Server restarting DeviceMonitors.", logFileName);
-					deviceMonitors.clear();
-					eventCount = 0;
-					checkDevices = true;
+					executeRestartScript();
 				} else if (previousEventCount == 0) {
 					emailMostRecentEvents();
 				}
