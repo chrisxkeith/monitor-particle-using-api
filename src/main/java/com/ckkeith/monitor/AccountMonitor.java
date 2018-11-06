@@ -86,7 +86,7 @@ public class AccountMonitor extends Thread {
 				+ File.separator + "Documents"
 				+ File.separator + "tmp"
 				+ File.separator + "monitor.log";
-		FileWriter fstream = new FileWriter(scriptName, true);
+		FileWriter fstream = new FileWriter(scriptName, false);
 		fstream.write(cd + System.getProperty("line.separator"));
 		fstream.write(mvn + System.getProperty("line.separator"));
 		fstream.flush();
