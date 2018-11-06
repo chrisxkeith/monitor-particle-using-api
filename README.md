@@ -11,5 +11,3 @@ See https://github.com/chrisxkeith/monitor-particle-using-api/blob/master/bootst
 Email addresses (To: and From:) are currently hardcoded. You will need to find them (search for chris.keith@gmail.com) and change them.
 
 If you want to convert 'one sensor data point point row' to 'multiple sensors data points per row' you can try https://github.com/chrisxkeith/pivot-table-sort-of .
-
-x

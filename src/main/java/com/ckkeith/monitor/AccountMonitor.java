@@ -91,7 +91,7 @@ public class AccountMonitor extends Thread {
 		fstream.write(mvn + System.getProperty("line.separator"));
 		fstream.flush();
 		fstream.close();
-		String exec = "start cmd /c " + scriptName;
+		String exec = "cmd /c " + scriptName;
 		Utils.log("exec()ing : " + exec, logFileName);
 		Runtime.getRuntime().exec(exec);
 		Thread.sleep(10 * 1000);
