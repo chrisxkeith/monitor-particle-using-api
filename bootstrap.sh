@@ -30,9 +30,10 @@ cp -R JParticle/src/* monitor-particle-using-api/src/					; if [ $? -ne 0 ] ; th
 cd ~/Documents/Github/monitor-particle-using-api	  					; if [ $? -ne 0 ] ; then exit -6 ; fi
 mkdir -p src/main/resources/com/ckkeith/monitor/	  					; if [ $? -ne 0 ] ; then exit -6 ; fi
 
-echo "Now copy your GCP client_secret.json file into src/main/resources/com/ckkeith/monitor/"
-echo Then create Particle account subdirectory/ies in ~/Documents/tmp/
-echo Then run : mvn clean install exec:java -Dexec.mainClass=\""com.ckkeith.monitor.Main\""
-echo After a couple of minutes, you should see output something like:
-echo 2018-07-10T12:27:52-07  someone@somewhere.io     PhotonMonitor thread starting.
+echo "Now copy (or create) your GCP client_secret.json file into:
+echo "~/Documents/Github/monitor-particle-using-api/src/main/resources/com/ckkeith/monitor/"
+echo Then run : ~/Documents/Github/monitor-particle-using-api/scripts/run.sh
+echo You should get a browser window asking you to verify your credentials.
+echo After that (in a couple of minutes), you should see output something like:
+echo 2018-11-06T08:09:13-08  thermistor3-test        DeviceMonitor thread exiting.   2015-INSPIRON
 echo "Use Ctrl-C (Cmd-C? on mac) to quit."
