@@ -92,11 +92,13 @@ public class AccountMonitor extends Thread {
 		fstream.flush();
 		fstream.close();
 		String exec = "cmd /c " + scriptName;
-		Utils.log("exec()ing : " + exec, logFileName);
+		Utils.log("Would have exec()ed : " + exec, logFileName);
+		/*
 		Runtime.getRuntime().exec(exec);
 		Thread.sleep(10 * 1000);
 		Utils.log("About to System.exit(0)", logFileName);
 		System.exit(0);
+		*/
 	}
 
 	public void run() {
@@ -107,8 +109,9 @@ public class AccountMonitor extends Thread {
 			try {
 				int previousEventCount = eventCount;
 				LocalDateTime then = LocalDateTime.now().plusSeconds(Main.runParams.expectedEventRateInSeconds);
-				Utils.sleepUntil("AccountMonitor sleeping until event count check", then);
+				Utils.sleepUntil("AccountMonitor sleeping until event count check.", then);
 				if (previousEventCount == eventCount) {
+					Utils.log("previousEventCount: " + previousEventCount, logFileName);
 					// Got no new events in the expected interval.
 					executeRestartScript();
 				} else if (previousEventCount == 0) {
