@@ -6,7 +6,7 @@ rem ----- How to use powershell to make a tee
 rem ----- https://stackoverflow.com/questions/796476/displaying-windows-command-prompt-output-and-redirecting-it-to-a-file
 
 set userhome=%HOMEDRIVE%%HOMEPATH%
-set log=%userhome%\Documents\tmp\monitor.log
+set log=%userhome%\Documents\tmp\%COMPUTERNAME%\monitor.log
 
 rem ----- Put timestamp in log
 echo %DATE% %TIME% >> %log%
