@@ -6,6 +6,7 @@ rem ----- How to use powershell to make a tee
 rem ----- https://stackoverflow.com/questions/796476/displaying-windows-command-prompt-output-and-redirecting-it-to-a-file
 
 set userhome=%HOMEDRIVE%%HOMEPATH%
+mkdir %userhome%\Documents\tmp\%COMPUTERNAME%
 set log=%userhome%\Documents\tmp\%COMPUTERNAME%\monitor.log
 
 rem ----- Put timestamp in log
@@ -13,8 +14,6 @@ echo %DATE% %TIME% >> %log%
 set >> %log%
 where mvn >> %log%
 
-del /f /q %userhome%\Documents\tmp\chris-keith-gmail-com\*.html
-
 pushd %userhome%\Documents\Github\monitor-particle-using-api
-powershell "mvn clean install exec:java -D maven.test.skip=true -D exec.mainClass="com.ckkeith.monitor.Main" 2>&1 | tee -Append %log%"
+mvn clean install exec:java -D maven.test.skip=true -D exec.mainClass="com.ckkeith.monitor.Main" 2>&1 >> %log%
 popd
