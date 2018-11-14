@@ -7,9 +7,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import nl.infcomtec.jparticle.Cloud;
-import nl.infcomtec.jparticle.Device;
-
 public class AccountMonitor extends Thread {
 
 	String accessToken = null;
@@ -35,25 +32,25 @@ public class AccountMonitor extends Thread {
 	}
 
 	void startDeviceMonitors(Map<String, DeviceMonitor> deviceMonitors) {
-		Cloud c = new Cloud("Bearer " + accessToken, true, false);
+		ParticleCloud c = new ParticleCloud("Bearer " + accessToken, true, false);
 		ArrayList<String> statuses = new ArrayList<String>();
 		ArrayList<DeviceMonitor> newDevices = new ArrayList<DeviceMonitor>();
-		for (Device device : c.devices.values()) {
+		for (ParticleDevice device : c.getDevices()) {
 			try {
 				// Get device variables and functions
-				device = Device.getDevice(device.id, "Bearer " + accessToken);
+				device = device.getDevice("Bearer " + accessToken);
 				DeviceMonitor dm = new DeviceMonitor(this, device, c);
 				Utils.logWithGSheetsDate(LocalDateTime.now(), dm.toTabbedString(), logFileName);
 				statuses.add(dm.toTabbedString());
-				if (device.connected && (deviceMonitors.get(device.name) == null)) {
-					deviceMonitors.put(device.name, dm);
+				if (device.getConnected() && (deviceMonitors.get(device.getName()) == null)) {
+					deviceMonitors.put(device.getName(), dm);
 					newDevices.add(dm);
 				}
 				// Server returned HTTP response code: 502 for URL: https://api.particle.io/v1/devices/4b0050001151373331333230
 				LocalDateTime then = LocalDateTime.now().plusSeconds(2);
 				Utils.sleepUntil("AccountMonitor.startDeviceMonitors() sleeping to try to avoid \"Too many requests\" (http 502) error", then);
 			} catch (Exception e) {
-				String err = "run() :\t" + device.name + "\t" + e.getClass().getName() + "\t" + e.getMessage();
+				String err = "run() :\t" + device.getName() + "\t" + e.getClass().getName() + "\t" + e.getMessage();
 				Utils.logToConsole(err);
 				statuses.add(err);
 				e.printStackTrace(new PrintStream(System.out));

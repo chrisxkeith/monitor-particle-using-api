@@ -4,9 +4,6 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
-import nl.infcomtec.jparticle.Device;
-import nl.infcomtec.jparticle.Event;
-
 public class StoveThermistorEvent extends ParticleDeviceEvent {
 
 	class ThermistorData {
@@ -28,7 +25,7 @@ public class StoveThermistorEvent extends ParticleDeviceEvent {
 	ThermistorData lastDataSeen = null;
 	ThermistorData lastDataOverLimit = null;
 
-	public StoveThermistorEvent(AccountMonitor accountMonitor, Device device) throws Exception {
+	public StoveThermistorEvent(AccountMonitor accountMonitor, ParticleDevice device) throws Exception {
 		super(accountMonitor, device);
 	}
 
@@ -48,12 +45,12 @@ public class StoveThermistorEvent extends ParticleDeviceEvent {
 	final static DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("h:mm a, MMMM dd, yyyy");
 
 	// public for automated testing only.
-	public String checkStoveLeftOn(Event e) {
+	public String checkStoveLeftOn(ParticleEvent e) {
 		String subjectLine = "subject line : no message yet";
 		try {
-			String fields[] = e.data.split("\\|");
+			String fields[] = e.getData().split("\\|");
 			if (fields.length < 3) {
-				subjectLine = "No sensor data : " + e.data;
+				subjectLine = "No sensor data : " + e.getData();
 			} else {
 				ThermistorData t = new ThermistorData(fields);
 				if (t.degreesInF > this.temperatureLimit) {
@@ -64,8 +61,8 @@ public class StoveThermistorEvent extends ParticleDeviceEvent {
 						if (minutes > timeLimit) {
 							subjectLine = "Warning: stove top temperature has been over " + temperatureLimit + " degrees F for "
 									+ minutes + " minutes starting at " + dateFormatter.format(lastDataOverLimit.deviceTime);
-							String body = "Sent from sensor '" + e.name + "' on Photon '" + e.coreId +  "' by server '" + Utils.getHostName()
-									+ "'. Raw data: " + e.data;
+							String body = "Sent from sensor '" + e.getName() + "' on Photon '" + e.getCoreId() +  "' by server '" + Utils.getHostName()
+									+ "'. Raw data: " + e.getData();
 							Utils.logWithGSheetsDate(LocalDateTime.now(), subjectLine, logFileName);
 							sendEmail(subjectLine, body);
 						}
@@ -82,7 +79,7 @@ public class StoveThermistorEvent extends ParticleDeviceEvent {
 		return subjectLine;
 	}
 
-	public void handleEvent(Event e) {
+	public void handleEvent(ParticleEvent e) {
 		super.handleEvent(e);
 		checkStoveLeftOn(e);
 	}
