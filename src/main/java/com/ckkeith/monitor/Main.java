@@ -22,8 +22,13 @@ public class Main {
 					monitors.add(m);
 				}
 			}
+
+			// Works best when computer is restarted close to the top of the hour,
+			// since it would be os-specific to ask the machine for its startup time
+			// (if that's even possible). Still need to figure out some way around
+			// data-dropout problem.
 			LocalDateTime then = LocalDateTime.now().plusHours(1).withMinute(0).withSecond(0);
-			Utils.sleepUntil("MonitorParticle main - waiting for shutdown.", then);
+			Utils.sleepUntil("MonitorParticle main - waiting to System.exit(0).", then);
 			System.exit(0);
 		} catch (Exception e) {
 			Utils.logToConsole("main() :\t" + e.getClass().getName() + "\t" + e.getMessage());
