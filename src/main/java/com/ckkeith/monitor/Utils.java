@@ -10,11 +10,14 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
-import java.util.StringJoiner;
+
+import org.apache.commons.lang3.SystemUtils;
 
 public class Utils {
 	public static String getHomeDir() throws Exception {
@@ -175,24 +178,46 @@ public class Utils {
 		return serverName;
 	}
 
-	public static String runCommandForOutput(List<String> params) {
+	public static List<String> runCommandForOutput(List<String> params) {
 	    ProcessBuilder pb = new ProcessBuilder(params);
 	    Process p;
-	    String result = "";
+	    ArrayList<String> result = new ArrayList<String>();
 	    try {
 	        p = pb.start();
 	        final BufferedReader reader = new BufferedReader(new InputStreamReader(p.getInputStream()));
-
-	        StringJoiner sj = new StringJoiner(System.getProperty("line.separator"));
-	        reader.lines().iterator().forEachRemaining(sj::add);
-	        result = sj.toString();
-
+	        reader.lines().iterator().forEachRemaining(result::add);
 	        p.waitFor();
 	        p.destroy();
 	    } catch (Exception e) {
 	        e.printStackTrace();
+	        result.add(e.getMessage());
 	    }
 	    return result;
+	}
+
+	public static LocalDateTime getBootTime() {
+		if (SystemUtils.IS_OS_WINDOWS) {
+			ArrayList<String> cmd = new ArrayList<String>();
+			cmd.add("systeminfo");
+			List<String> output = runCommandForOutput(cmd);
+			for (String s : output) {
+				if (s.contains("System Boot Time:")) {
+					s = s.replace("System Boot Time:", "");
+					s = s.trim();
+					// 11/14/2018, 11:48:32 AM
+					s = s.replace(", ", "T");
+					try {
+						SimpleDateFormat f = new SimpleDateFormat("MM'/'dd'/'yyyy'T'hh:mm:ss' 'a");
+						Date d = f.parse(s);
+						return LocalDateTime.ofInstant(d.toInstant(), ZoneId.systemDefault());
+					} catch(Exception e) {
+						Utils.logToConsole("Unable to parse datetime: " + s);
+						return null;
+					}
+				}
+			}
+		}
+		return null;
 	}
 
 	private static void writeTableHeader(StringBuilder sb, String[] headers) {
