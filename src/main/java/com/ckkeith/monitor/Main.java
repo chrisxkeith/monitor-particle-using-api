@@ -23,13 +23,17 @@ public class Main {
 				}
 			}
 			LocalDateTime bootTime = Utils.getBootTime();
-			int minutes;
+			int bootMinute;
 			if (bootTime == null) {
-				minutes = 0;
+				bootMinute = 0;
 			} else {
-				minutes = bootTime.getMinute();
+				bootMinute = bootTime.getMinute();
 			}
-			LocalDateTime then = LocalDateTime.now().plusHours(runParams.shutDownHours).withMinute(minutes);
+			int hour = runParams.shutDownHours;
+			if (bootMinute > LocalDateTime.now().getMinute()) {
+				hour--;
+			}
+			LocalDateTime then = LocalDateTime.now().plusHours(hour).withMinute(bootMinute);
 			Utils.sleepUntil("MonitorParticle main - waiting to System.exit(0).", then);
 			System.exit(0);
 		} catch (Exception e) {
