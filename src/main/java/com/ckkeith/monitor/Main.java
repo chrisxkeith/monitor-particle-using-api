@@ -33,7 +33,9 @@ public class Main {
 			if (bootMinute > LocalDateTime.now().getMinute()) {
 				hour--;
 			}
-			LocalDateTime then = LocalDateTime.now().plusHours(hour).withMinute(bootMinute);
+			LocalDateTime then = LocalDateTime.now().plusHours(hour).withMinute(bootMinute - 3);
+							// - 3 to increase the odds that this instance is gone
+							// before Task Scheduler tries to start a new one.
 			Utils.sleepUntil("MonitorParticle main - waiting to System.exit(0).", then);
 			System.exit(0);
 		} catch (Exception e) {
