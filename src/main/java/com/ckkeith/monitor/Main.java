@@ -1,20 +1,18 @@
 // Please credit chris.keith@gmail.com
 package com.ckkeith.monitor;
 
+import java.io.File;
 import java.io.PrintStream;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 
 public class Main {
 	private static ArrayList<AccountMonitor> monitors = new ArrayList<AccountMonitor>();
-	static RunParams runParams;
 
 	public static void main(String[] args) {
 		try {
-			runParams = RunParams.load("monitor-run-params.txt");
-			Utils.logToConsole(runParams.toString());
-
-			ArrayList<String> accountTokens = Utils.readParameterFile("particle-tokens.txt");
+			String filePath = Utils.getHomeDir() + File.separator + "Documents" + File.separator + "particle-tokens.txt";
+			ArrayList<String> accountTokens = Utils.readParameterFile(filePath);
 			for (String c : accountTokens) {
 				if (c != null && !c.startsWith("#")) {
 					AccountMonitor m = new AccountMonitor(c);
@@ -29,11 +27,11 @@ public class Main {
 			} else {
 				bootMinute = bootTime.getMinute();
 			}
-			int hour = runParams.shutDownHours;
+			int hourIncrement = 1;
 			if (bootMinute > LocalDateTime.now().getMinute()) {
-				hour--;
+				hourIncrement--;
 			}
-			LocalDateTime then = LocalDateTime.now().plusHours(hour).withMinute(bootMinute - 3);
+			LocalDateTime then = LocalDateTime.now().plusHours(hourIncrement).withMinute(bootMinute - 3);
 							// - 3 to increase the odds that this instance is gone
 							// before Task Scheduler tries to start a new one.
 			Utils.sleepUntil("MonitorParticle main - waiting to System.exit(0).", then);

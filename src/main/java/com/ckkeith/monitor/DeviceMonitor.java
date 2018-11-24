@@ -56,7 +56,7 @@ public class DeviceMonitor extends Thread {
 
 	private void subscribe() throws Exception {
 		ParticleDeviceEvent cb;
-		if (device.getName().contains("thermistor") && "chris.keith@gmail.com".equals(accountMonitor.accountName)) {
+		if (device.getName().contains("thermistor")) {
 			cb = new StoveThermistorEvent(accountMonitor, device);
 		} else {
 			cb = new ParticleDeviceEvent(accountMonitor, device);

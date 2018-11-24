@@ -91,7 +91,7 @@ public class Utils {
 		return logString;
 	}
 
-	private static String getSafeName(String s) {
+	static String getSafeName(String s) {
 		String safeName = s.replaceAll("\\W+", "-");
 		if (safeName.length() > 24) {
 			safeName = safeName.substring(0, 11)
@@ -132,12 +132,7 @@ public class Utils {
 		Utils.logToConsole(msg + "\tFinished sleeping, started at\t" + then);
 	}
 
-	public static String getParamFileDirectory() throws Exception {
-		return getHomeDir() + File.separator + "Documents" + File.separator;
-	}
-
-	public static ArrayList<String> readParameterFile(String fileName) throws Exception {
-		String parameterFilePath =  getParamFileDirectory() + fileName;
+	public static ArrayList<String> readParameterFile(String parameterFilePath) throws Exception {
 		File f = new File(parameterFilePath);
 		if (!f.exists()) {
 			System.out.println("No parameter file : " + parameterFilePath);

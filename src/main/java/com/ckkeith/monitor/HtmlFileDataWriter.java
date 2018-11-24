@@ -114,9 +114,9 @@ public class HtmlFileDataWriter extends Thread {
 					line = line.replace("_fileIndexGoesHere_", nextFileNumber)
 							.replace("_homePathGoesHere_", Utils.getHomeURLPath())
 							.replace("_writeIntervalGoesHere_",
-									new Integer(Main.runParams.htmlWriteIntervalInSeconds).toString());
+									new Integer(accountMonitor.runParams.htmlWriteIntervalInSeconds).toString());
 				} else if (line.contains("_suggestedTimeMin_")) {
-					LocalDateTime then = LocalDateTime.now().minusMinutes(Main.runParams.dataIntervalInMinutes);
+					LocalDateTime then = LocalDateTime.now().minusMinutes(accountMonitor.runParams.dataIntervalInMinutes);
 					line = line.replace("_suggestedTimeMin_", Utils.googleSheetsDateFormat.format(then));
 				} else if (line.contains("_suggestedTimeMax_")) {
 					line = line.replace("_suggestedTimeMax_", Utils.googleSheetsDateFormat.format(LocalDateTime.now()));
@@ -130,14 +130,14 @@ public class HtmlFileDataWriter extends Thread {
 
 	String getNextFileNumber() {
 		nextFileNumber++;
-		if (nextFileNumber >= Main.runParams.nHtmlFiles) {
+		if (nextFileNumber >= 2) {
 			nextFileNumber = 0;
 		}
 		return String.format("%03d", nextFileNumber);
 	}
 
 	void deleteOldData() {
-		LocalDateTime start = LocalDateTime.now().minusMinutes(Main.runParams.dataIntervalInMinutes);
+		LocalDateTime start = LocalDateTime.now().minusMinutes(accountMonitor.runParams.dataIntervalInMinutes);
 		Set<LocalDateTime> keys = sensorData.keySet();
 		Iterator<LocalDateTime> itr = keys.iterator();
 		while (itr.hasNext()) {
@@ -208,7 +208,7 @@ public class HtmlFileDataWriter extends Thread {
 		try {
 			while (true) {
 				writeHtml();
-				Thread.sleep(Main.runParams.htmlWriteIntervalInSeconds * 1000);
+				Thread.sleep(accountMonitor.runParams.htmlWriteIntervalInSeconds * 1000);
 			}
 		} catch (Exception e) {
 			Utils.logToConsole(e.getMessage());
