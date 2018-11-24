@@ -196,7 +196,8 @@ public class HtmlFileDataWriter extends Thread {
 				Files.move(tempFile.toPath(), thisFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
 				Utils.logToConsole(
 						"Wrote " + thisFileName + " : # data points : " + new Integer(nDataPoints).toString());
-				startChrome(thisFileName);
+// Only use this when NOT running from Task Scheduler
+//				startChrome(thisFileName);
 			} catch (Exception e) {
 				Utils.logToConsole("FAILED to write : " + thisFileName + " : # data points : "
 						+ new Integer(nDataPoints).toString() + " : " + e.getMessage());
