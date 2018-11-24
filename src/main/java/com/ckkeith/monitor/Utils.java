@@ -31,8 +31,8 @@ public class Utils {
 		return d;
 	}
 
-	public static String getHomeURLPath() throws Exception {
-		String d = getHomeDir();
+	public static String getHomeURLPath(String accountPath) throws Exception {
+		String d = getHomeDir() + File.separator + accountPath;
 		if (d.charAt(1) == ':') {
 			d = d.replaceAll("\\\\", "/");
 		}

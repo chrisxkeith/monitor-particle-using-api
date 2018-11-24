@@ -111,8 +111,11 @@ public class HtmlFileDataWriter extends Thread {
 			String line;
 			while ((line = br.readLine()) != null) {
 				if (line.contains("_fileIndexGoesHere_.html")) {
+					String accountPath = Utils.getHomeURLPath(
+							"Documents" + File.separator + "tmp" + File.separator + Utils.getHostName() + File.separator
+									+ Utils.getSafeName(accountMonitor.accountName));
 					line = line.replace("_fileIndexGoesHere_", nextFileNumber)
-							.replace("_homePathGoesHere_", Utils.getHomeURLPath())
+							.replace("_homePathGoesHere_", accountPath)
 							.replace("_writeIntervalGoesHere_",
 									new Integer(accountMonitor.runParams.htmlWriteIntervalInSeconds).toString());
 				} else if (line.contains("_suggestedTimeMin_")) {
