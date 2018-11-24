@@ -73,8 +73,8 @@ public class AccountMonitor extends Thread {
 			dm.start();
 		}
 		if (htmlFileDataWriter == null) {
-//			htmlFileDataWriter = new HtmlFileDataWriter(this);
-//			htmlFileDataWriter.start();
+			htmlFileDataWriter = new HtmlFileDataWriter(this);
+			htmlFileDataWriter.start();
 		}
 	}
 
