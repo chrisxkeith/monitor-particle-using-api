@@ -7,6 +7,7 @@ public class RunParams {
 	int		dataIntervalInMinutes = 10;
 	int		htmlWriteIntervalInSeconds = 5;
 	int		expectedEventRateInSeconds = 60 * 2;
+	String	devicesToReport = "";
 	
 	static RunParams load(String filePath) {
 		RunParams rp = new RunParams();
@@ -28,6 +29,8 @@ public class RunParams {
 							rp.htmlWriteIntervalInSeconds = Integer.valueOf(val);
 						} else if (key.equalsIgnoreCase("expectedEventRateInSeconds")) {
 							rp.expectedEventRateInSeconds = Integer.valueOf(val);
+						} else if (key.equalsIgnoreCase("devicesToReport")) {
+							rp.devicesToReport = val;
 						}
 					}
 				}				
@@ -43,6 +46,7 @@ public class RunParams {
 				+ "dataIntervalInMinutes = " + dataIntervalInMinutes
 				+ ", htmlWriteIntervalInSeconds = " + htmlWriteIntervalInSeconds
 				+ ", expectedEventRateInSeconds = " + expectedEventRateInSeconds
+				+ ", devicesToReport = " + devicesToReport
 				;
 	}
 }

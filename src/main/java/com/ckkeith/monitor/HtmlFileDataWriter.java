@@ -26,12 +26,13 @@ public class HtmlFileDataWriter extends Thread {
 	
 	public void addData(SensorDataPoint sensorDataPoint) {
 		synchronized (this) {
-			sensorNames.put(sensorDataPoint.sensorName, sensorDataPoint.sensorName);
+			String fullSensorName = sensorDataPoint.deviceName + " " + sensorDataPoint.sensorName;
+			sensorNames.put(fullSensorName, sensorDataPoint.sensorName);
 			ConcurrentSkipListMap<String, String> sensorValues = sensorData.get(sensorDataPoint.timestamp);
 			if (sensorValues == null) {
 				sensorValues = new ConcurrentSkipListMap<String, String>();
 			}
-			sensorValues.put(sensorDataPoint.sensorName, sensorDataPoint.sensorData);
+			sensorValues.put(fullSensorName, sensorDataPoint.sensorData);
 			sensorData.put(sensorDataPoint.timestamp, sensorValues);
 		}
 	}
@@ -52,52 +53,60 @@ public class HtmlFileDataWriter extends Thread {
 		return nextColor;
 	}
 
-	private int writeJson(FileWriter jsonStream) throws Exception {
+	private int addDataForSensor(FileWriter jsonStream, String sensorName, StringBuilder sb1) throws Exception {
+		writeln(jsonStream, "\t\t\t\t\"data\" : [");
+		Set<LocalDateTime> keys = sensorData.keySet();
+		Iterator<LocalDateTime> itr = keys.iterator();
+		boolean first = true;
 		int nDataPoints = 0;
+		while (itr.hasNext()) {
+			LocalDateTime timestamp = itr.next();
+			ConcurrentSkipListMap<String, String> entries = sensorData.get(timestamp);
+
+			String val = entries.get(sensorName);
+			if (val != null && !val.isEmpty()) {
+				StringBuilder sb2 = new StringBuilder();
+				if (!first) {
+					sb2.append(",");
+				} else {
+					first = false;
+				}
+				sb2.append("{ \"t\" : \"").append(timestamp).append("\", \"y\" : " + val + "}");
+				writeln(jsonStream, sb2.toString());
+				nDataPoints++;
+			}
+		}
+		writeln(jsonStream, "\t\t\t\t]");
+		return nDataPoints;
+	}
+
+	private Integer writeJson(FileWriter jsonStream) throws Exception {
+		Integer nDataPoints = 0;
 		try {
 			colorIndex = 0;
 			writeln(jsonStream, "\t{ \"datasets\" : ");
 			writeln(jsonStream, "\t\t[");
 
 			Iterator<String> sensorIt = sensorNames.keySet().iterator();
-			boolean firstSensor = true;
+			Boolean firstSensor = true;
 			while (sensorIt.hasNext()) {
 				String sensorName = sensorIt.next();
-				StringBuilder sb1 = new StringBuilder("\t\t\t");
-				if (firstSensor) {
-					firstSensor = false;
-				} else {
-					sb1.append(" , ");
-				}
-				sb1.append("{ \"label\" : \"");
-				sb1.append(sensorName).append("\",");
-				writeln(jsonStream, sb1.toString());
-				writeln(jsonStream, "\t\t\t\"borderColor\" : \"rgba(" + getNextColor() + ")\",");
-				writeln(jsonStream, "\t\t\t\"backgroundColor\" : \"rgba(0, 0, 0, 0.0)\",");
-				writeln(jsonStream, "\t\t\t\t\"data\" : [");
-
-				Set<LocalDateTime> keys = sensorData.keySet();
-				Iterator<LocalDateTime> itr = keys.iterator();
-				boolean first = true;
-				while (itr.hasNext()) {
-					LocalDateTime timestamp = itr.next();
-					ConcurrentSkipListMap<String, String> entries = sensorData.get(timestamp);
-
-					String val = entries.get(sensorName);
-					if (val != null && !val.isEmpty()) {
-						StringBuilder sb2 = new StringBuilder();
-						if (!first) {
-							sb2.append(",");
-						} else {
-							first = false;
-						}
-						sb2.append("{ \"t\" : \"").append(timestamp).append("\", \"y\" : " + val + "}");
-						writeln(jsonStream, sb2.toString());
-						nDataPoints++;
+				if (accountMonitor.runParams.devicesToReport.isEmpty()
+						|| accountMonitor.runParams.devicesToReport.contains(sensorName)) {
+					StringBuilder sb1 = new StringBuilder("\t\t\t");
+					if (firstSensor) {
+						firstSensor = false;
+					} else {
+						sb1.append(" , ");
 					}
+					sb1.append("{ \"label\" : \"");
+					sb1.append(sensorName).append("\",");
+					writeln(jsonStream, sb1.toString());
+					writeln(jsonStream, "\t\t\t\"borderColor\" : \"rgba(" + getNextColor() + ")\",");
+					writeln(jsonStream, "\t\t\t\"backgroundColor\" : \"rgba(0, 0, 0, 0.0)\",");
+					nDataPoints += addDataForSensor(jsonStream, sensorName, sb1);
+					writeln(jsonStream, "\t\t\t}");
 				}
-				writeln(jsonStream, "\t\t\t\t]");
-				writeln(jsonStream, "\t\t\t}");
 			}
 		} finally {
 			writeln(jsonStream, "\t\t]");
@@ -152,6 +161,7 @@ public class HtmlFileDataWriter extends Thread {
 	}
 	
 	private boolean chromeStarted = false;
+	@SuppressWarnings("unused")
 	private void startChrome(String fn) {
 		if (! chromeStarted) {
 		    try {
