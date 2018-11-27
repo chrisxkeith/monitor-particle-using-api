@@ -47,21 +47,25 @@ public class AccountMonitor extends Thread {
 		ArrayList<DeviceMonitor> newDevices = new ArrayList<DeviceMonitor>();
 		for (ParticleDevice device : c.getDevices()) {
 			try {
-				// Get device variables and functions
-				device = device.getDevice("Bearer " + accessToken);
-				DeviceMonitor dm = new DeviceMonitor(this, device, c);
-				Utils.logWithGSheetsDate(LocalDateTime.now(), dm.toTabbedString(), logFileName);
-				statuses.add(dm.toTabbedString());
-				if (device.getConnected() && (deviceMonitors.get(device.getName()) == null)) {
-					deviceMonitors.put(device.getName(), dm);
-					newDevices.add(dm);
+				if (!device.getConnected()) {
+					Utils.logToConsole("Skipping disconnected device : " + device.getName());
+				} else {
+					// Get device variables and functions
+					device = device.getDevice("Bearer " + accessToken);
+					DeviceMonitor dm = new DeviceMonitor(this, device, c);
+					Utils.logWithGSheetsDate(LocalDateTime.now(), dm.toTabbedString(), logFileName);
+					statuses.add(dm.toTabbedString());
+					if (deviceMonitors.get(device.getName()) == null) {
+						deviceMonitors.put(device.getName(), dm);
+						newDevices.add(dm);
+					}
+					// Server returned HTTP response code: 502 for URL: https://api.particle.io/v1/devices/4b0050001151373331333230
+					LocalDateTime then = LocalDateTime.now().plusSeconds(2);
+					Utils.sleepUntil(
+							"AccountMonitor.startDeviceMonitors() sleeping to try to avoid \"Too many requests\" (http 502) error for: "
+									+ device.getName(),
+							then);
 				}
-				// Server returned HTTP response code: 502 for URL: https://api.particle.io/v1/devices/4b0050001151373331333230
-				LocalDateTime then = LocalDateTime.now().plusSeconds(2);
-				Utils.sleepUntil(
-						"AccountMonitor.startDeviceMonitors() sleeping to try to avoid \"Too many requests\" (http 502) error for: "
-								+ device.getName(),
-						then);
 			} catch (Exception e) {
 				String err = "run() :\t" + device.getName() + "\t" + e.getClass().getName() + "\t" + e.getMessage();
 				Utils.logToConsole(err);
