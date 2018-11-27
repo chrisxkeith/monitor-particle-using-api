@@ -6,7 +6,7 @@ import java.time.LocalDateTime;
 public class DeviceMonitor extends Thread {
 
 	private String accessToken;
-	private ParticleDevice device;
+	ParticleDevice device;
 	private ParticleCloud cloud;
 	private String logFileName;
 	private AccountMonitor accountMonitor;

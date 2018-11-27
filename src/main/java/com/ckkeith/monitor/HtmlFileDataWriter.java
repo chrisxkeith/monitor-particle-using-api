@@ -80,7 +80,7 @@ public class HtmlFileDataWriter extends Thread {
 		return nDataPoints;
 	}
 
-	private Integer writeJson(FileWriter jsonStream) throws Exception {
+	private Integer writeJson(FileWriter jsonStream, String deviceName) throws Exception {
 		Integer nDataPoints = 0;
 		try {
 			colorIndex = 0;
@@ -91,8 +91,9 @@ public class HtmlFileDataWriter extends Thread {
 			Boolean firstSensor = true;
 			while (sensorIt.hasNext()) {
 				String sensorName = sensorIt.next();
-				if (accountMonitor.runParams.devicesToReport.isEmpty()
-						|| accountMonitor.runParams.devicesToReport.contains(sensorName)) {
+				if (((deviceName == null) || sensorName.startsWith(deviceName))
+						&& ((accountMonitor.runParams.devicesToReport.isEmpty()
+								|| accountMonitor.runParams.devicesToReport.contains(sensorName)))) {
 					StringBuilder sb1 = new StringBuilder("\t\t\t");
 					if (firstSensor) {
 						firstSensor = false;
@@ -115,15 +116,15 @@ public class HtmlFileDataWriter extends Thread {
 		return nDataPoints;
 	}
 
-	private void appendFromFileToFile(FileWriter htmlStream, String fromFile, String nextFileNumber) throws Exception {
+	private void appendFromFileToFile(FileWriter htmlStream, String fromFile, String fileName) throws Exception {
 		try (BufferedReader br = new BufferedReader(new FileReader(new File(fromFile)))) {
 			String line;
 			while ((line = br.readLine()) != null) {
-				if (line.contains("_fileIndexGoesHere_.html")) {
+				if (line.contains("_fileNameGoesHere_.html")) {
 					String accountPath = Utils.getHomeURLPath(
 							"Documents" + File.separator + "tmp" + File.separator + Utils.getHostName() + File.separator
 									+ Utils.getSafeName(accountMonitor.accountName));
-					line = line.replace("_fileIndexGoesHere_", nextFileNumber)
+					line = line.replace("_fileNameGoesHere_", fileName)
 							.replace("_homePathGoesHere_", accountPath)
 							.replace("_writeIntervalGoesHere_",
 									new Integer(accountMonitor.runParams.htmlWriteIntervalInSeconds).toString());
@@ -138,14 +139,13 @@ public class HtmlFileDataWriter extends Thread {
 		}
 	}
 
-	int nextFileNumber = 0;
+	int currentFileNumber = 0;
 
-	String getNextFileNumber() {
-		nextFileNumber++;
-		if (nextFileNumber >= 2) {
-			nextFileNumber = 0;
+	int getNextFileNumber(int thisFileNumber) {
+		if (thisFileNumber == 0) {
+			return 1;
 		}
-		return String.format("%03d", nextFileNumber);
+		return 0;
 	}
 
 	void deleteOldData() {
@@ -178,42 +178,58 @@ public class HtmlFileDataWriter extends Thread {
 		}
 	}
 
+	void writeOneHtml(String deviceName, int thisFileNumber) {
+		String thisFileName = "not yet specified";
+		int nDataPoints = 0;
+		try {
+			deleteOldData();
+			String safeFn;
+			if (deviceName == null) {
+				safeFn = "all";
+			} else {
+				safeFn = Utils.getSafeName(deviceName);
+			}
+			String fileName = Utils.getLogFileName(accountMonitor.accountName, safeFn + "NNN.html");
+			thisFileName = fileName.replace("NNN", String.format("%03d", thisFileNumber));
+			String dir = new File(fileName).getParent();
+			File tempFile = File.createTempFile("tmp", ".html", new File(dir));
+			FileWriter htmlStream = new FileWriter(tempFile.getCanonicalPath(), false);
+			try {
+				appendFromFileToFile(htmlStream, "src/main/resources/prefix.html",
+						safeFn + String.format("%03d", getNextFileNumber(thisFileNumber)));
+				nDataPoints = writeJson(htmlStream, deviceName);
+				appendFromFileToFile(htmlStream, "src/main/resources/suffix.html", "junk");
+			} finally {
+				htmlStream.close();
+			}
+			File thisFile = new File(thisFileName);
+			try {
+				thisFile.delete();
+			} catch (Exception ex) {
+				Utils.logToConsole(
+						"thisFile.delete() : " + ex.getMessage() + " " + ex.getClass().getName() + ", continuing");
+			}
+			Files.move(tempFile.toPath(), thisFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+			Utils.logToConsole(
+					"Wrote " + thisFileName + " : # data points : " + new Integer(nDataPoints).toString());
+//Only use this when NOT running from Task Scheduler
+//			startChrome(thisFileName);
+		} catch (Exception e) {
+			Utils.logToConsole("FAILED to write : " + thisFileName + " : # data points : "
+					+ new Integer(nDataPoints).toString() + " : " + e.getMessage());
+			e.printStackTrace();
+			// If there's any failure, continue and write the next file at the appropriate time.
+		}
+	}
+
 	void writeHtml() throws Exception {
 		synchronized (this) {
-			String thisFileName = "not yet specified";
-			int nDataPoints = 0;
-			try {
-				deleteOldData();
-				String fileName = Utils.getLogFileName(accountMonitor.accountName, "allNNN.html");
-				thisFileName = fileName.replace("NNN", String.format("%03d", nextFileNumber));
-				String dir = new File(fileName).getParent();
-				File tempFile = File.createTempFile("tmp", ".html", new File(dir));
-				FileWriter htmlStream = new FileWriter(tempFile.getCanonicalPath(), false);
-				try {
-					appendFromFileToFile(htmlStream, "src/main/resources/prefix.html", getNextFileNumber());
-					nDataPoints = writeJson(htmlStream);
-					appendFromFileToFile(htmlStream, "src/main/resources/suffix.html", "junk");
-				} finally {
-					htmlStream.close();
-				}
-				File thisFile = new File(thisFileName);
-				try {
-					thisFile.delete();
-				} catch (Exception ex) {
-					Utils.logToConsole(
-							"thisFile.delete() : " + ex.getMessage() + " " + ex.getClass().getName() + ", continuing");
-				}
-				Files.move(tempFile.toPath(), thisFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
-				Utils.logToConsole(
-						"Wrote " + thisFileName + " : # data points : " + new Integer(nDataPoints).toString());
-// Only use this when NOT running from Task Scheduler
-//				startChrome(thisFileName);
-			} catch (Exception e) {
-				Utils.logToConsole("FAILED to write : " + thisFileName + " : # data points : "
-						+ new Integer(nDataPoints).toString() + " : " + e.getMessage());
-				e.printStackTrace();
-				// If there's any failure, continue and write the next file at the appropriate time.
+			int thisFileNumber = currentFileNumber;
+			for (DeviceMonitor dm : accountMonitor.deviceMonitors.values()) {
+				writeOneHtml(dm.device.getName(), thisFileNumber);
 			}
+			writeOneHtml(null, thisFileNumber);
+			currentFileNumber = getNextFileNumber(currentFileNumber);
 		}
 	}
 	

@@ -17,6 +17,7 @@ public class AccountMonitor extends Thread {
 	private Map<String, ParticleDeviceEvent> eventSubscribers = new HashMap<String, ParticleDeviceEvent>();
 	private HtmlFileDataWriter htmlFileDataWriter;
 	RunParams runParams;
+	Map<String, DeviceMonitor> deviceMonitors = new HashMap<String, DeviceMonitor>();
 
 	public AccountMonitor(String credentials) throws Exception {
 		String[] creds = credentials.split("\t");
@@ -41,9 +42,8 @@ public class AccountMonitor extends Thread {
 				+ "runparams.txt";
 	}
 
-	void startDeviceMonitors(Map<String, DeviceMonitor> deviceMonitors) {
+	void startDeviceMonitors() {
 		ParticleCloud c = new ParticleCloud("Bearer " + accessToken, true, false);
-		ArrayList<String> statuses = new ArrayList<String>();
 		ArrayList<DeviceMonitor> newDevices = new ArrayList<DeviceMonitor>();
 		for (ParticleDevice device : c.getDevices()) {
 			try {
@@ -54,13 +54,12 @@ public class AccountMonitor extends Thread {
 					device = device.getDevice("Bearer " + accessToken);
 					DeviceMonitor dm = new DeviceMonitor(this, device, c);
 					Utils.logWithGSheetsDate(LocalDateTime.now(), dm.toTabbedString(), logFileName);
-					statuses.add(dm.toTabbedString());
 					if (deviceMonitors.get(device.getName()) == null) {
 						deviceMonitors.put(device.getName(), dm);
 						newDevices.add(dm);
 					}
 					// Server returned HTTP response code: 502 for URL: https://api.particle.io/v1/devices/4b0050001151373331333230
-					LocalDateTime then = LocalDateTime.now().plusSeconds(2);
+					LocalDateTime then = LocalDateTime.now().plusSeconds(3);
 					Utils.sleepUntil(
 							"AccountMonitor.startDeviceMonitors() sleeping to try to avoid \"Too many requests\" (http 502) error for: "
 									+ device.getName(),
@@ -69,7 +68,6 @@ public class AccountMonitor extends Thread {
 			} catch (Exception e) {
 				String err = "run() :\t" + device.getName() + "\t" + e.getClass().getName() + "\t" + e.getMessage();
 				Utils.logToConsole(err);
-				statuses.add(err);
 				e.printStackTrace(new PrintStream(System.out));
 			}
 		}
@@ -84,15 +82,14 @@ public class AccountMonitor extends Thread {
 
 	public void run() {
 		Utils.logToConsole(Utils.padWithSpaces(this.accountName, 20) + "\tPhotonMonitor thread starting.");
-		Map<String, DeviceMonitor> deviceMonitors = new HashMap<String, DeviceMonitor>();
-		startDeviceMonitors(deviceMonitors);
+		startDeviceMonitors();
 		while (true) {
 			try {
 				int previousEventCount = eventCount;
 				LocalDateTime then = LocalDateTime.now().plusSeconds(runParams.expectedEventRateInSeconds);
 				Utils.sleepUntil("AccountMonitor sleeping until event count check.", then);
 				if (previousEventCount == eventCount) {
-					Utils.log("previousEventCount: " + previousEventCount, logFileName);
+					Utils.log("no new events, previousEventCount: " + previousEventCount, logFileName);
 				}
 			} catch (Exception e) {
 				Utils.logToConsole("run() :\t" + e.getClass().getName() + "\t" + e.getMessage());
