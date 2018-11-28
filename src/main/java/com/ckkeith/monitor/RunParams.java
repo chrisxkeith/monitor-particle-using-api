@@ -1,3 +1,4 @@
+// Please credit chris.keith@gmail.com
 package com.ckkeith.monitor;
 
 import java.io.File;
@@ -8,6 +9,7 @@ public class RunParams {
 	int		htmlWriteIntervalInSeconds = 5;
 	int		expectedEventRateInSeconds = 60 * 2;
 	String	devicesToReport = "";
+	int		csvTimeGranularityInSeconds = 60;	// E.g. '60' == round to minutes, '30' == round to minutes and half-minutes.
 	
 	static RunParams load(String filePath) {
 		RunParams rp = new RunParams();
@@ -31,6 +33,8 @@ public class RunParams {
 							rp.expectedEventRateInSeconds = Integer.valueOf(val);
 						} else if (key.equalsIgnoreCase("devicesToReport")) {
 							rp.devicesToReport = val;
+						} else if (key.equalsIgnoreCase("csvTimeGranularityInSeconds")) {
+							rp.csvTimeGranularityInSeconds = Integer.valueOf(val);
 						}
 					}
 				}				
