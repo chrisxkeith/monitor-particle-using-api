@@ -38,11 +38,15 @@ public class PivotDataApp {
 	
 	class ReverseReader {
 		ReversedLinesFileReader fr;
+		String					filePath;
 		LocalDateTime			startTime;
+		String					previousLine;
 
 		@SuppressWarnings("deprecation")
 		ReverseReader(String filePath, LocalDateTime startTime) throws Exception {
+			this.filePath = filePath;
 			this.startTime = startTime;
+			this.previousLine = "no previous line";
 			fr = new ReversedLinesFileReader(new File(filePath));
 		}
 
@@ -51,6 +55,7 @@ public class PivotDataApp {
 				String ch = fr.readLine();
 				if (ch == null) {
 					fr.close();
+					Utils.logToConsole("Reached start of file: " + filePath + ". previous line: " + previousLine);
 					return null;
 				}
 				String[] chunks = ch.split("\t");
@@ -67,8 +72,16 @@ public class PivotDataApp {
 					continue;
 				}
 				if (startTime == null || startTime.isBefore(ldt)) {
+					previousLine = ch;
 					return ch;
 				}
+				String ts = ldt.format(Utils.googleSheetsDateFormat);
+				String lim = "no startTime";
+				if (startTime != null) {
+					lim = startTime.format(Utils.googleSheetsDateFormat);
+				}
+				Utils.logToConsole("Read lines from " + filePath + " back up to " + ts +
+						". startTime: " + lim + ". previous line: " + previousLine);
 				return null;
 			}
 		}
