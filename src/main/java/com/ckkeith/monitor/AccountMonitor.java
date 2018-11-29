@@ -84,17 +84,18 @@ public class AccountMonitor extends Thread {
 	public void run() {
 		Utils.logToConsole(Utils.padWithSpaces(this.accountName, 20) + "\tPhotonMonitor thread starting.");
 		startDeviceMonitors();
+		PivotDataApp	pivotDataApp = new PivotDataApp();
 		while (true) {
 			try {
-				int previousEventCount = eventCount;
-				LocalDateTime then = LocalDateTime.now().plusSeconds(runParams.expectedEventRateInSeconds);
-				Utils.sleepUntil("AccountMonitor sleeping until event count check.", then);
-				if (previousEventCount == eventCount) {
-					Utils.log("no new events, previousEventCount: " + previousEventCount, logFileName);
+				LocalDateTime then = LocalDateTime.now().plusHours(1);
+				if (Utils.isDebug) {
+					then = LocalDateTime.now().plusSeconds(15);
 				}
+				Utils.sleepUntil("AccountMonitor sleeping until next cvs file generation.", then);
+				pivotDataApp.run(Utils.getLogFileDir(accountName), runParams);
 			} catch (Exception e) {
 				Utils.logToConsole("run() :\t" + e.getClass().getName() + "\t" + e.getMessage());
-				e.printStackTrace(new PrintStream(System.out));
+				e.printStackTrace();
 				// ... and keep thread going ...
 			}
 		}

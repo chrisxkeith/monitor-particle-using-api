@@ -114,7 +114,7 @@ public class Utils {
 		}
 	}
 
-	public static String getLogFileName(String accountName, String fn) throws Exception {
+	public static String getLogFileDir(String accountName) throws Exception {
 		String d = Utils.getHomeDir();
 		String acctId = getSafeName(accountName);
 		String machineName = getSafeName(getHostName());
@@ -123,8 +123,11 @@ public class Utils {
 		mkdir(path);	// looks like mkdir will only create a directory at one level.
 		path += File.separator + acctId;
 		mkdir(path);
-		// Append to existing log file to get better long term data.
-		return path + File.separator + fn;
+		return path;
+	}
+
+	public static String getLogFileName(String accountName, String fn) throws Exception {
+		return getLogFileDir(accountName) + File.separator + fn;
 	}
 
 	public static void sleepUntil(String msg, LocalDateTime then) throws Exception {

@@ -211,11 +211,7 @@ public class PivotDataApp {
 	}
 
 	LocalDateTime getTimeLimit() {
-		int dataIntervalInMinutes = 10;
-		if (params.dataIntervalInMinutes > 0) {
-			dataIntervalInMinutes = params.dataIntervalInMinutes;
-		}
-		return LocalDateTime.now().minusMinutes(dataIntervalInMinutes);
+		return LocalDateTime.now().minusDays(14); // two weeks.
 	}
 
 	private void readSensorNames(String fn, ConcurrentSkipListMap<String, String> firstSensorValues,
