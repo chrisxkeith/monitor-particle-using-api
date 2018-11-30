@@ -92,7 +92,7 @@ public class AccountMonitor extends Thread {
 					then = LocalDateTime.now().plusSeconds(15);
 				}
 				Utils.sleepUntil("AccountMonitor sleeping until next cvs file generation.", then);
-				pivotDataApp.run(Utils.getLogFileDir(accountName), runParams);
+//				pivotDataApp.run(Utils.getLogFileDir(accountName), runParams);
 			} catch (Exception e) {
 				Utils.logToConsole("run() :\t" + e.getClass().getName() + "\t" + e.getMessage());
 				e.printStackTrace();
