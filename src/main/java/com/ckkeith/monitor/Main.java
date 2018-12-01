@@ -13,7 +13,7 @@ public class Main {
 	private static void displayEnv() {
 		ArrayList<String> envVars = new ArrayList<String>();
 		for (String key : System.getenv().keySet()) {
-			envVars.add(key + "=" + System.getProperty(key));
+			envVars.add(key + "=" + System.getenv(key));
 		}
 		Collections.sort(envVars);
 		for (String e : envVars) {
