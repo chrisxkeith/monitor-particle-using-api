@@ -5,12 +5,25 @@ import java.io.File;
 import java.io.PrintStream;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collections;
 
 public class Main {
 	private static ArrayList<AccountMonitor> monitors = new ArrayList<AccountMonitor>();
 
+	private static void displayEnv() {
+		ArrayList<String> envVars = new ArrayList<String>();
+		for (String key : System.getenv().keySet()) {
+			envVars.add(key + "=" + System.getProperty(key));
+		}
+		Collections.sort(envVars);
+		for (String e : envVars) {
+			Utils.logToConsole(e);
+		}
+	}
+
 	public static void main(String[] args) {
 		try {
+			displayEnv();
 			String filePath = Utils.getHomeDir() + File.separator + "Documents" + File.separator + "particle-tokens.txt";
 			ArrayList<String> accountTokens = Utils.readParameterFile(filePath);
 			for (String c : accountTokens) {
