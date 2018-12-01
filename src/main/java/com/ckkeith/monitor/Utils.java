@@ -15,6 +15,7 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -246,5 +247,25 @@ public class Utils {
 			sb.append("</tr>");
 		}
 		sb.append("</table>");
+	}
+
+	public static void displayEnv() {
+		ArrayList<String> envVars = new ArrayList<String>();
+		for (String key : System.getenv().keySet()) {
+			envVars.add(key + "=" + System.getenv(key));
+		}
+		Collections.sort(envVars);
+		for (String e : envVars) {
+			Utils.logToConsole(e);
+		}
+	}
+
+	public static boolean runFromTerminal() {
+		for (String key : System.getenv().keySet()) {
+			if ("TERM".equals(key)) {
+				return true;
+			}
+		}
+		return false;
 	}
 }
