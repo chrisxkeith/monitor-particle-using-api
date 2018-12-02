@@ -211,11 +211,16 @@ public class HtmlFileDataWriter extends Thread {
 				thisFile.delete();
 			} catch (Exception ex) {
 				Utils.logToConsole(
-						"thisFile.delete() : " + ex.getMessage() + " " + ex.getClass().getName() + ", continuing");
+						"thisFile.delete() failed : " + ex.getMessage() + " " + ex.getClass().getName() + ", continuing");
 			}
-			Files.move(tempFile.toPath(), thisFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
-			Utils.logToConsole(
-					"Wrote " + thisFileName + " : # data points : " + new Integer(nDataPoints).toString());
+			try {
+				Files.move(tempFile.toPath(), thisFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+				Utils.logToConsole(
+						"Wrote " + thisFileName + " : # data points : " + new Integer(nDataPoints).toString());
+			} catch (Exception ex) {
+				Utils.logToConsole(
+						"Files.move() failed : " + ex.getMessage() + " " + ex.getClass().getName() + ", continuing");
+			}
 //Only use this when NOT running from Task Scheduler
 //			startChrome(thisFileName);
 		} catch (Exception e) {

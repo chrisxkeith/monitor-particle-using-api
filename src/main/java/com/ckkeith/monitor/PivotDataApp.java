@@ -20,7 +20,7 @@ import java.util.function.Consumer;
 import java.util.function.Predicate;
 import org.apache.commons.io.input.ReversedLinesFileReader;
 
-public class PivotDataApp {
+public class PivotDataApp extends Thread {
 	final static String expectedInputData =
 			"logTimestamp<tab>GSheetsTimestamp<tab>sensorName<tab>sensorValue<tab>photonName";
 	/*
@@ -397,8 +397,18 @@ public class PivotDataApp {
 		return summaries;
 	}
 
-	ArrayList<String> run(String directory, RunParams params) {
-		return processDirectory();
+	public void run() {
+		while (true) {
+			try {
+				for (String s : processDirectory()) {
+					Utils.logToConsole(s);
+				}
+				Thread.sleep(60 * 60 * 1000); // one hour
+			} catch (InterruptedException e) {
+				Utils.logToConsole("Failure in PivotDataApp.run()");
+				e.printStackTrace();
+			}
+		}
 	}
 
 	public PivotDataApp(String directory, RunParams params) {
