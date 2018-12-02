@@ -12,7 +12,6 @@ import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.concurrent.ConcurrentSkipListMap;
@@ -356,7 +355,7 @@ public class PivotDataApp extends Thread {
 				+ "\t" + timeLimits + "\t" + totalCsvLinesOutput;
 	}
 
-	private void processPath(Path p, ArrayList<String> summaries) {
+	private void processPath(Path p) {
 		try {
 			ConcurrentSkipListMap<String, ConcurrentSkipListMap<String, String>> outputRows =
 					new ConcurrentSkipListMap<String, ConcurrentSkipListMap<String, String>>();
@@ -367,7 +366,6 @@ public class PivotDataApp extends Thread {
 					outputRows);
 			if (summary != null) {
 				System.out.println(summary);
-				summaries.add(summary);
 			}
 		} catch (Exception e) {
 			System.out.println("processPath() : " + e.toString());
@@ -379,30 +377,26 @@ public class PivotDataApp extends Thread {
 		return p.toString().endsWith("_particle_log.txt");
 	}
 
-	ArrayList<String> processDirectory() {
-		ArrayList<String> summaries = new ArrayList<String>();
-		String titles = Utils.padWithSpaces("photon", 100) + "\t" + Utils.padWithSpaces("first", 23) + "\t"
-				+ Utils.padWithSpaces("last", 23) + "\tdatapoints";
-		System.out.println(titles);
-		summaries.add(titles);
-		try {
-			Predicate<Path> isParticleFile = i -> (checkPath(i));
-			Consumer<Path> processPath = i -> processPath(i, summaries);
-			Files.walk(Paths.get(directory)).filter(isParticleFile).forEach(processPath);
-		} catch (Exception e) {
-			System.out.println("processDirectory() : " + e.toString());
-			e.printStackTrace();
-			summaries.add(e.toString());
+	void processDirectory() {
+		synchronized(this) {
+			String titles = Utils.padWithSpaces("photon", 100) + "\t" + Utils.padWithSpaces("first", 23) + "\t"
+					+ Utils.padWithSpaces("last", 23) + "\tdatapoints";
+			System.out.println(titles);
+			try {
+				Predicate<Path> isParticleFile = i -> (checkPath(i));
+				Consumer<Path> processPath = i -> processPath(i);
+				Files.walk(Paths.get(directory)).filter(isParticleFile).forEach(processPath);
+			} catch (Exception e) {
+				System.out.println("processDirectory() : " + e.toString());
+				e.printStackTrace();
+			}
 		}
-		return summaries;
 	}
 
 	public void run() {
 		while (true) {
 			try {
-				for (String s : processDirectory()) {
-					Utils.logToConsole(s);
-				}
+				processDirectory();
 				Thread.sleep(60 * 60 * 1000); // one hour
 			} catch (InterruptedException e) {
 				Utils.logToConsole("Failure in PivotDataApp.run()");
@@ -416,8 +410,44 @@ public class PivotDataApp extends Thread {
 		this.params = params;
 	}
 
-	public void fillInData(ConcurrentSkipListMap<LocalDateTime, ConcurrentSkipListMap<String, String>> sensorData,
-			ConcurrentSkipListMap<String, String> sensorNames) {
-		// TODO : load sensorData and sensorName with sensor data ten minutes back from now.
+	private void loadHtml(Path p, HtmlFileDataWriter htmlFileDataWriter, LocalDateTime timeLimit) {
+		ReverseReader br = null;
+		try {
+			String fn = p.toFile().getCanonicalPath();
+			br = new ReverseReader(fn, timeLimit);
+			String s;
+			int dataPoints = 0;
+			while ((s = br.readLine()) != null) {
+				String err = checkInputData(s);
+				if (err == null) {
+					String[] vals = getVals(s);
+					ZonedDateTime zdt = ZonedDateTime.parse(vals[0], logDateFormat);
+					ZoneId caZone = ZoneId.of("America/Los_Angeles");
+					ZonedDateTime caZoned = zdt.withZoneSameInstant(caZone);
+					SensorDataPoint sensorDataPoint = new SensorDataPoint(caZoned.toLocalDateTime(), vals[4],
+							vals[2].replace(vals[4] + " ", ""), vals[3]);
+					htmlFileDataWriter.addData(sensorDataPoint);
+					dataPoints++;
+				}
+			}
+			Utils.logToConsole("loadHtml: back filled " + dataPoints + " data points for " + fn);
+		} catch (Exception e) {
+			Utils.logToConsole("loadHtml() : " + e.getMessage());
+			e.printStackTrace();
+		}
+	}
+
+	public void fillInData(HtmlFileDataWriter htmlFileDataWriter) {
+		synchronized (this) {
+			try {
+				LocalDateTime timeLimit = LocalDateTime.now().minusMinutes(this.params.dataIntervalInMinutes);
+				Predicate<Path> isParticleFile = i -> (checkPath(i));
+				Consumer<Path> processPath = i -> loadHtml(i, htmlFileDataWriter, timeLimit);
+				Files.walk(Paths.get(directory)).filter(isParticleFile).forEach(processPath);
+			} catch (Exception e) {
+				System.out.println("fillInData() : " + e.toString());
+				e.printStackTrace();
+			}
+		}
 	}
 }

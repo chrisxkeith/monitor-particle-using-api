@@ -24,7 +24,7 @@ public class HtmlFileDataWriter extends Thread {
 	public HtmlFileDataWriter(AccountMonitor accountMonitor, PivotDataApp pivotDataApp) {
 		this.accountMonitor = accountMonitor;
 		if (pivotDataApp != null) {
-			pivotDataApp.fillInData(sensorData, sensorNames);
+			pivotDataApp.fillInData(this);
 		}
 	}
 	
