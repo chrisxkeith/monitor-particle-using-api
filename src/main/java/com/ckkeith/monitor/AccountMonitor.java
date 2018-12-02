@@ -43,7 +43,7 @@ public class AccountMonitor extends Thread {
 				+ "runparams.txt";
 	}
 
-	void startDeviceMonitors() {
+	void startDeviceMonitors(PivotDataApp pivotDataApp) {
 		ParticleCloud c = new ParticleCloud("Bearer " + accessToken, true, false);
 		ArrayList<DeviceMonitor> newDevices = new ArrayList<DeviceMonitor>();
 		for (ParticleDevice device : c.getDevices()) {
@@ -76,15 +76,21 @@ public class AccountMonitor extends Thread {
 			dm.start();
 		}
 		if (htmlFileDataWriter == null) {
-			htmlFileDataWriter = new HtmlFileDataWriter(this);
+			htmlFileDataWriter = new HtmlFileDataWriter(this, pivotDataApp);
 			htmlFileDataWriter.start();
 		}
 	}
 
 	public void run() {
 		Utils.logToConsole(Utils.padWithSpaces(this.accountName, 20) + "\tPhotonMonitor thread starting.");
-		startDeviceMonitors();
-		PivotDataApp	pivotDataApp = new PivotDataApp();
+		PivotDataApp	pivotDataApp = null;
+		try {
+			pivotDataApp = new PivotDataApp(Utils.getLogFileDir(accountName), runParams);
+		} catch (Exception e1) {
+			Utils.logToConsole("Unable to construct a PivotDataApp");
+			e1.printStackTrace();
+		}
+		startDeviceMonitors(pivotDataApp);
 		while (true) {
 			try {
 				LocalDateTime then = LocalDateTime.now().plusHours(1);
@@ -92,7 +98,9 @@ public class AccountMonitor extends Thread {
 					then = LocalDateTime.now().plusSeconds(15);
 				}
 				Utils.sleepUntil("AccountMonitor sleeping until next cvs file generation.", then);
-//				pivotDataApp.run(Utils.getLogFileDir(accountName), runParams);
+				if (pivotDataApp != null) {
+//					pivotDataApp.run();
+				}
 			} catch (Exception e) {
 				Utils.logToConsole("run() :\t" + e.getClass().getName() + "\t" + e.getMessage());
 				e.printStackTrace();

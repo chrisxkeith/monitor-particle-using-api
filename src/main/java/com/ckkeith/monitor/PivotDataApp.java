@@ -398,8 +398,16 @@ public class PivotDataApp {
 	}
 
 	ArrayList<String> run(String directory, RunParams params) {
+		return processDirectory();
+	}
+
+	public PivotDataApp(String directory, RunParams params) {
 		this.directory = directory;
 		this.params = params;
-		return processDirectory();
+	}
+
+	public void fillInData(ConcurrentSkipListMap<LocalDateTime, ConcurrentSkipListMap<String, String>> sensorData,
+			ConcurrentSkipListMap<String, String> sensorNames) {
+		// TODO : load sensorData and sensorName with sensor data ten minutes back from now.
 	}
 }
