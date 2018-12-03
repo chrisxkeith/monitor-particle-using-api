@@ -30,6 +30,11 @@
 	      <scope>compile</scope>
 	    </dependency>
 	    <dependency>
+	      <groupId>com.google.apis</groupId>
+	      <artifactId>google-api-services-sheets</artifactId>
+	      <version>v4-rev553-1.25.0</version>
+	    </dependency>
+	    <dependency>
 	      <groupId>javax.mail</groupId>
 	      <artifactId>mail</artifactId>
 	      <version>1.4.1</version>

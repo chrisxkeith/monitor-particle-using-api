@@ -16,6 +16,7 @@ import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.client.util.store.FileDataStoreFactory;
 import com.google.api.services.gmail.Gmail;
+import com.google.api.services.sheets.v4.Sheets;
 
 public class GServicesProvider {
 	private static final String APPLICATION_NAME = "Gmail API Java Quickstart";
@@ -23,6 +24,7 @@ public class GServicesProvider {
 	private static final String CREDENTIALS_FOLDER = "credentials"; // Directory to store user credentials.
 	private static NetHttpTransport http_transport;
 	private static Gmail gmailService;
+	private static Sheets sheetsService;
 
 	/**
 	 * Creates an authorized Credential object.
@@ -36,21 +38,36 @@ public class GServicesProvider {
 		GoogleClientSecrets clientSecrets = GoogleClientSecrets.load(JSON_FACTORY, new InputStreamReader(in));
 
 		// Build flow and trigger user authorization request.
-		GoogleAuthorizationCodeFlow flow = new GoogleAuthorizationCodeFlow.Builder(http_transport, JSON_FACTORY,
+		GoogleAuthorizationCodeFlow flow = new GoogleAuthorizationCodeFlow.Builder(
+				http_transport, JSON_FACTORY,
 				clientSecrets, scopes)
-						.setDataStoreFactory(new FileDataStoreFactory(new java.io.File(CREDENTIALS_FOLDER)))
+						.setDataStoreFactory(new FileDataStoreFactory(
+								new java.io.File(CREDENTIALS_FOLDER)))
 						.setAccessType("offline").build();
 		return new AuthorizationCodeInstalledApp(flow, new LocalServerReceiver()).authorize("user");
 	}
 
+	// Gmail API access must be enabled for your account
 	public static Gmail getGmailService(List<String> scopes, final InputStream in) throws Exception {
 		if (gmailService == null) {
 			// Build a new authorized API client service.
 			http_transport = GoogleNetHttpTransport.newTrustedTransport();
-			gmailService = new Gmail.Builder(http_transport, JSON_FACTORY, getCredentials(scopes, in))
+			gmailService = new Gmail.Builder(http_transport, JSON_FACTORY, 
+					getCredentials(scopes, in))
 					.setApplicationName(APPLICATION_NAME).build();
 
 		}
 		return gmailService;
+	}
+	
+	// TODO : Gsheets API access must be enabled for your account
+	public static Sheets getSheetsService(List<String> scopes, final InputStream in) throws Exception {
+		if (sheetsService == null) {
+			http_transport = GoogleNetHttpTransport.newTrustedTransport();
+			sheetsService = new Sheets.Builder(http_transport, JSON_FACTORY,
+					getCredentials(scopes, in))
+					.setApplicationName(APPLICATION_NAME).build();
+		}
+		return sheetsService;
 	}
 }
