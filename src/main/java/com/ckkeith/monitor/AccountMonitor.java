@@ -7,16 +7,15 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Map.Entry;
 
 public class AccountMonitor extends Thread {
 
 	String accessToken = null;
 	String accountName = null;
-	Integer eventCount = 0;
 	private String logFileName;
 	private Map<String, ParticleDeviceEvent> eventSubscribers = new HashMap<String, ParticleDeviceEvent>();
 	private HtmlFileDataWriter htmlFileDataWriter;
+	private GoogleSheetsWriter googleSheetsWriter;
 	RunParams runParams;
 	Map<String, DeviceMonitor> deviceMonitors = new HashMap<String, DeviceMonitor>();
 
@@ -76,8 +75,12 @@ public class AccountMonitor extends Thread {
 			dm.start();
 		}
 		if (htmlFileDataWriter == null) {
-			htmlFileDataWriter = new HtmlFileDataWriter(this, pivotDataApp);
+			htmlFileDataWriter = new HtmlFileDataWriter(this);
 			htmlFileDataWriter.start();
+		}
+		if (googleSheetsWriter == null) {
+			googleSheetsWriter = new GoogleSheetsWriter(this, pivotDataApp);
+//			googleSheetsWriter.start();
 		}
 	}
 
@@ -91,39 +94,8 @@ public class AccountMonitor extends Thread {
 			e1.printStackTrace();
 		}
 		startDeviceMonitors(pivotDataApp);
-		while (true) {
-			try {
-				LocalDateTime then = LocalDateTime.now().plusHours(1);
-				if (Utils.isDebug) {
-					then = LocalDateTime.now().plusSeconds(15);
-				}
-				Utils.sleepUntil("AccountMonitor sleeping until next cvs file generation.", then);
-				if (pivotDataApp != null) {
-//					pivotDataApp.run();
-				}
-			} catch (Exception e) {
-				Utils.logToConsole("run() :\t" + e.getClass().getName() + "\t" + e.getMessage());
-				e.printStackTrace();
-				// ... and keep thread going ...
-			}
-		}
-	}
-
-	public void emailMostRecentEvents() {
-		StringBuilder sb = new StringBuilder("<!DOCTYPE HTML><html><body>");
-		String headers[] = {"Device Name", "PublishedAt", "Event Name", "Event Data"};
-		Integer columns[] = {0, 1, 2, 3}; // event is returned as tabbed string.
-		ArrayList<String> lines = new ArrayList<String>(eventSubscribers.size());
-		for (Entry<String, ParticleDeviceEvent> e : eventSubscribers.entrySet()) {
-			StringBuilder s = new StringBuilder(e.getKey());
-			s.append("\t").append(e.getValue().getMostRecentEventDateTime())
-			 .append("\t").append(e.getValue().getMostRecentEvent());
-			lines.add(s.toString());
-		}
-		Utils.writeTable(sb, headers, columns, lines);
-		sb.append("</body></html>");
-		String subject = accountName + " : Particle device most recent entries from " + Utils.getHostName();
-		GMailer.sendMessageX("chris.keith@gmail.com", "chris.keith@gmail.com", subject, sb.toString());
+// Eventually put while(true) loop here to write longer term data to Google Sheets
+		Utils.logToConsole(Utils.padWithSpaces(this.accountName, 20) + "\tPhotonMonitor thread exiting.");
 	}
 
 	public void addEventSubscriber(String name, ParticleDeviceEvent cb) {
@@ -133,11 +105,13 @@ public class AccountMonitor extends Thread {
 	}
 
 	public void addDataPoint(LocalDateTime ldt, String deviceName, String event, String data) {
-		if ((htmlFileDataWriter != null) && event.contains("ensor")) {
-			this.htmlFileDataWriter.addData(new SensorDataPoint(ldt, deviceName, event, data));
-		}
-		synchronized(eventCount) {
-			eventCount++;
+		if (event.contains("ensor") || event.contains("ontroller")) {
+			if ((htmlFileDataWriter != null)) {
+				this.htmlFileDataWriter.addData(new SensorDataPoint(ldt, deviceName, event, data));
+			}
+			if ((googleSheetsWriter != null)) {
+				this.googleSheetsWriter.addData(new SensorDataPoint(ldt, deviceName, event, data));
+			}
 		}
 	}
 }

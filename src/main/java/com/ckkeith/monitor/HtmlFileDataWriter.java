@@ -21,11 +21,8 @@ public class HtmlFileDataWriter extends Thread {
 	private ConcurrentSkipListMap<LocalDateTime, ConcurrentSkipListMap<String, String>> sensorData = new ConcurrentSkipListMap<LocalDateTime, ConcurrentSkipListMap<String, String>>();
 	private ConcurrentSkipListMap<String, String> sensorNames = new ConcurrentSkipListMap<String, String>();
 
-	public HtmlFileDataWriter(AccountMonitor accountMonitor, PivotDataApp pivotDataApp) {
+	public HtmlFileDataWriter(AccountMonitor accountMonitor) {
 		this.accountMonitor = accountMonitor;
-		if (pivotDataApp != null) {
-			pivotDataApp.fillInData(this);
-		}
 	}
 	
 	public void addData(SensorDataPoint sensorDataPoint) {

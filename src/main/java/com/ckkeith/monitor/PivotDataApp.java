@@ -410,7 +410,7 @@ public class PivotDataApp extends Thread {
 		this.params = params;
 	}
 
-	private void loadHtml(Path p, HtmlFileDataWriter htmlFileDataWriter, LocalDateTime timeLimit) {
+	private void backFillData(Path p, GoogleSheetsWriter googleSheetsWriter, LocalDateTime timeLimit) {
 		ReverseReader br = null;
 		try {
 			String fn = p.toFile().getCanonicalPath();
@@ -426,7 +426,7 @@ public class PivotDataApp extends Thread {
 					ZonedDateTime caZoned = zdt.withZoneSameInstant(caZone);
 					SensorDataPoint sensorDataPoint = new SensorDataPoint(caZoned.toLocalDateTime(), vals[4],
 							vals[2].replace(vals[4] + " ", ""), vals[3]);
-					htmlFileDataWriter.addData(sensorDataPoint);
+					googleSheetsWriter.addData(sensorDataPoint);
 					dataPoints++;
 				}
 			}
@@ -437,12 +437,12 @@ public class PivotDataApp extends Thread {
 		}
 	}
 
-	public void fillInData(HtmlFileDataWriter htmlFileDataWriter) {
+	public void fillInData(GoogleSheetsWriter googleSheetsWriter) {
 		synchronized (this) {
 			try {
 				LocalDateTime timeLimit = LocalDateTime.now().minusMinutes(this.params.dataIntervalInMinutes);
 				Predicate<Path> isParticleFile = i -> (checkPath(i));
-				Consumer<Path> processPath = i -> loadHtml(i, htmlFileDataWriter, timeLimit);
+				Consumer<Path> processPath = i -> backFillData(i, googleSheetsWriter, timeLimit);
 				Files.walk(Paths.get(directory)).filter(isParticleFile).forEach(processPath);
 			} catch (Exception e) {
 				System.out.println("fillInData() : " + e.toString());
