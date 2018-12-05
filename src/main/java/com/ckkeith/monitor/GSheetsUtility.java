@@ -38,7 +38,7 @@ public class GSheetsUtility {
      * If modifying these scopes, delete your previously saved tokens/ folder.
      */
 	private static final List<String> SCOPES = Arrays.asList(SheetsScopes.DRIVE, SheetsScopes.SPREADSHEETS);
-    private static final String CREDENTIALS_FILE_PATH = "/credentials.json";
+    private static final String CREDENTIALS_FILE_PATH = "credentials.json";
 
     private static Sheets sheetsService;
     

@@ -29,3 +29,4 @@ target/
 .settings/
 credentials/
 src/main/resources/com/*
+tokens/
