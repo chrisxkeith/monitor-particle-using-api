@@ -61,7 +61,7 @@ public class GoogleSheetsWriter extends Thread {
 			try {
 				List<List<Object>> listOfRows = new ArrayList<List<Object>>();
 				List<Object> sensorNameRow = new ArrayList<Object>();
-				sensorNameRow.add(""); // timestamp column
+				sensorNameRow.add(""); // time stamp column
 				Iterator<String> sensorIt = sensorNames.keySet().iterator();
 				while (sensorIt.hasNext()) {
 					String sensorName = sensorIt.next();
@@ -83,10 +83,13 @@ public class GoogleSheetsWriter extends Thread {
 							sensorDataRow.add(entries.get(sensorName));
 						}
 					}
-					listOfRows.add(sensorDataRow);
+					if (sensorDataRow.size() > 1) { // must be more than just the time stamp
+						listOfRows.add(sensorDataRow);
+					}
 				}
-// TODO : clear all cells first.
-				GSheetsUtility.appendData(sheetId, "A1", listOfRows);
+				GSheetsUtility.updateData(sheetId, "A1", listOfRows);
+				Utils.logToConsole("Updated Google Sheet for : " + deviceName + " : rows : " + listOfRows.size()
+						+ ", columns : " + listOfRows.get(0).size());
 			} catch (Exception e) {
 				Utils.logToConsole("FAILED to update Google Sheet for : " + deviceName + " : " + e.getMessage());
 				e.printStackTrace();
@@ -96,14 +99,16 @@ public class GoogleSheetsWriter extends Thread {
 	}
 
 	void updateGoogleSheets() {
-		deleteOldData();
-		for (String deviceName : accountMonitor.deviceMonitors.keySet()) {
-			try {
-				updateSheet(deviceName);
-			} catch (Exception e) {
-				Utils.logToConsole("FAILED to update Google Sheet for : " + deviceName + " : " + e.getMessage());
-				e.printStackTrace();
-				// If there's any failure, continue and update the next sheet.
+		synchronized(this) {
+			deleteOldData();
+			for (String deviceName : accountMonitor.deviceMonitors.keySet()) {
+				try {
+					updateSheet(deviceName);
+				} catch (Exception e) {
+					Utils.logToConsole("FAILED to update Google Sheet for : " + deviceName + " : " + e.getMessage());
+					e.printStackTrace();
+					// If there's any failure, continue and update the next sheet.
+				}
 			}
 		}
 	}

@@ -109,6 +109,12 @@ public class GSheetsUtility {
 				.execute();
 	}
 
+	public static void updateData(String spreadSheetId, String targetCell, List<List<Object>> values) throws Exception {
+		ValueRange updateBody = new ValueRange().setValues(values);
+		getSheetsService().spreadsheets().values()
+				.update(spreadSheetId, targetCell, updateBody).setValueInputOption("USER_ENTERED").execute();
+	}
+
 	public static void deleteRow(String spreadSheetId, int startRowIndex, int endRowIndex) throws Exception {
 		BatchUpdateSpreadsheetRequest content = new BatchUpdateSpreadsheetRequest();
 		Request request = new Request();
