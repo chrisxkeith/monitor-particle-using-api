@@ -2,6 +2,7 @@ package com.ckkeith.monitor;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -69,21 +70,32 @@ public class GoogleSheetsWriter extends Thread {
 	}
 
 	private void updateSheet(String deviceName) throws Exception {
-		List<List<Object>> values = new ArrayList<List<Object>>();
-		Iterator<String> sensorIt = sensorNames.keySet().iterator();
-		while (sensorIt.hasNext()) {
-			String sensorName = sensorIt.next();
-			List<Object> thisSensorData = new ArrayList<Object>();
-			if ((sensorName.startsWith(deviceName))) {
-				if (thisSensorData.size() == 0) {
-					thisSensorData.add(sensorName);
-				}
-				addDataForSensor(thisSensorData);
-			}
-			values.add(thisSensorData);
-		}
 		String sheetId = deviceNameToSheetId.get(deviceName);
 		if (sheetId != null && !sheetId.isEmpty()) {
+			Map<String, List<Object>> listOfSensors = new HashMap<String, List<Object>>();
+			Iterator<String> sensorIt = sensorNames.keySet().iterator();
+			while (sensorIt.hasNext()) {
+				String sensorName = sensorIt.next();
+				if ((sensorName.startsWith(deviceName))) {
+					List<Object> thisSensorData = new ArrayList<Object>();
+					thisSensorData.add(sensorName);
+					listOfSensors.put(sensorName, thisSensorData);
+				}
+			}
+			Iterator<LocalDateTime> itr = sensorData.keySet().iterator();
+			while (itr.hasNext()) {
+				LocalDateTime timestamp = itr.next();
+				ConcurrentSkipListMap<String, String> entries = sensorData.get(timestamp);
+				for (Object sensorName2 : Arrays.asList(entries.keySet().iterator())) {
+					if ((((String)sensorName2).startsWith(deviceName))) {
+						addDataForSensor(listOfSensors.get(sensorName2));
+					}
+				}
+			}
+			List<List<Object>> values = new ArrayList<List<Object>>();
+			for (List<Object> listOfSensorData : listOfSensors.values()) {
+				values.add(listOfSensorData);
+			}
 			GSheetsUtility.appendData(sheetId, "A1", values);
 		}
 	}
