@@ -22,11 +22,9 @@ public class GoogleSheetsWriter extends Thread {
 		if (pivotDataApp != null) {
 //			pivotDataApp.fillInData(this);
 		}
-// TODO : parameterize sheet id.
+// Parameterize sheet ids if necessary.
 		deviceNameToSheetId.put("US Foods", "1qCHfRDno-Lp-fzIc_xUbq7kjU0lkxLrjGb9dVqtWAuE");
 		deviceNameToSheetId.put("verdical_system_2", "1n4bcbzooUjyah2Hc506FNdy4RwHSAETjBLNo48AFwEI");
-//		deviceNameToSheetId.put("trochee_scraper", "12JP_5OPXauD_RiYQChZ0W9dfFP7CHZs6HYhEbsxIyzw");
-//		deviceNameToSheetId.put("bobcat_pizza", "1c3xX70MlulYnxcphZnfmbEBtOokTHTBK1Dxi1KfOZE4");
 		deviceNameToSheetId.put("CatDev", "1d9oT0tGskhF87KSjRYYBj3svNFl3dzC3hrCrPqn5P1c");		
 	}
 

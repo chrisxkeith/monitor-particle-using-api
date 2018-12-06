@@ -80,7 +80,7 @@ public class AccountMonitor extends Thread {
 		}
 		if (googleSheetsWriter == null && runParams.sheetsWriteIntervalInSeconds > 0) {
 			googleSheetsWriter = new GoogleSheetsWriter(this, pivotDataApp);
-//			googleSheetsWriter.start();
+			googleSheetsWriter.start();
 		}
 	}
 
