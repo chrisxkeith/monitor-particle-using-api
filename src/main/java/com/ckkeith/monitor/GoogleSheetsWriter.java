@@ -86,9 +86,10 @@ public class GoogleSheetsWriter extends Thread {
 			while (itr.hasNext()) {
 				LocalDateTime timestamp = itr.next();
 				ConcurrentSkipListMap<String, String> entries = sensorData.get(timestamp);
-				for (Object sensorName2 : Arrays.asList(entries.keySet().iterator())) {
-					if ((((String)sensorName2).startsWith(deviceName))) {
-						addDataForSensor(listOfSensors.get(sensorName2));
+				String sensorNameArray[] = entries.keySet().toArray(new String[sensorNames.size()]);
+				for (String sensorName : sensorNameArray) {
+					if (sensorName.startsWith(deviceName)) {
+						addDataForSensor(listOfSensors.get(sensorName));
 					}
 				}
 			}
