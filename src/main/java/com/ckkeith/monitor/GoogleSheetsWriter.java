@@ -20,13 +20,13 @@ public class GoogleSheetsWriter extends Thread {
 	public GoogleSheetsWriter(AccountMonitor accountMonitor, PivotDataApp pivotDataApp) {
 		this.accountMonitor = accountMonitor;
 		if (pivotDataApp != null) {
-			pivotDataApp.fillInData(this);
+//			pivotDataApp.fillInData(this);
 		}
 // TODO : parameterize sheet id.
 		deviceNameToSheetId.put("US Foods", "1qCHfRDno-Lp-fzIc_xUbq7kjU0lkxLrjGb9dVqtWAuE");
 		deviceNameToSheetId.put("verdical_system_2", "1n4bcbzooUjyah2Hc506FNdy4RwHSAETjBLNo48AFwEI");
-		deviceNameToSheetId.put("trochee_scraper", "12JP_5OPXauD_RiYQChZ0W9dfFP7CHZs6HYhEbsxIyzw");
-		deviceNameToSheetId.put("bobcat_pizza", "1c3xX70MlulYnxcphZnfmbEBtOokTHTBK1Dxi1KfOZE4");
+//		deviceNameToSheetId.put("trochee_scraper", "12JP_5OPXauD_RiYQChZ0W9dfFP7CHZs6HYhEbsxIyzw");
+//		deviceNameToSheetId.put("bobcat_pizza", "1c3xX70MlulYnxcphZnfmbEBtOokTHTBK1Dxi1KfOZE4");
 		deviceNameToSheetId.put("CatDev", "1d9oT0tGskhF87KSjRYYBj3svNFl3dzC3hrCrPqn5P1c");		
 	}
 
@@ -34,12 +34,17 @@ public class GoogleSheetsWriter extends Thread {
 		synchronized (this) {
 			String fullSensorName = sensorDataPoint.deviceName + " " + sensorDataPoint.sensorName;
 			sensorNames.put(fullSensorName, sensorDataPoint.sensorName);
-			ConcurrentSkipListMap<String, String> sensorValues = sensorData.get(sensorDataPoint.timestamp);
+
+			// Don't need time granularity finer than reporting granularity.
+			int seconds = sensorDataPoint.timestamp.getSecond();
+			LocalDateTime truncatedTime = sensorDataPoint.timestamp
+					.minusSeconds(seconds % accountMonitor.runParams.sheetsWriteIntervalInSeconds).withNano(0);
+			ConcurrentSkipListMap<String, String> sensorValues = sensorData.get(truncatedTime);
 			if (sensorValues == null) {
 				sensorValues = new ConcurrentSkipListMap<String, String>();
 			}
 			sensorValues.put(fullSensorName, sensorDataPoint.sensorData);
-			sensorData.put(sensorDataPoint.timestamp, sensorValues);
+			sensorData.put(truncatedTime, sensorValues);
 		}
 	}
 

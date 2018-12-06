@@ -24,7 +24,8 @@ public class Main {
 			if (Utils.runFromTerminal()) {
 				Utils.logToConsole("Running from terminal, will not automaticallyl shut down.");
 			} else {
-				// Shutdown a few minutes before the top of the hour. Will be restarted by Task Scheduler.
+				// Shutdown a few minutes before the hour interval after system restarted.
+				// A new instance of this Will be restarted by Task Scheduler.
 				LocalDateTime bootTime = Utils.getBootTime();
 				int bootMinute;
 				if (bootTime == null) {

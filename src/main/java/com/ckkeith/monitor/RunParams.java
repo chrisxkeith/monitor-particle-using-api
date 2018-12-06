@@ -52,6 +52,7 @@ public class RunParams {
 		return "RunParams : "
 				+ "dataIntervalInMinutes = " + dataIntervalInMinutes
 				+ ", htmlWriteIntervalInSeconds = " + htmlWriteIntervalInSeconds
+				+ ", sheetsWriteIntervalInSeconds = " + sheetsWriteIntervalInSeconds
 				+ ", expectedEventRateInSeconds = " + expectedEventRateInSeconds
 				+ ", devicesToReport = " + devicesToReport
 				;
