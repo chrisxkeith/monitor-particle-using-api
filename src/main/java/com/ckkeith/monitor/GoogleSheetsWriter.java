@@ -55,44 +55,38 @@ public class GoogleSheetsWriter extends Thread {
 		}
 	}
 
-	private void addDataForSensor(List<Object> thisSensorData, ConcurrentSkipListMap<String, String> entries) throws Exception {
-		String val = entries.get(thisSensorData.get(0));
-		if (val != null && !val.isEmpty()) {
-			thisSensorData.add(val);
-		}
-	}
-
 	private void updateSheet(String deviceName) throws Exception {
 		String sheetId = deviceNameToSheetId.get(deviceName);
 		if (sheetId != null && !sheetId.isEmpty()) {
 			try {
-				Map<String, List<Object>> listOfSensors = new HashMap<String, List<Object>>();
+				List<List<Object>> listOfRows = new ArrayList<List<Object>>();
+				List<Object> sensorNameRow = new ArrayList<Object>();
+				sensorNameRow.add(""); // timestamp column
 				Iterator<String> sensorIt = sensorNames.keySet().iterator();
 				while (sensorIt.hasNext()) {
 					String sensorName = sensorIt.next();
 					if ((sensorName.startsWith(deviceName))) {
-						List<Object> thisSensorData = new ArrayList<Object>();
-						thisSensorData.add(sensorName);
-						listOfSensors.put(sensorName, thisSensorData);
+						sensorNameRow.add(sensorName);
 					}
 				}
+				listOfRows.add(sensorNameRow);
 				Iterator<LocalDateTime> itr = sensorData.keySet().iterator();
 				while (itr.hasNext()) {
 					LocalDateTime timestamp = itr.next();
+					List<Object> sensorDataRow = new ArrayList<Object>();
+					sensorDataRow.add(Utils.googleSheetsDateFormat.format(timestamp));
 					ConcurrentSkipListMap<String, String> entries = sensorData.get(timestamp);
-					sensorIt = sensorNames.keySet().iterator();
+					sensorIt = entries.keySet().iterator();
 					while (sensorIt.hasNext()) {
 						String sensorName = sensorIt.next();
-						if (sensorName != null && sensorName.startsWith(deviceName)) {
-							addDataForSensor(listOfSensors.get(sensorName), entries);
+						if ((sensorName.startsWith(deviceName))) {
+							sensorDataRow.add(entries.get(sensorName));
 						}
 					}
+					listOfRows.add(sensorDataRow);
 				}
-				List<List<Object>> values = new ArrayList<List<Object>>();
-				for (List<Object> listOfSensorData : listOfSensors.values()) {
-					values.add(listOfSensorData);
-				}
-				GSheetsUtility.appendData(sheetId, "A1", values);
+// TODO : clear all cells first.
+				GSheetsUtility.appendData(sheetId, "A1", listOfRows);
 			} catch (Exception e) {
 				Utils.logToConsole("FAILED to update Google Sheet for : " + deviceName + " : " + e.getMessage());
 				e.printStackTrace();
