@@ -23,10 +23,13 @@ public class GoogleSheetsWriter extends Thread {
 //			pivotDataApp.fillInData(this);
 		}
 // Parameterize sheet ids if necessary.
-		deviceNameToSheetId.put("US Foods", "1qCHfRDno-Lp-fzIc_xUbq7kjU0lkxLrjGb9dVqtWAuE");
-		deviceNameToSheetId.put("verdical_system_2", "1n4bcbzooUjyah2Hc506FNdy4RwHSAETjBLNo48AFwEI");
-		deviceNameToSheetId.put("CatDev", "1d9oT0tGskhF87KSjRYYBj3svNFl3dzC3hrCrPqn5P1c");		
-	}
+//		deviceNameToSheetId.put("US Foods", "1qCHfRDno-Lp-fzIc_xUbq7kjU0lkxLrjGb9dVqtWAuE");
+//		deviceNameToSheetId.put("CatDev", "1d9oT0tGskhF87KSjRYYBj3svNFl3dzC3hrCrPqn5P1c");
+
+// CK's for debugging.
+//		deviceNameToSheetId.put("US Foods", "1S718sd91U71XFLBK-MFCLYfAGyys4SmlTj3JcakpOUQ");
+//		deviceNameToSheetId.put("CatDev", "1gHh7R50EIRTZB5hdgZ08Q_HRhjNJH5IFwKulql5QySg");
+}
 
 	public void addData(SensorDataPoint sensorDataPoint) {
 		synchronized (this) {

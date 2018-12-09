@@ -21,7 +21,7 @@ public class Main {
 					monitors.add(m);
 				}
 			}
-			if (Utils.runFromTerminal()) {
+			if (Utils.runFromTerminal() || Utils.isDebug) {
 				Utils.logToConsole("Running from terminal, will not automaticallyl shut down.");
 			} else {
 				// Shutdown a few minutes before the hour interval after system restarted.
