@@ -109,7 +109,13 @@ public class GoogleSheetsWriter extends Thread {
 			deleteOldData();
 			for (String deviceName : accountMonitor.deviceMonitors.keySet()) {
 				try {
-					updateSheet(deviceName);
+					String spreadSheetId = deviceNameToSheetId.get(deviceName);
+					if (spreadSheetId != null) {
+						// TODO : If there is any way to get 'existing data range',
+						// use it here instead of hardcoding the range.
+						GSheetsUtility.clear(spreadSheetId, "Sheet1!A1:I400");
+						updateSheet(deviceName);
+					}
 				} catch (Exception e) {
 					Utils.logToConsole("FAILED to update Google Sheet for : " + deviceName + " : " + e.getMessage());
 					e.printStackTrace();

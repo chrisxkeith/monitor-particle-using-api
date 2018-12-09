@@ -14,6 +14,7 @@ import com.google.api.services.sheets.v4.Sheets;
 import com.google.api.services.sheets.v4.Sheets.Spreadsheets.BatchUpdate;
 import com.google.api.services.sheets.v4.SheetsScopes;
 import com.google.api.services.sheets.v4.model.BatchUpdateSpreadsheetRequest;
+import com.google.api.services.sheets.v4.model.ClearValuesRequest;
 import com.google.api.services.sheets.v4.model.DeleteDimensionRequest;
 import com.google.api.services.sheets.v4.model.DimensionRange;
 import com.google.api.services.sheets.v4.model.Request;
@@ -82,8 +83,10 @@ public class GSheetsUtility {
     }
     
     public static void printData(List<List<Object>> values) {
-        if (values == null || values.isEmpty()) {
-            System.out.println("No data found.");
+        if (values == null) {
+            System.out.println("values == null");
+        } else if (values.isEmpty()) {
+            System.out.println("values.isEmpty()");
         } else {
             for (List<Object> row : values) {
             	StringBuilder sb = new StringBuilder();
@@ -128,5 +131,9 @@ public class GSheetsUtility {
 		content.setRequests(requests);
 		BatchUpdate batchUpdate = getSheetsService().spreadsheets().batchUpdate(spreadSheetId, content);
 		System.out.println("batchUpdate: " + batchUpdate.toString());
+	}
+
+	public static void clear(String spreadSheetId, String range) throws Exception {
+		getSheetsService().spreadsheets().values().clear(spreadSheetId, range, new ClearValuesRequest()).execute();
 	}
 }

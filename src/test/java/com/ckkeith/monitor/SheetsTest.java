@@ -56,9 +56,16 @@ public class SheetsTest extends TestCase {
 		}
 	}
 
+	void doTestClear(String spreadSheetId) throws Exception {
+		GSheetsUtility.clear(spreadSheetId, "Sheet1!A1:B10");
+		List<List<Object>>  values = GSheetsUtility.getRange(spreadSheetId, "Sheet1!A1:B10");
+		GSheetsUtility.printData(values);
+	}
+
 	public void testAll() throws Exception {
 		String spreadSheetId = doTestCreate();
 		Integer i = doTestAppend(spreadSheetId, 2);
 		doTestDelete(spreadSheetId, i);
+		doTestClear(spreadSheetId);
 	}
 }
