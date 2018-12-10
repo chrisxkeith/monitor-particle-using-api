@@ -23,8 +23,11 @@ public class GoogleSheetsWriter extends Thread {
 //			pivotDataApp.fillInData(this);
 		}
 // Parameterize sheet ids if necessary.
-//		deviceNameToSheetId.put("US Foods", "1qCHfRDno-Lp-fzIc_xUbq7kjU0lkxLrjGb9dVqtWAuE");
-//		deviceNameToSheetId.put("CatDev", "1d9oT0tGskhF87KSjRYYBj3svNFl3dzC3hrCrPqn5P1c");
+		deviceNameToSheetId.put("US Foods", "1qCHfRDno-Lp-fzIc_xUbq7kjU0lkxLrjGb9dVqtWAuE");
+		deviceNameToSheetId.put("CatDev", "1d9oT0tGskhF87KSjRYYBj3svNFl3dzC3hrCrPqn5P1c");
+		deviceNameToSheetId.put("verdical_system_2", "1d9oT0tGskhF87KSjRYYBj3svNFl3dzC3hrCrPqn5P1c");
+		deviceNameToSheetId.put("verdical_tester_usfoods", "1xWj_bFERM0tvtJYdak0Ujba3h9dPJjpn2-YK4Ibji2I");
+		deviceNameToSheetId.put("verdical_tester_5", "1fA8T5qodNa48EQro1B5FIwHMeAd3kciOdx6dgAAOWFI");
 
 // CK's for debugging.
 //		deviceNameToSheetId.put("CatDev", "1gHh7R50EIRTZB5hdgZ08Q_HRhjNJH5IFwKulql5QySg");
