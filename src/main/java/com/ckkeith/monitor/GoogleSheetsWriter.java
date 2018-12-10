@@ -27,7 +27,6 @@ public class GoogleSheetsWriter extends Thread {
 //		deviceNameToSheetId.put("CatDev", "1d9oT0tGskhF87KSjRYYBj3svNFl3dzC3hrCrPqn5P1c");
 
 // CK's for debugging.
-//		deviceNameToSheetId.put("US Foods", "1S718sd91U71XFLBK-MFCLYfAGyys4SmlTj3JcakpOUQ");
 //		deviceNameToSheetId.put("CatDev", "1gHh7R50EIRTZB5hdgZ08Q_HRhjNJH5IFwKulql5QySg");
 }
 
@@ -113,7 +112,7 @@ public class GoogleSheetsWriter extends Thread {
 					if (spreadSheetId != null) {
 						// TODO : If there is any way to get 'existing data range',
 						// use it here instead of hardcoding the range.
-						GSheetsUtility.clear(spreadSheetId, "Sheet1!A1:I400");
+//						GSheetsUtility.clear(spreadSheetId, "Sheet1!A1:I400");
 						updateSheet(deviceName);
 					}
 				} catch (Exception e) {
