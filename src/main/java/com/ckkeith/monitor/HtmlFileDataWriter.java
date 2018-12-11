@@ -54,7 +54,7 @@ public class HtmlFileDataWriter extends Thread {
 		return nextColor;
 	}
 
-	private int addDataForSensor(FileWriter jsonStream, String sensorName, StringBuilder sb1) throws Exception {
+	private int addDataForSensor(FileWriter jsonStream, String sensorName) throws Exception {
 		writeln(jsonStream, "\t\t\t\t\"data\" : [");
 		Set<LocalDateTime> keys = sensorData.keySet();
 		Iterator<LocalDateTime> itr = keys.iterator();
@@ -104,9 +104,10 @@ public class HtmlFileDataWriter extends Thread {
 					sb1.append("{ \"label\" : \"");
 					sb1.append(sensorName).append("\",");
 					writeln(jsonStream, sb1.toString());
+					writeln(jsonStream, "\"lineTension\" : 0,");
 					writeln(jsonStream, "\t\t\t\"borderColor\" : \"rgba(" + getNextColor() + ")\",");
 					writeln(jsonStream, "\t\t\t\"backgroundColor\" : \"rgba(0, 0, 0, 0.0)\",");
-					nDataPoints += addDataForSensor(jsonStream, sensorName, sb1);
+					nDataPoints += addDataForSensor(jsonStream, sensorName);
 					writeln(jsonStream, "\t\t\t}");
 				}
 			}
