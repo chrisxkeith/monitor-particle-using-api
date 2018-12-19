@@ -71,7 +71,7 @@ public class GoogleSheetsWriter extends Thread {
 				List<Object> sensorNameRow = new ArrayList<Object>();
 				List<Object> mostRecentDataRow = new ArrayList<Object>();
 				sensorNameRow.add(""); // time stamp column
-				mostRecentDataRow.add("");
+				mostRecentDataRow.add(Utils.googleSheetsDateFormat.format(LocalDateTime.now().withYear(1980)));
 				Iterator<String> sensorIt = sensorNames.keySet().iterator();
 				while (sensorIt.hasNext()) {
 					String sensorName = sensorIt.next();
@@ -84,23 +84,26 @@ public class GoogleSheetsWriter extends Thread {
 				Iterator<LocalDateTime> itr = sensorData.keySet().iterator();
 				while (itr.hasNext()) {
 					LocalDateTime timestamp = itr.next();
-					List<Object> sensorDataRow = new ArrayList<Object>();
-					sensorDataRow.addAll(mostRecentDataRow);
-					sensorDataRow.set(0, Utils.googleSheetsDateFormat.format(timestamp));
+					LocalDateTime prev = Utils.getLocalDateTime((String)mostRecentDataRow.get(0));
+					if (prev.isBefore(timestamp)) {
+						List<Object> sensorDataRow = new ArrayList<Object>();
+						sensorDataRow.addAll(mostRecentDataRow);
+						sensorDataRow.set(0, Utils.googleSheetsDateFormat.format(timestamp));
 
-					ConcurrentSkipListMap<String, String> entries = sensorData.get(timestamp);
-					Iterator<String> sensorNameIt = sensorNames.keySet().iterator();
-					int i = 1;
-					while (sensorNameIt.hasNext()) {
-						String sensorName = sensorNameIt.next();
-						String val = entries.get(sensorName);
-						if (i < sensorNameRow.size() && val != null && !val.isEmpty()) {
-							sensorDataRow.set(i++, val);
+						ConcurrentSkipListMap<String, String> entries = sensorData.get(timestamp);
+						Iterator<String> sensorNameIt = sensorNames.keySet().iterator();
+						int i = 1;
+						while (sensorNameIt.hasNext()) {
+							String sensorName = sensorNameIt.next();
+							String val = entries.get(sensorName);
+							if (i < sensorNameRow.size() && val != null && !val.isEmpty()) {
+								sensorDataRow.set(i++, val);
+							}
 						}
+	                    listOfRows.add(sensorDataRow);
+	                    mostRecentDataRow.clear();
+	                    mostRecentDataRow.addAll(sensorDataRow);
 					}
-                    listOfRows.add(sensorDataRow);
-                    mostRecentDataRow.clear();
-                    mostRecentDataRow.addAll(sensorDataRow);
 				}
 				if (listOfRows.size() > 1) {
 					GSheetsUtility.updateData(sheetId, "A1", listOfRows);

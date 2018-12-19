@@ -93,6 +93,10 @@ public class Utils {
 		return logString;
 	}
 
+	public static LocalDateTime getLocalDateTime(String str) {
+		return LocalDateTime.parse(str, googleSheetsDateFormat);
+	}
+
 	static String getSafeName(String s) {
 		String safeName = s.replaceAll("\\W+", "-");
 		if (safeName.length() > 24) {
