@@ -45,8 +45,18 @@ public class HtmlFileDataWriter extends Thread {
 	private int colorIndex = 0;
 
 	private String getNextColor() {
-		final String colors[] = { "255,99,132,1", "75, 192, 192, 1", "153, 102, 255, 1",
-				"255, 159, 64, 1", "54, 162, 235, 1" };
+		final String colors[] = {
+				"255, 99, 132, 1",
+				"75, 192, 192, 1",
+				"153, 102, 255, 1",
+				"255, 159, 64, 1",
+				"54, 162, 235, 1",
+				"127, 45, 132, 1",
+				"34, 81, 192, 1",
+				"76, 51, 255, 1",
+				"127, 78, 64, 1",
+				"27, 81, 235, 1"
+		};
 		String nextColor = colors[colorIndex++];
 		if (colorIndex >= colors.length) {
 			colorIndex = 0;

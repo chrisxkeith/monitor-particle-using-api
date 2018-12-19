@@ -22,7 +22,7 @@ public class Main {
 				}
 			}
 			if (Utils.runFromTerminal() || Utils.isDebug) {
-				Utils.logToConsole("Running from terminal, will not automaticallyl shut down.");
+				Utils.logToConsole("Running from terminal, will not automatically shut down.");
 			} else {
 				// Shutdown a few minutes before the hour interval after system restarted.
 				// A new instance of this Will be restarted by Task Scheduler.
