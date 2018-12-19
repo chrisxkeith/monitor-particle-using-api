@@ -103,7 +103,9 @@ public class GoogleSheetsWriter extends Thread {
                     mostRecentDataRow.clear();
                     mostRecentDataRow.addAll(sensorDataRow);
 				}
-				GSheetsUtility.updateData(sheetId, "A1", listOfRows);
+				if (listOfRows.size() > 1) {
+					GSheetsUtility.updateData(sheetId, "A1", listOfRows);
+				}
 				Utils.logToConsole("Updated Google Sheet for : " + deviceName + " : rows : " + listOfRows.size()
 						+ ", columns : " + listOfRows.get(0).size());
 			} catch (Exception e) {
