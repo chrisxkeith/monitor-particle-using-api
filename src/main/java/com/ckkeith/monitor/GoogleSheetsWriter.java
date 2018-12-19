@@ -20,17 +20,18 @@ public class GoogleSheetsWriter extends Thread {
 	public GoogleSheetsWriter(AccountMonitor accountMonitor, PivotDataApp pivotDataApp) {
 		this.accountMonitor = accountMonitor;
 		if (pivotDataApp != null) {
+// Implement when it's asked for.
 //			pivotDataApp.fillInData(this);
 		}
-// Parameterize sheet ids if necessary.
-//		deviceNameToSheetId.put("US Foods", "1qCHfRDno-Lp-fzIc_xUbq7kjU0lkxLrjGb9dVqtWAuE");
-//		deviceNameToSheetId.put("CatDev", "1d9oT0tGskhF87KSjRYYBj3svNFl3dzC3hrCrPqn5P1c");
-//		deviceNameToSheetId.put("verdical_system_2", "1d9oT0tGskhF87KSjRYYBj3svNFl3dzC3hrCrPqn5P1c");
-//		deviceNameToSheetId.put("verdical_tester_usfoods", "1xWj_bFERM0tvtJYdak0Ujba3h9dPJjpn2-YK4Ibji2I");
-//		deviceNameToSheetId.put("verdical_tester_5", "1fA8T5qodNa48EQro1B5FIwHMeAd3kciOdx6dgAAOWFI");
-
-// CK's for debugging.
-//		deviceNameToSheetId.put("CatDev", "1gHh7R50EIRTZB5hdgZ08Q_HRhjNJH5IFwKulql5QySg");
+// Parameterize sheet ids when necessary.
+		if (Utils.isDebug) {
+			deviceNameToSheetId.put("thermistor2-test", "1Tq1lGWuO4kipyKz_zIaXOQhVN5B4as0N0VEG_PTgP9w");
+//			deviceNameToSheetId.put("CatDev", "1gHh7R50EIRTZB5hdgZ08Q_HRhjNJH5IFwKulql5QySg");
+		} else {
+//			deviceNameToSheetId.put("US Foods", "... to come ...");
+//			deviceNameToSheetId.put("verdical_tester_usfoods", "... to come ...");
+//			deviceNameToSheetId.put("verdical_tester_5", "... to come ...");
+		}
 }
 
 	public void addData(SensorDataPoint sensorDataPoint) {
@@ -69,31 +70,38 @@ public class GoogleSheetsWriter extends Thread {
 			try {
 				List<List<Object>> listOfRows = new ArrayList<List<Object>>();
 				List<Object> sensorNameRow = new ArrayList<Object>();
+				List<Object> mostRecentDataRow = new ArrayList<Object>();
 				sensorNameRow.add(""); // time stamp column
+				mostRecentDataRow.add("");
 				Iterator<String> sensorIt = sensorNames.keySet().iterator();
 				while (sensorIt.hasNext()) {
 					String sensorName = sensorIt.next();
 					if ((sensorName.startsWith(deviceName))) {
 						sensorNameRow.add(sensorName);
 					}
+					mostRecentDataRow.add("");
 				}
 				listOfRows.add(sensorNameRow);
 				Iterator<LocalDateTime> itr = sensorData.keySet().iterator();
 				while (itr.hasNext()) {
 					LocalDateTime timestamp = itr.next();
 					List<Object> sensorDataRow = new ArrayList<Object>();
-					sensorDataRow.add(Utils.googleSheetsDateFormat.format(timestamp));
+					sensorDataRow.addAll(mostRecentDataRow);
+					sensorDataRow.set(0, Utils.googleSheetsDateFormat.format(timestamp));
+
 					ConcurrentSkipListMap<String, String> entries = sensorData.get(timestamp);
-					sensorIt = entries.keySet().iterator();
-					while (sensorIt.hasNext()) {
-						String sensorName = sensorIt.next();
-						if ((sensorName.startsWith(deviceName))) {
-							sensorDataRow.add(entries.get(sensorName));
+					Iterator<String> sensorNameIt = sensorNames.keySet().iterator();
+					int i = 1;
+					while (sensorNameIt.hasNext()) {
+						String sensorName = sensorNameIt.next();
+						String val = entries.get(sensorName);
+						if (val != null && !val.isEmpty()) {
+							sensorDataRow.set(i++, val);
 						}
 					}
-					if (sensorDataRow.size() > 1) { // must be more than just the time stamp
-						listOfRows.add(sensorDataRow);
-					}
+                    listOfRows.add(sensorDataRow);
+                    mostRecentDataRow.clear();
+                    mostRecentDataRow.addAll(sensorDataRow);
 				}
 				GSheetsUtility.updateData(sheetId, "A1", listOfRows);
 				Utils.logToConsole("Updated Google Sheet for : " + deviceName + " : rows : " + listOfRows.size()
