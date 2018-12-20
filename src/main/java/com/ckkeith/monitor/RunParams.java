@@ -10,7 +10,7 @@ public class RunParams {
 	int		expectedEventRateInSeconds = 60 * 2;
 	String	devicesToReport = "";
 	int		csvTimeGranularityInSeconds = 60;	// E.g. '60' == round to minutes, '30' == round to minutes and half-minutes.
-	public int sheetsWriteIntervalInSeconds = 5;
+	public int sheetsWriteIntervalInSeconds = 10;
 	
 	static RunParams load(String filePath) {
 		RunParams rp = new RunParams();
