@@ -22,18 +22,22 @@ public class EventData {
 	}
 
 	public Map.Entry<String, String> getNextSensorData() {
-		if (eventName.startsWith("All sensors")) {
-			String[] sensorDatas = eventData.split(" ");
-			if (currentSensorIndex < sensorDatas.length - 1) {
-				currentSensorIndex++;
-				String[] sensorData = sensorDatas[currentSensorIndex].split(":");
-				if (sensorData.length > 1) {
-					return new AbstractMap.SimpleEntry<String, String>(sensorData[0], sensorData[1]);
-				}
-			}
-		} else if (currentSensorIndex < 0) {
+		if (!eventName.startsWith("All sensors")) {
 			// 'Old style' event (one per sensor)
-			return new AbstractMap.SimpleEntry<String, String>(eventName, eventData);
+			if (currentSensorIndex == -1) {
+				currentSensorIndex++;
+				return new AbstractMap.SimpleEntry<String, String>(eventName, eventData);
+			}
+			return null;
+		}
+		String[] sensorDatas = eventData.split(" ");
+		currentSensorIndex++;
+		if (currentSensorIndex >= sensorDatas.length) {
+			return null;
+		}
+		String[] sensorData = sensorDatas[currentSensorIndex].split(":");
+		if (sensorData.length > 1) {
+			return null;
 		}
 		return null;
 	}
