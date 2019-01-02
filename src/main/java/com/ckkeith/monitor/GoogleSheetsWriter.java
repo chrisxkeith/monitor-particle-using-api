@@ -26,7 +26,8 @@ public class GoogleSheetsWriter extends Thread {
 		synchronized (this) {
 			Map.Entry<String, String> sensorDataEntry = eventData.getNextSensorData();
 			while (sensorDataEntry != null) {
-				sensorNames.put(sensorDataEntry.getKey(), sensorDataEntry.getKey());
+				String fullSensorName = eventData.deviceName + sensorDataEntry.getKey();
+				sensorNames.put(fullSensorName, sensorDataEntry.getKey());
 	
 				// Don't need time granularity finer than reporting granularity.
 				int seconds = eventData.timestamp.getSecond();
@@ -36,7 +37,7 @@ public class GoogleSheetsWriter extends Thread {
 				if (sensorValues == null) {
 					sensorValues = new ConcurrentSkipListMap<String, String>();
 				}
-				sensorValues.put(sensorDataEntry.getKey(), sensorDataEntry.getValue());
+				sensorValues.put(fullSensorName, sensorDataEntry.getValue());
 				sensorData.put(truncatedTime, sensorValues);
 				sensorDataEntry = eventData.getNextSensorData();
 			}
@@ -66,9 +67,9 @@ public class GoogleSheetsWriter extends Thread {
 				mostRecentDataRow.add(Utils.googleSheetsDateFormat.format(LocalDateTime.now().withYear(1980)));
 				Iterator<String> sensorIt = sensorNames.keySet().iterator();
 				while (sensorIt.hasNext()) {
-					String sensorName = sensorIt.next();
-					if ((sensorName.startsWith(deviceName))) {
-						sensorNameRow.add(sensorName);
+					String fullSensorName = sensorIt.next();
+					if ((fullSensorName.startsWith(deviceName))) {
+						sensorNameRow.add(sensorNames.get(fullSensorName));
 					}
 					mostRecentDataRow.add("");
 				}
