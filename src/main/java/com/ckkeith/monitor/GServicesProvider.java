@@ -60,7 +60,7 @@ public class GServicesProvider {
 		return gmailService;
 	}
 	
-	// TODO : Gsheets API access must be enabled for your account
+	// Gsheets API access must be enabled for your account
 	public static Sheets getSheetsService(List<String> scopes, final InputStream in) throws Exception {
 		if (sheetsService == null) {
 			http_transport = GoogleNetHttpTransport.newTrustedTransport();

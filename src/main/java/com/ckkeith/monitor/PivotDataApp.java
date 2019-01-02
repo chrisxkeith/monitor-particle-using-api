@@ -424,7 +424,7 @@ public class PivotDataApp extends Thread {
 					ZonedDateTime zdt = ZonedDateTime.parse(vals[0], logDateFormat);
 					ZoneId caZone = ZoneId.of("America/Los_Angeles");
 					ZonedDateTime caZoned = zdt.withZoneSameInstant(caZone);
-					SensorDataPoint sensorDataPoint = new SensorDataPoint(caZoned.toLocalDateTime(), vals[4],
+					EventData sensorDataPoint = new EventData(caZoned.toLocalDateTime(), vals[4],
 							vals[2].replace(vals[4] + " ", ""), vals[3]);
 					googleSheetsWriter.addData(sensorDataPoint);
 					dataPoints++;

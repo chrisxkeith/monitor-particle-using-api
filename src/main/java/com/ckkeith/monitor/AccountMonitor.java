@@ -107,10 +107,10 @@ public class AccountMonitor extends Thread {
 	public void addDataPoint(LocalDateTime ldt, String deviceName, String event, String data) {
 		if (event.contains("ensor") || event.contains("ontroller")) {
 			if ((htmlFileDataWriter != null)) {
-				this.htmlFileDataWriter.addData(new SensorDataPoint(ldt, deviceName, event, data));
+				this.htmlFileDataWriter.addData(new EventData(ldt, deviceName, event, data));
 			}
 			if ((googleSheetsWriter != null)) {
-				this.googleSheetsWriter.addData(new SensorDataPoint(ldt, deviceName, event, data));
+				this.googleSheetsWriter.addData(new EventData(ldt, deviceName, event, data));
 			}
 		}
 	}

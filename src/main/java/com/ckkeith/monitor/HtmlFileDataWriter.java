@@ -25,15 +25,15 @@ public class HtmlFileDataWriter extends Thread {
 		this.accountMonitor = accountMonitor;
 	}
 	
-	public void addData(SensorDataPoint sensorDataPoint) {
+	public void addData(EventData sensorDataPoint) {
 		synchronized (this) {
-			String fullSensorName = sensorDataPoint.deviceName + " " + sensorDataPoint.sensorName;
-			sensorNames.put(fullSensorName, sensorDataPoint.sensorName);
+			String fullSensorName = sensorDataPoint.deviceName + " " + sensorDataPoint.getEventName();
+			sensorNames.put(fullSensorName, sensorDataPoint.getEventName());
 			ConcurrentSkipListMap<String, String> sensorValues = sensorData.get(sensorDataPoint.timestamp);
 			if (sensorValues == null) {
 				sensorValues = new ConcurrentSkipListMap<String, String>();
 			}
-			sensorValues.put(fullSensorName, sensorDataPoint.sensorData);
+			sensorValues.put(fullSensorName, sensorDataPoint.getEventData());
 			sensorData.put(sensorDataPoint.timestamp, sensorValues);
 		}
 	}

@@ -33,21 +33,24 @@ public class GoogleSheetsWriter extends Thread {
 		}
 }
 
-	public void addData(SensorDataPoint sensorDataPoint) {
+	public void addData(EventData eventData) {
 		synchronized (this) {
-			String fullSensorName = sensorDataPoint.deviceName + " " + sensorDataPoint.sensorName;
-			sensorNames.put(fullSensorName, sensorDataPoint.sensorName);
-
-			// Don't need time granularity finer than reporting granularity.
-			int seconds = sensorDataPoint.timestamp.getSecond();
-			LocalDateTime truncatedTime = sensorDataPoint.timestamp
-					.minusSeconds(seconds % accountMonitor.runParams.sheetsWriteIntervalInSeconds).withNano(0);
-			ConcurrentSkipListMap<String, String> sensorValues = sensorData.get(truncatedTime);
-			if (sensorValues == null) {
-				sensorValues = new ConcurrentSkipListMap<String, String>();
-			}
-			sensorValues.put(fullSensorName, sensorDataPoint.sensorData);
-			sensorData.put(truncatedTime, sensorValues);
+			Map.Entry<String, String> sensorDataEntry = eventData.getNextSensorData();
+			while (sensorDataEntry != null) {
+				String fullSensorName = eventData.deviceName + " " + sensorDataEntry.getKey();
+				sensorNames.put(fullSensorName, sensorDataEntry.getKey());
+	
+				// Don't need time granularity finer than reporting granularity.
+				int seconds = eventData.timestamp.getSecond();
+				LocalDateTime truncatedTime = eventData.timestamp
+						.minusSeconds(seconds % accountMonitor.runParams.sheetsWriteIntervalInSeconds).withNano(0);
+				ConcurrentSkipListMap<String, String> sensorValues = sensorData.get(truncatedTime);
+				if (sensorValues == null) {
+					sensorValues = new ConcurrentSkipListMap<String, String>();
+				}
+				sensorValues.put(fullSensorName, sensorDataEntry.getValue());
+				sensorData.put(truncatedTime, sensorValues);
+				}
 		}
 	}
 
@@ -125,7 +128,7 @@ public class GoogleSheetsWriter extends Thread {
 				try {
 					String spreadSheetId = deviceNameToSheetId.get(deviceName);
 					if (spreadSheetId != null) {
-						// TODO : If there is any way to get 'existing data range',
+						// TO DO : If there is any way to get 'existing data range',
 						// use it here instead of hardcoding the range.
 //						GSheetsUtility.clear(spreadSheetId, "Sheet1!A1:I400");
 						updateSheet(deviceName);
