@@ -20,7 +20,7 @@ public class GoogleSheetsWriter extends Thread {
 // Implement when it's asked for.
 //			pivotDataApp.fillInData(this);
 		}
-}
+	}
 
 	public void addData(EventData eventData) {
 		synchronized (this) {

@@ -24,11 +24,11 @@ public class EventData {
 	public Map.Entry<String, String> getNextSensorData() {
 		if (!eventName.startsWith("All sensors")) {
 			// 'Old style' event (one per sensor)
-			if (currentSensorIndex == -1) {
-				currentSensorIndex++;
-				return new AbstractMap.SimpleEntry<String, String>(eventName, eventData);
+			if (currentSensorIndex == 0) {
+				return null;
 			}
-			return null;
+			currentSensorIndex++;
+			return new AbstractMap.SimpleEntry<String, String>(eventName, eventData);
 		}
 		String[] sensorDatas = eventData.split(" ");
 		currentSensorIndex++;
@@ -37,7 +37,7 @@ public class EventData {
 		}
 		String[] sensorData = sensorDatas[currentSensorIndex].split(":");
 		if (sensorData.length > 1) {
-			return null;
+			return new AbstractMap.SimpleEntry<String, String>(sensorData[0], sensorData[1]);
 		}
 		return null;
 	}
