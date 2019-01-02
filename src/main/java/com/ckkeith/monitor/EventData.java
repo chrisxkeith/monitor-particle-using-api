@@ -3,6 +3,7 @@ package com.ckkeith.monitor;
 
 import java.time.LocalDateTime;
 import java.util.AbstractMap;
+import java.util.HashMap;
 import java.util.Map;
 
 public class EventData {
@@ -11,6 +12,7 @@ public class EventData {
 	private String eventName;
 	private String eventData;
 	private int currentSensorIndex;
+	private Map<String, String> abbrevToSensorName = new HashMap<String, String>();
 
 	public EventData(LocalDateTime timestamp, String deviceName, String eventName, String eventData) {
 		super();
@@ -19,6 +21,12 @@ public class EventData {
 		this.eventName = eventName;
 		this.eventData = eventData;
 		this.currentSensorIndex = -1;
+		abbrevToSensorName.put("ws", "Water Level");
+		abbrevToSensorName.put("bs", "Button");
+		abbrevToSensorName.put("ms", "Moisture Level");
+		abbrevToSensorName.put("fc", "Fan");
+		abbrevToSensorName.put("lc", "Lights");
+		abbrevToSensorName.put("pc", "Pump");
 	}
 
 	public Map.Entry<String, String> getNextSensorData() {
@@ -37,7 +45,11 @@ public class EventData {
 		}
 		String[] sensorData = sensorDatas[currentSensorIndex].split(":");
 		if (sensorData.length > 1) {
-			return new AbstractMap.SimpleEntry<String, String>(sensorData[0], sensorData[1]);
+			String sensorName = abbrevToSensorName.get(sensorData[0]);
+			if (sensorName == null || sensorName.isEmpty()) {
+				sensorName = "Unknown";
+			}
+			return new AbstractMap.SimpleEntry<String, String>(sensorName, sensorData[1]);
 		}
 		return null;
 	}

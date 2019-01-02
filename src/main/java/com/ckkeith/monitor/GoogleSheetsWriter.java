@@ -26,8 +26,7 @@ public class GoogleSheetsWriter extends Thread {
 		synchronized (this) {
 			Map.Entry<String, String> sensorDataEntry = eventData.getNextSensorData();
 			while (sensorDataEntry != null) {
-				String fullSensorName = eventData.deviceName + " " + sensorDataEntry.getKey();
-				sensorNames.put(fullSensorName, sensorDataEntry.getKey());
+				sensorNames.put(sensorDataEntry.getKey(), sensorDataEntry.getKey());
 	
 				// Don't need time granularity finer than reporting granularity.
 				int seconds = eventData.timestamp.getSecond();
@@ -37,7 +36,7 @@ public class GoogleSheetsWriter extends Thread {
 				if (sensorValues == null) {
 					sensorValues = new ConcurrentSkipListMap<String, String>();
 				}
-				sensorValues.put(fullSensorName, sensorDataEntry.getValue());
+				sensorValues.put(sensorDataEntry.getKey(), sensorDataEntry.getValue());
 				sensorData.put(truncatedTime, sensorValues);
 				sensorDataEntry = eventData.getNextSensorData();
 			}
