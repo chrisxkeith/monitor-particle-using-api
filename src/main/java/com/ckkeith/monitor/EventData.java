@@ -24,10 +24,10 @@ public class EventData {
 	public Map.Entry<String, String> getNextSensorData() {
 		if (eventName.startsWith("All sensors")) {
 			String[] sensorDatas = eventData.split(" ");
-			if (currentSensorIndex < sensorDatas.length) {
+			if (currentSensorIndex < sensorDatas.length - 1) {
+				currentSensorIndex++;
 				String[] sensorData = sensorDatas[currentSensorIndex].split(":");
 				if (sensorData.length > 1) {
-					currentSensorIndex++;
 					return new AbstractMap.SimpleEntry<String, String>(sensorData[0], sensorData[1]);
 				}
 			}

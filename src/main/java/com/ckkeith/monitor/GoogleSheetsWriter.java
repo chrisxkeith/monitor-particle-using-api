@@ -2,7 +2,6 @@ package com.ckkeith.monitor;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -14,22 +13,12 @@ public class GoogleSheetsWriter extends Thread {
 	private AccountMonitor accountMonitor;
 	private ConcurrentSkipListMap<LocalDateTime, ConcurrentSkipListMap<String, String>> sensorData = new ConcurrentSkipListMap<LocalDateTime, ConcurrentSkipListMap<String, String>>();
 	private ConcurrentSkipListMap<String, String> sensorNames = new ConcurrentSkipListMap<String, String>();
-	Map<String, String> deviceNameToSheetId = new HashMap<String, String>();
-	
 
 	public GoogleSheetsWriter(AccountMonitor accountMonitor, PivotDataApp pivotDataApp) {
 		this.accountMonitor = accountMonitor;
 		if (pivotDataApp != null) {
 // Implement when it's asked for.
 //			pivotDataApp.fillInData(this);
-		}
-// Parameterize sheet ids when necessary.
-		if (accountMonitor.accountName.equals("chris.keith@gmail.com")) {
-			deviceNameToSheetId.put("thermistor2-test", "1Tq1lGWuO4kipyKz_zIaXOQhVN5B4as0N0VEG_PTgP9w");
-		} else if (accountMonitor.accountName.equals("ara@verdical.io")) {
-			deviceNameToSheetId.put("US Foods", "1qCHfRDno-Lp-fzIc_xUbq7kjU0lkxLrjGb9dVqtWAuE");
-			deviceNameToSheetId.put("verdical_tester_usfoods2", "1xWj_bFERM0tvtJYdak0Ujba3h9dPJjpn2-YK4Ibji2I");
-//			deviceNameToSheetId.put("verdical_tester_5", "1fA8T5qodNa48EQro1B5FIwHMeAd3kciOdx6dgAAOWFI");
 		}
 }
 
@@ -68,7 +57,7 @@ public class GoogleSheetsWriter extends Thread {
 	}
 
 	private void updateSheet(String deviceName) throws Exception {
-		String sheetId = deviceNameToSheetId.get(deviceName);
+		String sheetId = accountMonitor.deviceNameToSheetId.get(deviceName);
 		if (sheetId != null && !sheetId.isEmpty()) {
 			try {
 				List<List<Object>> listOfRows = new ArrayList<List<Object>>();
@@ -127,7 +116,7 @@ public class GoogleSheetsWriter extends Thread {
 			deleteOldData();
 			for (String deviceName : accountMonitor.deviceMonitors.keySet()) {
 				try {
-					String spreadSheetId = deviceNameToSheetId.get(deviceName);
+					String spreadSheetId = accountMonitor.deviceNameToSheetId.get(deviceName);
 					if (spreadSheetId != null) {
 						// TO DO : If there is any way to get 'existing data range',
 						// use it here instead of hardcoding the range.

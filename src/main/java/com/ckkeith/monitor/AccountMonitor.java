@@ -18,6 +18,7 @@ public class AccountMonitor extends Thread {
 	private GoogleSheetsWriter googleSheetsWriter;
 	RunParams runParams;
 	Map<String, DeviceMonitor> deviceMonitors = new HashMap<String, DeviceMonitor>();
+	Map<String, String> deviceNameToSheetId = new HashMap<String, String>();
 
 	public AccountMonitor(String credentials) throws Exception {
 		String[] creds = credentials.split("\t");
@@ -34,6 +35,15 @@ public class AccountMonitor extends Thread {
 		logFileName = Utils.getLogFileName(accountName, "devices-overview.txt");
 		runParams = RunParams.load(getParamFilePath());
 		Utils.logToConsole(accountName + ": " + runParams.toString());
+
+		// Parameterize sheet ids when necessary.
+		if (accountName.equals("chris.keith@gmail.com")) {
+			deviceNameToSheetId.put("thermistor2-test", "1Tq1lGWuO4kipyKz_zIaXOQhVN5B4as0N0VEG_PTgP9w");
+		} else if (accountName.equals("ara@verdical.io")) {
+			deviceNameToSheetId.put("US Foods", "1qCHfRDno-Lp-fzIc_xUbq7kjU0lkxLrjGb9dVqtWAuE");
+			deviceNameToSheetId.put("verdical_tester_usfoods2", "1xWj_bFERM0tvtJYdak0Ujba3h9dPJjpn2-YK4Ibji2I");
+	//			deviceNameToSheetId.put("verdical_tester_5", "1fA8T5qodNa48EQro1B5FIwHMeAd3kciOdx6dgAAOWFI");
+		}
 	}
 
 	private String getParamFilePath() throws Exception {
@@ -54,16 +64,16 @@ public class AccountMonitor extends Thread {
 					device = device.getDevice("Bearer " + accessToken);
 					DeviceMonitor dm = new DeviceMonitor(this, device, c);
 					Utils.logWithGSheetsDate(LocalDateTime.now(), dm.toTabbedString(), logFileName);
-					if (deviceMonitors.get(device.getName()) == null) {
+					if (deviceNameToSheetId.get(device.getName()) != null && deviceMonitors.get(device.getName()) == null) {
 						deviceMonitors.put(device.getName(), dm);
 						newDevices.add(dm);
 					}
 					// Server returned HTTP response code: 502 for URL: https://api.particle.io/v1/devices/4b0050001151373331333230
 					LocalDateTime then = LocalDateTime.now().plusSeconds(3);
 					Utils.sleepUntil(
-							"AccountMonitor.startDeviceMonitors() sleeping to try to avoid \"Too many requests\" (http 502) error for: "
-									+ device.getName(),
-							then);
+						"AccountMonitor.startDeviceMonitors() sleeping to try to avoid \"Too many requests\" (http 502) error for: "
+								+ device.getName(),
+						then);
 				}
 			} catch (Exception e) {
 				String err = "run() :\t" + device.getName() + "\t" + e.getClass().getName() + "\t" + e.getMessage();
