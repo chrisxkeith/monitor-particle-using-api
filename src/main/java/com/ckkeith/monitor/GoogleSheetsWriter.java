@@ -28,7 +28,7 @@ public class GoogleSheetsWriter extends Thread {
 			deviceNameToSheetId.put("thermistor2-test", "1Tq1lGWuO4kipyKz_zIaXOQhVN5B4as0N0VEG_PTgP9w");
 		} else if (accountMonitor.accountName.equals("ara@verdical.io")) {
 			deviceNameToSheetId.put("US Foods", "1qCHfRDno-Lp-fzIc_xUbq7kjU0lkxLrjGb9dVqtWAuE");
-//			deviceNameToSheetId.put("verdical_tester_usfoods", "1xWj_bFERM0tvtJYdak0Ujba3h9dPJjpn2-YK4Ibji2I");
+			deviceNameToSheetId.put("verdical_tester_usfoods2", "1xWj_bFERM0tvtJYdak0Ujba3h9dPJjpn2-YK4Ibji2I");
 //			deviceNameToSheetId.put("verdical_tester_5", "1fA8T5qodNa48EQro1B5FIwHMeAd3kciOdx6dgAAOWFI");
 		}
 }
@@ -50,7 +50,8 @@ public class GoogleSheetsWriter extends Thread {
 				}
 				sensorValues.put(fullSensorName, sensorDataEntry.getValue());
 				sensorData.put(truncatedTime, sensorValues);
-				}
+				sensorDataEntry = eventData.getNextSensorData();
+			}
 		}
 	}
 

@@ -74,10 +74,10 @@ public class AccountMonitor extends Thread {
 		for (DeviceMonitor dm : newDevices) {
 			dm.start();
 		}
-		if (htmlFileDataWriter == null && runParams.htmlWriteIntervalInSeconds > 0) {
-			htmlFileDataWriter = new HtmlFileDataWriter(this);
-			htmlFileDataWriter.start();
-		}
+		// if (htmlFileDataWriter == null && runParams.htmlWriteIntervalInSeconds > 0) {
+		// 	htmlFileDataWriter = new HtmlFileDataWriter(this);
+		// 	htmlFileDataWriter.start();
+		// }
 		if (googleSheetsWriter == null && runParams.sheetsWriteIntervalInSeconds > 0) {
 			googleSheetsWriter = new GoogleSheetsWriter(this, pivotDataApp);
 			googleSheetsWriter.start();

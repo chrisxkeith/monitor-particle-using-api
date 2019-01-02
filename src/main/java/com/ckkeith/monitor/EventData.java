@@ -22,7 +22,7 @@ public class EventData {
 	}
 
 	public Map.Entry<String, String> getNextSensorData() {
-		if (eventName.startsWith("All Sensor")) {
+		if (eventName.startsWith("All sensors")) {
 			String[] sensorDatas = eventData.split(" ");
 			if (currentSensorIndex < sensorDatas.length) {
 				String[] sensorData = sensorDatas[currentSensorIndex].split(":");
