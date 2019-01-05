@@ -17,8 +17,7 @@ public class GoogleSheetsWriter extends Thread {
 	public GoogleSheetsWriter(AccountMonitor accountMonitor, PivotDataApp pivotDataApp) {
 		this.accountMonitor = accountMonitor;
 		if (pivotDataApp != null) {
-// Implement when it's asked for.
-//			pivotDataApp.fillInData(this);
+			pivotDataApp.fillInData(this);
 		}
 	}
 
@@ -99,7 +98,7 @@ public class GoogleSheetsWriter extends Thread {
 					}
 				}
 				if (listOfRows.size() > 1) {
-					GSheetsUtility.updateData(sheetId, "A1", listOfRows);
+					GSheetsUtility.updateData(accountMonitor.accountName, sheetId, "A1", listOfRows);
 				}
 				Utils.logToConsole("Updated Google Sheet for : " + deviceName + " : rows : " + listOfRows.size()
 						+ ", columns : " + listOfRows.get(0).size());

@@ -1,5 +1,15 @@
 package com.ckkeith.monitor;
 
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 import com.google.api.client.auth.oauth2.Credential;
 import com.google.api.client.extensions.java6.auth.oauth2.AuthorizationCodeInstalledApp;
 import com.google.api.client.extensions.jetty.auth.oauth2.LocalServerReceiver;
@@ -22,29 +32,23 @@ import com.google.api.services.sheets.v4.model.Spreadsheet;
 import com.google.api.services.sheets.v4.model.SpreadsheetProperties;
 import com.google.api.services.sheets.v4.model.ValueRange;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
 public class GSheetsUtility {
     private static final String APPLICATION_NAME = "Google Sheets API Java Quickstart";
     private static final JsonFactory JSON_FACTORY = JacksonFactory.getDefaultInstance();
     private static final String TOKENS_DIRECTORY_PATH = "tokens";
 
     /**
-     * Global instance of the scopes required by this quickstart.
-     * If modifying these scopes, delete your previously saved tokens/ folder.
+     * Global instance of the scopes required by this quickstart. If modifying these
+     * scopes, delete your previously saved tokens/ folder.
      */
-	private static final List<String> SCOPES = Arrays.asList(SheetsScopes.DRIVE, SheetsScopes.SPREADSHEETS);
+    private static final List<String> SCOPES = Arrays.asList(SheetsScopes.DRIVE, SheetsScopes.SPREADSHEETS);
     private static final String CREDENTIALS_FILE_PATH = "credentials.json";
 
     private static Sheets sheetsService;
-    
+
     /**
      * Creates an authorized Credential object.
+     * 
      * @param HTTP_TRANSPORT The network HTTP Transport.
      * @return An authorized Credential object.
      * @throws IOException If the credentials.json file cannot be found.
@@ -82,27 +86,44 @@ public class GSheetsUtility {
         return response.getValues();
     }
     
-    public static void printData(List<List<Object>> values) {
+    private static StringBuilder getDataSb(List<List<Object>> values) {
+        StringBuilder sb = new StringBuilder();
         if (values == null) {
-            System.out.println("values == null");
+            sb.append("values == null");
         } else if (values.isEmpty()) {
-            System.out.println("values.isEmpty()");
+            sb.append("values.isEmpty()");
         } else {
             for (List<Object> row : values) {
-            	StringBuilder sb = new StringBuilder();
             	for (Object o : row) {
             		sb.append(o.toString()).append("\t");
             	}
-                System.out.println(sb.toString());
+                sb.append(System.getProperty("line.separator"));
             }
         }
+        return sb;
+    }
+    
+    public static void printData(List<List<Object>> values) {
+        System.out.println(getDataSb(values));
     }
     
 	public static String create(String sheetName) throws Exception {
 		Spreadsheet spreadSheet = new Spreadsheet().setProperties(new SpreadsheetProperties().setTitle(sheetName));
 		Spreadsheet result = getSheetsService().spreadsheets().create(spreadSheet).execute();
 		return result.getSpreadsheetId();
-	}
+    }
+    
+    private static void dumpToFile(List<List<Object>> values, String accountName) throws Exception {
+        if (Utils.isDebug) {
+            DateTimeFormatter dateFormat = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
+		    String d2 = dateFormat.format(LocalDateTime.now());
+            String tmpFileName = Utils.getLogFileName(accountName, "tmp" + d2);
+            FileWriter fstream = new FileWriter(tmpFileName, true);
+			fstream.write(getDataSb(values).toString());
+            fstream.close();
+            Utils.logToConsole("Dumped: " + tmpFileName);
+        }
+    }
 
 	public static void appendData(String spreadSheetId, String targetCell, List<List<Object>> values)
 			throws Exception {
@@ -112,8 +133,9 @@ public class GSheetsUtility {
 				.execute();
 	}
 
-	public static void updateData(String spreadSheetId, String targetCell, List<List<Object>> values) throws Exception {
-		ValueRange updateBody = new ValueRange().setValues(values);
+	public static void updateData(String accountName, String spreadSheetId, String targetCell, List<List<Object>> values) throws Exception {
+        dumpToFile(values, accountName);
+        ValueRange updateBody = new ValueRange().setValues(values);
 		getSheetsService().spreadsheets().values()
 				.update(spreadSheetId, targetCell, updateBody).setValueInputOption("USER_ENTERED").execute();
 	}
