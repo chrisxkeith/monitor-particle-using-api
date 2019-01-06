@@ -17,7 +17,7 @@ public class GoogleSheetsWriter extends Thread {
 	public GoogleSheetsWriter(AccountMonitor accountMonitor, PivotDataApp pivotDataApp) {
 		this.accountMonitor = accountMonitor;
 		if (pivotDataApp != null) {
-			pivotDataApp.fillInData(this);
+//			pivotDataApp.fillInData(this);
 		}
 	}
 
