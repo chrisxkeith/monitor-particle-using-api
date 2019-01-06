@@ -9,6 +9,7 @@ public class RunParams {
 	int		htmlWriteIntervalInSeconds = 5;
 	int		expectedEventRateInSeconds = 60 * 2;
 	String	devicesToReport = "";
+	String	deviceNameToSheetId = "";
 	int		csvTimeGranularityInSeconds = 60;	// E.g. '60' == round to minutes, '30' == round to minutes and half-minutes.
 	public int sheetsWriteIntervalInSeconds = 10;
 	
@@ -34,6 +35,8 @@ public class RunParams {
 							rp.expectedEventRateInSeconds = Integer.valueOf(val);
 						} else if (key.equalsIgnoreCase("devicesToReport")) {
 							rp.devicesToReport = val;
+						} else if (key.equalsIgnoreCase("deviceNameToSheetId")) {
+							rp.deviceNameToSheetId = val;
 						} else if (key.equalsIgnoreCase("csvTimeGranularityInSeconds")) {
 							rp.csvTimeGranularityInSeconds = Integer.valueOf(val);
 						} else if (key.equalsIgnoreCase("sheetsWriteIntervalInSeconds")) {
@@ -55,6 +58,9 @@ public class RunParams {
 				+ ", sheetsWriteIntervalInSeconds = " + sheetsWriteIntervalInSeconds
 				+ ", expectedEventRateInSeconds = " + expectedEventRateInSeconds
 				+ ", devicesToReport = " + devicesToReport
+				+ ", deviceNameToSheetId = " + deviceNameToSheetId
+				+ ", csvTimeGranularityInSeconds = " + csvTimeGranularityInSeconds
+				+ ", sheetsWriteIntervalInSeconds = " + sheetsWriteIntervalInSeconds
 				;
 	}
 }

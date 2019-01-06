@@ -35,17 +35,18 @@ public class AccountMonitor extends Thread {
 		logFileName = Utils.getLogFileName(accountName, "devices-overview.txt");
 		runParams = RunParams.load(getParamFilePath());
 		Utils.logToConsole(accountName + ": " + runParams.toString());
-
-		// Parameterize sheet ids when necessary.
-		if (accountName.equals("chris.keith@gmail.com")) {
-			deviceNameToSheetId.put("thermistor2-test", "1Tq1lGWuO4kipyKz_zIaXOQhVN5B4as0N0VEG_PTgP9w");
-		} else if (accountName.equals("ara@verdical.io")) {
-			deviceNameToSheetId.put("US Foods", "1qCHfRDno-Lp-fzIc_xUbq7kjU0lkxLrjGb9dVqtWAuE");			
-//			deviceNameToSheetId.put("verdical_tester_usfoods2", "183GNiZRFygayUo8zfwh84N3LAoaClPQJJMFZEzpoYR4"); // CK's
-			deviceNameToSheetId.put("verdical_tester_usfoods2", "1xWj_bFERM0tvtJYdak0Ujba3h9dPJjpn2-YK4Ibji2I");
-//			deviceNameToSheetId.put("verdical_tester_5", "1fA8T5qodNa48EQro1B5FIwHMeAd3kciOdx6dgAAOWFI");
+		String[] mapEntries = runParams.deviceNameToSheetId.split(" ");
+		for (String s : mapEntries) {
+			String[] kv = s.split(":");
+			if (kv.length == 2) {
+				deviceNameToSheetId.put(kv[0], kv[1]);
+			}
 		}
-	}
+		if (deviceNameToSheetId.size() == 0) {
+			Utils.logToConsole("No deviceNameToSheetId for " + accountName);
+			System.exit(-1);
+		}
+}
 
 	private String getParamFilePath() throws Exception {
 		return Utils.getHomeDir() + File.separator + "Documents" + File.separator + "tmp" + File.separator
