@@ -35,7 +35,7 @@ public class AccountMonitor extends Thread {
 		logFileName = Utils.getLogFileName(accountName, "devices-overview.txt");
 		runParams = RunParams.load(getParamFilePath());
 		Utils.logToConsole(accountName + ": " + runParams.toString());
-		String[] mapEntries = runParams.deviceNameToSheetId.split(" ");
+		String[] mapEntries = runParams.deviceNameToSheetId.split("\\|");
 		for (String s : mapEntries) {
 			String[] kv = s.split(":");
 			if (kv.length == 2) {
