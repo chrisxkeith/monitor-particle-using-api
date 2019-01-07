@@ -11,7 +11,9 @@ public class Main {
 
 	public static void main(String[] args) {
 		try {
-			Utils.displayEnv();
+			if (!Utils.isDebug) {
+				Utils.displayEnv();
+			}
 			String filePath = Utils.getHomeDir() + File.separator + "Documents" + File.separator + "particle-tokens.txt";
 			ArrayList<String> accountTokens = Utils.readParameterFile(filePath);
 			for (String c : accountTokens) {

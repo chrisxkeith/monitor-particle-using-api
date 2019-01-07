@@ -60,7 +60,9 @@ public class AccountMonitor extends Thread {
 		for (ParticleDevice device : c.getDevices()) {
 			try {
 				if (!device.getConnected()) {
-					Utils.logToConsole("Skipping disconnected device : " + device.getName());
+					if (!Utils.isDebug) {
+						Utils.logToConsole("Skipping disconnected device : " + device.getName());
+					}
 				} else {
 					// Get device variables and functions
 					device = device.getDevice("Bearer " + accessToken);
@@ -71,17 +73,25 @@ public class AccountMonitor extends Thread {
 						newDevices.add(dm);
 					}
 					// Server returned HTTP response code: 502 for URL: https://api.particle.io/v1/devices/4b0050001151373331333230
-					LocalDateTime then = LocalDateTime.now().plusSeconds(3);
-					Utils.sleepUntil(
-						"AccountMonitor.startDeviceMonitors() sleeping to try to avoid \"Too many requests\" (http 502) error for: "
-								+ device.getName(),
-						then);
+					if (Utils.isDebug) {
+						Thread.sleep(3 * 1000);
+					} else {
+						LocalDateTime then = LocalDateTime.now().plusSeconds(3);
+						Utils.sleepUntil(
+							"AccountMonitor.startDeviceMonitors() sleeping to try to avoid \"Too many requests\" (http 502) error for: "
+									+ device.getName(),
+							then);
+						}
 				}
 			} catch (Exception e) {
 				String err = "run() :\t" + device.getName() + "\t" + e.getClass().getName() + "\t" + e.getMessage();
 				Utils.logToConsole(err);
 				e.printStackTrace(new PrintStream(System.out));
 			}
+		}
+		if (newDevices.size() == 0) {
+			Utils.logToConsole("Didn't find any devices for : " + accountName);
+			System.exit(-6);
 		}
 		for (DeviceMonitor dm : newDevices) {
 			dm.start();
@@ -97,7 +107,7 @@ public class AccountMonitor extends Thread {
 	}
 
 	public void run() {
-		Utils.logToConsole(Utils.padWithSpaces(this.accountName, 20) + "\tPhotonMonitor thread starting.");
+		Utils.logToConsole(Utils.padWithSpaces(this.accountName, 20) + "\tAccountMonitor thread starting.");
 		PivotDataApp	pivotDataApp = null;
 		try {
 			pivotDataApp = new PivotDataApp(Utils.getLogFileDir(accountName), runParams);
@@ -107,7 +117,7 @@ public class AccountMonitor extends Thread {
 		}
 		startDeviceMonitors(pivotDataApp);
 // Eventually put while(true) loop here to write longer term data to Google Sheets
-		Utils.logToConsole(Utils.padWithSpaces(this.accountName, 20) + "\tPhotonMonitor thread exiting.");
+		Utils.logToConsole(Utils.padWithSpaces(this.accountName, 20) + "\tAccountMonitor thread exiting.");
 	}
 
 	public void addEventSubscriber(String name, ParticleDeviceEvent cb) {
