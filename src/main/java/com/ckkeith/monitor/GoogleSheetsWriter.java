@@ -2,6 +2,7 @@ package com.ckkeith.monitor;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -13,6 +14,7 @@ public class GoogleSheetsWriter extends Thread {
 	private AccountMonitor accountMonitor;
 	private ConcurrentSkipListMap<LocalDateTime, ConcurrentSkipListMap<String, String>> sensorData = new ConcurrentSkipListMap<LocalDateTime, ConcurrentSkipListMap<String, String>>();
 	private ConcurrentSkipListMap<String, String> sensorNames = new ConcurrentSkipListMap<String, String>();
+	private HashMap<String, Integer> mostRecentRowCount = new HashMap<String, Integer>();
 
 	public GoogleSheetsWriter(AccountMonitor accountMonitor, PivotDataApp pivotDataApp) {
 		this.accountMonitor = accountMonitor;
@@ -52,6 +54,20 @@ public class GoogleSheetsWriter extends Thread {
 			if (timestamp.isBefore(start)) {
 				sensorData.remove(timestamp);
 			}
+		}
+	}
+
+	private void addBlankRows(List<List<Object>> listOfRows, String deviceName) {
+		int blankRowsToAdd = this.mostRecentRowCount.get(deviceName) - listOfRows.size();
+		List<Object> blankRow = new ArrayList<Object>();
+		int numColumns = sensorNames.keySet().size();
+		while (numColumns > 0) {
+			blankRow.add("");
+			numColumns--;
+		}
+		this.mostRecentRowCount.put(deviceName, listOfRows.size());
+		while (blankRowsToAdd > 0) {
+			listOfRows.add(blankRow);
 		}
 	}
 
@@ -97,6 +113,7 @@ public class GoogleSheetsWriter extends Thread {
 	                    mostRecentDataRow.addAll(sensorDataRow);
 					}
 				}
+				addBlankRows(listOfRows, deviceName);
 				if (listOfRows.size() > 1) {
 					GSheetsUtility.updateData(accountMonitor.accountName, sheetId, "A1", listOfRows);
 				}
@@ -128,19 +145,18 @@ public class GoogleSheetsWriter extends Thread {
 		}
 	}
 
-	void clearSheets() {
+	void initSheets() {
 		for (String deviceName : accountMonitor.deviceMonitors.keySet()) {
 			try {
 				String spreadSheetId = accountMonitor.deviceNameToSheetId.get(deviceName);
 				if (spreadSheetId != null) {
-						// TO DO : If there is any way to get 'existing data range',
-						// use it here instead of hardcoding the range.
 						GSheetsUtility.clear(spreadSheetId, "Sheet1!A1:Z1000");
-			}
+						this.mostRecentRowCount.put(deviceName, 0);
+				}
 			} catch (Exception e) {
 				Utils.logToConsole("FAILED to update Google Sheet for : " + deviceName + " : " + e.getMessage());
 				e.printStackTrace();
-				// If there's any failure, continue and update the next sheet.
+				// If there's any failure, continue and initialize the next sheet.
 			}
 		}
 	}
@@ -148,7 +164,7 @@ public class GoogleSheetsWriter extends Thread {
 	public void run() {
 		Utils.logToConsole(this.getClass().getName() + ": thread starting.");
 		if (accountMonitor.runParams.sheetsWriteIntervalInSeconds > 0) {
-			clearSheets();
+			initSheets();
 			while (true) {
 				try {
 					updateGoogleSheets();
