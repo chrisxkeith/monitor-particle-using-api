@@ -134,7 +134,7 @@ public class GSheetsUtility {
 	}
 
 	public static void updateData(String accountName, String spreadSheetId, String targetCell, List<List<Object>> values) throws Exception {
-        dumpToFile(values, accountName);
+//        dumpToFile(values, accountName);
         ValueRange updateBody = new ValueRange().setValues(values);
 		getSheetsService().spreadsheets().values()
 				.update(spreadSheetId, targetCell, updateBody).setValueInputOption("USER_ENTERED").execute();

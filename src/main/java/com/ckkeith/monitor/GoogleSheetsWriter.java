@@ -117,9 +117,6 @@ public class GoogleSheetsWriter extends Thread {
 				try {
 					String spreadSheetId = accountMonitor.deviceNameToSheetId.get(deviceName);
 					if (spreadSheetId != null) {
-						// TO DO : If there is any way to get 'existing data range',
-						// use it here instead of hardcoding the range.
-//						GSheetsUtility.clear(spreadSheetId, "Sheet1!A1:I400");
 						updateSheet(deviceName);
 					}
 				} catch (Exception e) {
@@ -131,9 +128,27 @@ public class GoogleSheetsWriter extends Thread {
 		}
 	}
 
+	void clearSheets() {
+		for (String deviceName : accountMonitor.deviceMonitors.keySet()) {
+			try {
+				String spreadSheetId = accountMonitor.deviceNameToSheetId.get(deviceName);
+				if (spreadSheetId != null) {
+						// TO DO : If there is any way to get 'existing data range',
+						// use it here instead of hardcoding the range.
+						GSheetsUtility.clear(spreadSheetId, "Sheet1!A1:Z1000");
+			}
+			} catch (Exception e) {
+				Utils.logToConsole("FAILED to update Google Sheet for : " + deviceName + " : " + e.getMessage());
+				e.printStackTrace();
+				// If there's any failure, continue and update the next sheet.
+			}
+		}
+	}
+
 	public void run() {
 		Utils.logToConsole(this.getClass().getName() + ": thread starting.");
 		if (accountMonitor.runParams.sheetsWriteIntervalInSeconds > 0) {
+			clearSheets();
 			while (true) {
 				try {
 					updateGoogleSheets();
