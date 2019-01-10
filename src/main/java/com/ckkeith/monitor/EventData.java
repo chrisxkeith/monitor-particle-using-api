@@ -47,7 +47,7 @@ public class EventData {
 		if (sensorData.length > 1) {
 			String sensorName = abbrevToSensorName.get(sensorData[0]);
 			if (sensorName == null || sensorName.isEmpty()) {
-				sensorName = "Unknown";
+				sensorName = sensorData[0];
 			}
 			return new AbstractMap.SimpleEntry<String, String>(sensorName, sensorData[1]);
 		}
