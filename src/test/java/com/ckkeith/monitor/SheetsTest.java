@@ -12,11 +12,15 @@ public class SheetsTest extends TestCase {
 		super(testName);
 	}
 
+    private void printData(List<List<Object>> values) {
+        System.out.println(Utils.getDataSb(values));
+    }
+    
 	public void testGetData() {
 		try {
 			List<List<Object>> values = GSheetsUtility.getRange("1vo9OiDWyDvUGhjaXLUrnr9FkzO2NdUgN-AVe_CONU6U",
 					"Sheet1!A1:C10");
-			GSheetsUtility.printData(values);
+			printData(values);
 		} catch (Exception e) {
 			e.printStackTrace();
 			fail();
@@ -43,7 +47,7 @@ public class SheetsTest extends TestCase {
 			System.out.println("Appended row at " + targetCell);
 		}
 		List<List<Object>> values = GSheetsUtility.getRange(spreadSheetId, "Sheet1!A1:B" + i);
-		GSheetsUtility.printData(values);
+		printData(values);
 		return i;
 	}
 
@@ -52,14 +56,14 @@ public class SheetsTest extends TestCase {
 			GSheetsUtility.deleteRow(spreadSheetId, i - 1, 1);
 			List<List<Object>>  values = GSheetsUtility.getRange(spreadSheetId, "Sheet1!A1:B10");
 			System.out.println("Deleted (I hope) row " + i);
-			GSheetsUtility.printData(values);
+			printData(values);
 		}
 	}
 
 	void doTestClear(String spreadSheetId) throws Exception {
 		GSheetsUtility.clear(spreadSheetId, "Sheet1!A1:B10");
 		List<List<Object>>  values = GSheetsUtility.getRange(spreadSheetId, "Sheet1!A1:B10");
-		GSheetsUtility.printData(values);
+		printData(values);
 	}
 
 	public void testAll() throws Exception {

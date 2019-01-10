@@ -272,4 +272,33 @@ public class Utils {
 		}
 		return false;
 	}
+
+    public static StringBuilder getDataSb(List<List<Object>> values) {
+        StringBuilder sb = new StringBuilder();
+        if (values == null) {
+            sb.append("values == null");
+        } else if (values.isEmpty()) {
+            sb.append("values.isEmpty()");
+        } else {
+            for (List<Object> row : values) {
+            	for (Object o : row) {
+            		sb.append(o.toString()).append("\t");
+            	}
+                sb.append(System.getProperty("line.separator"));
+            }
+        }
+        return sb;
+    }
+    
+	public static void dumpToFile(List<List<Object>> values, String accountName) throws Exception {
+        if (Utils.isDebug) {
+            DateTimeFormatter dateFormat = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
+		    String d2 = dateFormat.format(LocalDateTime.now());
+            String tmpFileName = Utils.getLogFileName(accountName, "tmp" + d2);
+            FileWriter fstream = new FileWriter(tmpFileName, true);
+			fstream.write(getDataSb(values).toString());
+            fstream.close();
+            Utils.logToConsole("Dumped: " + tmpFileName);
+        }
+    }
 }

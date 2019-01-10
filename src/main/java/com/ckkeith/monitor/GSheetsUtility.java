@@ -1,11 +1,8 @@
 package com.ckkeith.monitor;
 
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -86,45 +83,12 @@ public class GSheetsUtility {
         return response.getValues();
     }
     
-    private static StringBuilder getDataSb(List<List<Object>> values) {
-        StringBuilder sb = new StringBuilder();
-        if (values == null) {
-            sb.append("values == null");
-        } else if (values.isEmpty()) {
-            sb.append("values.isEmpty()");
-        } else {
-            for (List<Object> row : values) {
-            	for (Object o : row) {
-            		sb.append(o.toString()).append("\t");
-            	}
-                sb.append(System.getProperty("line.separator"));
-            }
-        }
-        return sb;
-    }
-    
-    public static void printData(List<List<Object>> values) {
-        System.out.println(getDataSb(values));
-    }
-    
 	public static String create(String sheetName) throws Exception {
 		Spreadsheet spreadSheet = new Spreadsheet().setProperties(new SpreadsheetProperties().setTitle(sheetName));
 		Spreadsheet result = getSheetsService().spreadsheets().create(spreadSheet).execute();
 		return result.getSpreadsheetId();
     }
     
-    private static void dumpToFile(List<List<Object>> values, String accountName) throws Exception {
-        if (Utils.isDebug) {
-            DateTimeFormatter dateFormat = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
-		    String d2 = dateFormat.format(LocalDateTime.now());
-            String tmpFileName = Utils.getLogFileName(accountName, "tmp" + d2);
-            FileWriter fstream = new FileWriter(tmpFileName, true);
-			fstream.write(getDataSb(values).toString());
-            fstream.close();
-            Utils.logToConsole("Dumped: " + tmpFileName);
-        }
-    }
-
 	public static void appendData(String spreadSheetId, String targetCell, List<List<Object>> values)
 			throws Exception {
 		ValueRange appendBody = new ValueRange().setValues(values);
@@ -134,7 +98,6 @@ public class GSheetsUtility {
 	}
 
 	public static void updateData(String accountName, String spreadSheetId, String targetCell, List<List<Object>> values) throws Exception {
-//        dumpToFile(values, accountName);
         ValueRange updateBody = new ValueRange().setValues(values);
 		getSheetsService().spreadsheets().values()
 				.update(spreadSheetId, targetCell, updateBody).setValueInputOption("USER_ENTERED").execute();
