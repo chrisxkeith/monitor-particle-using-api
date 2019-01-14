@@ -33,7 +33,7 @@ public class AccountMonitor extends Thread {
 			throw new Exception("No account name specified.");
 		}
 		logFileName = Utils.getLogFileName(accountName, "devices-overview.txt");
-		runParams = RunParams.load(getParamFilePath());
+		runParams = RunParams.loadFromXML(getParamFilePath());
 		Utils.logToConsole(accountName + ": " + runParams.toString());
 		String[] mapEntries = runParams.deviceNameToSheetId.split("\\|");
 		for (String s : mapEntries) {
@@ -51,7 +51,7 @@ public class AccountMonitor extends Thread {
 	private String getParamFilePath() throws Exception {
 		return Utils.getHomeDir() + File.separator + "Documents" + File.separator + "tmp" + File.separator
 				+ Utils.getHostName() + File.separator + Utils.getSafeName(accountName) + File.separator
-				+ "runparams.txt";
+				+ "runparams.xml";
 	}
 
 	void startDeviceMonitors(PivotDataApp pivotDataApp) {

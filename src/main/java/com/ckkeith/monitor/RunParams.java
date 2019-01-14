@@ -4,15 +4,47 @@ package com.ckkeith.monitor;
 import java.io.File;
 import java.util.ArrayList;
 
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
+
 public class RunParams {
-	int		dataIntervalInMinutes = 10;
-	int		htmlWriteIntervalInSeconds = 5;
-	int		expectedEventRateInSeconds = 60 * 2;
-	String	devicesToReport = "";
-	String	deviceNameToSheetId = "";
-	int		csvTimeGranularityInSeconds = 60;	// E.g. '60' == round to minutes, '30' == round to minutes and half-minutes.
-	public int sheetsWriteIntervalInSeconds = 10;
+	Integer		dataIntervalInMinutes = 10;
+	Integer		htmlWriteIntervalInSeconds = 5;
+	Integer		expectedEventRateInSeconds = 60 * 2;
+	String		devicesToReport = "";
+	String		deviceNameToSheetId = "";
+	Integer		csvTimeGranularityInSeconds = 60;	// E.g. '60' == round to minutes, '30' == round to minutes and half-minutes.
+	Integer		sheetsWriteIntervalInSeconds = 10;
 	
+	private static Integer getInteger(Element root, String name, Integer defaultValue) {
+		NodeList nl = root.getElementsByTagName(name);
+		if (nl.getLength() > 0) {
+			return Integer.parseInt(nl.item(0).getTextContent());
+		}
+		return defaultValue;
+	}
+
+	private static String getString(Element root, String name, String defaultValue) {
+		NodeList nl = root.getElementsByTagName(name);
+		if (nl.getLength() > 0) {
+			return nl.item(0).getTextContent();
+		}
+		return defaultValue;
+	}
+
+	static RunParams loadFromXML(String filePath) throws Exception {
+		RunParams rp = new RunParams();
+		Element root = Utils.readTextFileIntoDOM(filePath).getDocumentElement();
+		rp.dataIntervalInMinutes = getInteger(root, "dataIntervalInMinutes", rp.dataIntervalInMinutes);
+		rp.htmlWriteIntervalInSeconds = getInteger(root, "htmlWriteIntervalInSeconds", rp.htmlWriteIntervalInSeconds);
+		rp.expectedEventRateInSeconds = getInteger(root, "expectedEventRateInSeconds", rp.expectedEventRateInSeconds);
+		rp.csvTimeGranularityInSeconds = getInteger(root, "csvTimeGranularityInSeconds", rp.csvTimeGranularityInSeconds);
+		rp.sheetsWriteIntervalInSeconds = getInteger(root, "sheetsWriteIntervalInSeconds", rp.sheetsWriteIntervalInSeconds);
+		rp.devicesToReport = getString(root, "devicesToReport", rp.devicesToReport);
+		rp.deviceNameToSheetId = getString(root, "deviceNameToSheetId", rp.deviceNameToSheetId);
+		return rp;
+	}
+
 	static RunParams load(String filePath) {
 		RunParams rp = new RunParams();
 		try {
