@@ -32,6 +32,18 @@ public class RunParams {
 		return defaultValue;
 	}
 
+	private static String getDeviceList(Element root) {
+		String ret = "";
+		NodeList nl = root.getElementsByTagName("deviceNameToSheetId");
+		for (int i = 0; i < nl.getLength(); i++) {
+			ret += nl.item(i).getTextContent();
+			if (i < nl.getLength() - 1) {
+				ret += "|";
+			}
+		}
+		return ret;
+	}
+
 	static RunParams loadFromXML(String filePath) throws Exception {
 		RunParams rp = new RunParams();
 		Element root = Utils.readTextFileIntoDOM(filePath).getDocumentElement();
@@ -41,7 +53,7 @@ public class RunParams {
 		rp.csvTimeGranularityInSeconds = getInteger(root, "csvTimeGranularityInSeconds", rp.csvTimeGranularityInSeconds);
 		rp.sheetsWriteIntervalInSeconds = getInteger(root, "sheetsWriteIntervalInSeconds", rp.sheetsWriteIntervalInSeconds);
 		rp.devicesToReport = getString(root, "devicesToReport", rp.devicesToReport);
-		rp.deviceNameToSheetId = getString(root, "deviceNameToSheetId", rp.deviceNameToSheetId);
+		rp.deviceNameToSheetId = getDeviceList(root);
 		return rp;
 	}
 
