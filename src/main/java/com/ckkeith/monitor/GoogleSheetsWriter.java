@@ -120,7 +120,7 @@ public class GoogleSheetsWriter extends Thread {
 				Utils.logToConsole("Updated Google Sheet for : " + deviceName + " : rows : " + listOfRows.size()
 						+ ", columns : " + listOfRows.get(0).size());
 			} catch (Exception e) {
-				Utils.logToConsole("FAILED to update Google Sheet for : " + deviceName + " : " + e.getMessage());
+				Utils.logToConsole("updateSheet(): FAILED to update Google Sheet for : " + deviceName + " : " + e.getClass().getCanonicalName() + " " + e.getMessage());
 				e.printStackTrace();
 				throw e;
 			}
@@ -137,7 +137,7 @@ public class GoogleSheetsWriter extends Thread {
 						updateSheet(deviceName);
 					}
 				} catch (Exception e) {
-					Utils.logToConsole("FAILED to update Google Sheet for : " + deviceName + " : " + e.getMessage());
+					Utils.logToConsole("updateGoogleSheets(): FAILED to update Google Sheet for : " + deviceName + " : " + e.getClass().getCanonicalName() + " " + e.getMessage());
 					e.printStackTrace();
 					// If there's any failure, continue and update the next sheet.
 				}
@@ -154,7 +154,7 @@ public class GoogleSheetsWriter extends Thread {
 						this.mostRecentRowCount.put(deviceName, 0);
 				}
 			} catch (Exception e) {
-				Utils.logToConsole("FAILED to update Google Sheet for : " + deviceName + " : " + e.getMessage());
+				Utils.logToConsole("initSheets(): FAILED to update Google Sheet for : " + deviceName + " : " + e.getClass().getCanonicalName() + " " + e.getMessage());
 				e.printStackTrace();
 				// If there's any failure, continue and initialize the next sheet.
 			}
