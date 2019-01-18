@@ -1,9 +1,6 @@
 // Please credit chris.keith@gmail.com
 package com.ckkeith.monitor;
 
-import java.io.File;
-import java.util.ArrayList;
-
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
