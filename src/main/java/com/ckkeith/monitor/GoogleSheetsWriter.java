@@ -68,62 +68,61 @@ public class GoogleSheetsWriter extends Thread {
 		this.mostRecentRowCount.put(deviceName, listOfRows.size());
 		while (blankRowsToAdd > 0) {
 			listOfRows.add(blankRow);
+			blankRowsToAdd--;
 		}
 	}
 
 	private void updateSheet(String deviceName) throws Exception {
-		String sheetId = accountMonitor.deviceNameToSheetId.get(deviceName);
-		if (sheetId != null && !sheetId.isEmpty()) {
-			try {
-				List<List<Object>> listOfRows = new ArrayList<List<Object>>();
-				List<Object> sensorNameRow = new ArrayList<Object>();
-				List<Object> mostRecentDataRow = new ArrayList<Object>();
-				sensorNameRow.add(""); // time stamp column
-				mostRecentDataRow.add(Utils.googleSheetsDateFormat.format(LocalDateTime.now().withYear(1980)));
-				Iterator<String> sensorIt = sensorNames.keySet().iterator();
-				while (sensorIt.hasNext()) {
-					String fullSensorName = sensorIt.next();
-					if ((fullSensorName.startsWith(deviceName))) {
-						sensorNameRow.add(sensorNames.get(fullSensorName));
-					}
-					mostRecentDataRow.add("");
+		try {
+			String sheetId = accountMonitor.deviceNameToSheetId.get(deviceName);
+			List<List<Object>> listOfRows = new ArrayList<List<Object>>();
+			List<Object> sensorNameRow = new ArrayList<Object>();
+			List<Object> mostRecentDataRow = new ArrayList<Object>();
+			sensorNameRow.add(""); // time stamp column
+			mostRecentDataRow.add(Utils.googleSheetsDateFormat.format(LocalDateTime.now().withYear(1980)));
+			Iterator<String> sensorIt = sensorNames.keySet().iterator();
+			while (sensorIt.hasNext()) {
+				String fullSensorName = sensorIt.next();
+				if ((fullSensorName.startsWith(deviceName))) {
+					sensorNameRow.add(sensorNames.get(fullSensorName));
 				}
-				listOfRows.add(sensorNameRow);
-				Iterator<LocalDateTime> itr = sensorData.keySet().iterator();
-				while (itr.hasNext()) {
-					LocalDateTime timestamp = itr.next();
-					LocalDateTime prev = Utils.getLocalDateTime((String)mostRecentDataRow.get(0));
-					if (prev.isBefore(timestamp)) {
-						List<Object> sensorDataRow = new ArrayList<Object>();
-						sensorDataRow.addAll(mostRecentDataRow);
-						sensorDataRow.set(0, Utils.googleSheetsDateFormat.format(timestamp));
-
-						ConcurrentSkipListMap<String, String> entries = sensorData.get(timestamp);
-						Iterator<String> sensorNameIt = sensorNames.keySet().iterator();
-						int i = 1;
-						while (sensorNameIt.hasNext()) {
-							String sensorName = sensorNameIt.next();
-							String val = entries.get(sensorName);
-							if (i < sensorNameRow.size() && val != null && !val.isEmpty()) {
-								sensorDataRow.set(i++, val);
-							}
-						}
-	                    listOfRows.add(sensorDataRow);
-	                    mostRecentDataRow.clear();
-	                    mostRecentDataRow.addAll(sensorDataRow);
-					}
-				}
-				addBlankRows(listOfRows, deviceName);
-				if (listOfRows.size() > 1) {
-					GSheetsUtility.updateData(accountMonitor.accountName, sheetId, "A1", listOfRows);
-				}
-				Utils.logToConsole("Updated Google Sheet for : " + deviceName + " : rows : " + listOfRows.size()
-						+ ", columns : " + listOfRows.get(0).size());
-			} catch (Exception e) {
-				Utils.logToConsole("updateSheet(): FAILED to update Google Sheet for : " + deviceName + " : " + e.getClass().getCanonicalName() + " " + e.getMessage());
-				e.printStackTrace();
-				throw e;
+				mostRecentDataRow.add("");
 			}
+			listOfRows.add(sensorNameRow);
+			Iterator<LocalDateTime> itr = sensorData.keySet().iterator();
+			while (itr.hasNext()) {
+				LocalDateTime timestamp = itr.next();
+				LocalDateTime prev = Utils.getLocalDateTime((String)mostRecentDataRow.get(0));
+				if (prev.isBefore(timestamp)) {
+					List<Object> sensorDataRow = new ArrayList<Object>();
+					sensorDataRow.addAll(mostRecentDataRow);
+					sensorDataRow.set(0, Utils.googleSheetsDateFormat.format(timestamp));
+
+					ConcurrentSkipListMap<String, String> entries = sensorData.get(timestamp);
+					Iterator<String> sensorNameIt = sensorNames.keySet().iterator();
+					int i = 1;
+					while (sensorNameIt.hasNext()) {
+						String sensorName = sensorNameIt.next();
+						String val = entries.get(sensorName);
+						if (i < sensorNameRow.size() && val != null && !val.isEmpty()) {
+							sensorDataRow.set(i++, val);
+						}
+					}
+					listOfRows.add(sensorDataRow);
+					mostRecentDataRow.clear();
+					mostRecentDataRow.addAll(sensorDataRow);
+				}
+			}
+			addBlankRows(listOfRows, deviceName);
+			if (listOfRows.size() > 1) {
+				GSheetsUtility.updateData(accountMonitor.accountName, sheetId, "A1", listOfRows);
+				Utils.logToConsole("Updated Google Sheet " + sheetId + " for : " + deviceName + " : rows : " + listOfRows.size()
+					+ ", columns : " + listOfRows.get(0).size());
+			}
+		} catch (Exception e) {
+			Utils.logToConsole("updateSheet(): FAILED to update Google Sheet for : " + deviceName + " : " + e.getClass().getCanonicalName() + " " + e.getMessage());
+			e.printStackTrace();
+			throw e;
 		}
 	}
 
@@ -133,7 +132,7 @@ public class GoogleSheetsWriter extends Thread {
 			for (String deviceName : accountMonitor.deviceMonitors.keySet()) {
 				try {
 					String spreadSheetId = accountMonitor.deviceNameToSheetId.get(deviceName);
-					if (spreadSheetId != null) {
+					if (spreadSheetId != null && !spreadSheetId.isEmpty()) {
 						updateSheet(deviceName);
 					}
 				} catch (Exception e) {
