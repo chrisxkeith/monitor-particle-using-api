@@ -57,6 +57,8 @@ public class GoogleSheetsWriter extends Thread {
 		}
 	}
 
+	// In case there are fewer rows than before,
+	// fill in with blanks to avoid junk data at right end of graph.
 	private void addBlankRows(List<List<Object>> listOfRows, String deviceName) {
 		int blankRowsToAdd = this.mostRecentRowCount.get(deviceName) - listOfRows.size();
 		List<Object> blankRow = new ArrayList<Object>();
@@ -77,18 +79,21 @@ public class GoogleSheetsWriter extends Thread {
 			String sheetId = accountMonitor.deviceNameToSheetId.get(deviceName);
 			List<List<Object>> listOfRows = new ArrayList<List<Object>>();
 			List<Object> sensorNameRow = new ArrayList<Object>();
+
+			// Keep most recent data values around to fill out potential 'holes' in the graph.
 			List<Object> mostRecentDataRow = new ArrayList<Object>();
 			sensorNameRow.add(""); // time stamp column
 			mostRecentDataRow.add(Utils.googleSheetsDateFormat.format(LocalDateTime.now().withYear(1980)));
 			Iterator<String> sensorIt = sensorNames.keySet().iterator();
 			while (sensorIt.hasNext()) {
 				String fullSensorName = sensorIt.next();
-				if ((fullSensorName.startsWith(deviceName))) {
+				if (fullSensorName.startsWith(deviceName)) {
 					sensorNameRow.add(sensorNames.get(fullSensorName));
 				}
 				mostRecentDataRow.add("");
 			}
 			listOfRows.add(sensorNameRow);
+
 			Iterator<LocalDateTime> itr = sensorData.keySet().iterator();
 			while (itr.hasNext()) {
 				LocalDateTime timestamp = itr.next();
@@ -102,10 +107,12 @@ public class GoogleSheetsWriter extends Thread {
 					Iterator<String> sensorNameIt = sensorNames.keySet().iterator();
 					int i = 1;
 					while (sensorNameIt.hasNext()) {
-						String sensorName = sensorNameIt.next();
-						String val = entries.get(sensorName);
-						if (i < sensorNameRow.size() && val != null && !val.isEmpty()) {
-							sensorDataRow.set(i++, val);
+						String fullSensorName = sensorNameIt.next();
+						if (fullSensorName.startsWith(deviceName)) {
+							String val = entries.get(fullSensorName);
+							if (i < sensorNameRow.size() && val != null && !val.isEmpty()) {
+								sensorDataRow.set(i++, val);
+							}
 						}
 					}
 					listOfRows.add(sensorDataRow);
