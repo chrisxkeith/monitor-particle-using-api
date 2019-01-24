@@ -18,6 +18,8 @@ public class AccountMonitor extends Thread {
 	private GoogleSheetsWriter googleSheetsWriter;
 	RunParams runParams;
 	Map<String, DeviceMonitor> deviceMonitors = new HashMap<String, DeviceMonitor>();
+
+	// TO (eventually) DO : replace with HashSet
 	Map<String, String> deviceNameToSheetId = new HashMap<String, String>();
 
 	public AccountMonitor(String credentials) throws Exception {
