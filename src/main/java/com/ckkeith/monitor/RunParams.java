@@ -74,7 +74,8 @@ public class RunParams {
 				}
 				HashSet<String> sensorNames = new HashSet<String>();
 				for (int nameIndex = 0; nameIndex < sensors.getLength(); nameIndex++) {
-					sensorNames.add(sensors.item(nameIndex).getTextContent());
+					// TO (eventually) DO : find correct Node to get text from instead of using trim().
+					sensorNames.add(sensors.item(nameIndex).getTextContent().trim());
 				}
 				microcontrollers.put(microcontrollerName, sensorNames);
 				datasets.add(new Dataset(microcontrollers));

@@ -3,6 +3,7 @@ package com.ckkeith.monitor;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -133,20 +134,129 @@ public class GoogleSheetsWriter extends Thread {
 		}
 	}
 
+	private void initFirstRow(List<Object> sensorNameRow,
+			Map.Entry<String, ArrayList<RunParams.Dataset>> entry,
+			List<Object> mostRecentDataRow) {
+		sensorNameRow.add(""); // time stamp column
+		mostRecentDataRow.add(Utils.googleSheetsDateFormat.format(LocalDateTime.now().withYear(1980)));
+		Iterator<RunParams.Dataset> datasetIt = entry.getValue().iterator();
+		while (datasetIt.hasNext()) {
+			RunParams.Dataset d = datasetIt.next();
+			for (Map.Entry<String, HashSet<String>> mc : d.microcontrollers.entrySet()) {
+				for (String sensorName : mc.getValue()) {
+					String fullSensorName = mc.getKey() + sensorName;
+					sensorNameRow.add(fullSensorName);
+				}
+			}
+			mostRecentDataRow.add("");
+		}
+	}
+
+	int findSensorIndex(List<Object> sensorNameRow, String fullSensorName) {
+		int i = 0;
+		for (Object n : sensorNameRow.toArray()) {
+			if (((String)n).equals(fullSensorName)) {
+				return i;
+			}
+			i++;
+		}
+		return -1;
+	}
+	void loadRows(List<Object> sensorNameRow,
+					Map.Entry<String, ArrayList<RunParams.Dataset>> entry,
+					List<Object> mostRecentDataRow,
+					List<List<Object>> listOfRows) {
+		Iterator<LocalDateTime> itr = sensorData.keySet().iterator();
+		while (itr.hasNext()) {
+			LocalDateTime timestamp = itr.next();
+			LocalDateTime prev = Utils.getLocalDateTime((String)mostRecentDataRow.get(0));
+			if (prev.isBefore(timestamp)) {
+				List<Object> sensorDataRow = new ArrayList<Object>();
+				sensorDataRow.addAll(mostRecentDataRow);
+				sensorDataRow.set(0, Utils.googleSheetsDateFormat.format(timestamp));
+
+				ConcurrentSkipListMap<String, String> entries = sensorData.get(timestamp);
+				Iterator<String> sensorNameIt = sensorNames.keySet().iterator();
+				while (sensorNameIt.hasNext()) {
+					String fullSensorName = sensorNameIt.next();
+					int sensorIndex = findSensorIndex(sensorNameRow, fullSensorName);
+					if (sensorIndex > -1) {
+						String val = entries.get(fullSensorName);
+						if (val != null && !val.isEmpty()) {
+							sensorDataRow.set(sensorIndex, val);
+						}
+					}
+				}
+				listOfRows.add(sensorDataRow);
+				mostRecentDataRow.clear();
+				mostRecentDataRow.addAll(sensorDataRow);
+			}
+		}
+	}
+
+	private void updateSheetById(Map.Entry<String, ArrayList<RunParams.Dataset>>
+			entry) throws Exception {
+		try {
+			List<Object> sensorNameRow = new ArrayList<Object>();
+
+			// Keep most recent data values around to fill out potential 'holes' in the graph.
+			List<Object> mostRecentDataRow = new ArrayList<Object>();
+			initFirstRow(sensorNameRow, entry, mostRecentDataRow);
+			List<List<Object>> listOfRows = new ArrayList<List<Object>>();
+			listOfRows.add(sensorNameRow);
+			loadRows(sensorNameRow, entry, mostRecentDataRow, listOfRows);
+//			addBlankRows(listOfRows, deviceName);
+			if (listOfRows.size() > 1) {
+				String sheetId = entry.getKey();
+				GSheetsUtility.updateData(accountMonitor.accountName, sheetId, "A1", listOfRows);
+				Utils.logToConsole("Updated Google Sheet : " + sheetId + ", rows : " + listOfRows.size()
+					+ ", columns : " + listOfRows.get(0).size());
+			}
+		} catch (Exception e) {
+			Utils.logToConsole("updateSheetById(): FAILED to update Google Sheet : " +
+				entry.getKey() + " : " + e.getClass().getCanonicalName() + " " + e.getMessage());
+			e.printStackTrace();
+			throw e;
+		}
+	}
+
+	void updateByDevice() {
+		for (String deviceName : accountMonitor.deviceMonitors.keySet()) {
+			try {
+				String spreadSheetId = accountMonitor.deviceNameToSheetId.get(deviceName);
+				if (spreadSheetId != null && !spreadSheetId.isEmpty()) {
+					updateSheet(deviceName);
+				}
+			} catch (Exception e) {
+				Utils.logToConsole("updateByDevice(): FAILED to update Google Sheet for : " + deviceName + " : " + e.getClass().getCanonicalName() + " " + e.getMessage());
+				e.printStackTrace();
+				// If there's any failure, continue and update the next sheet.
+			}
+		}
+	}
+
+	void updateBySheet() {
+		for (Map.Entry<String, ArrayList<RunParams.Dataset>> entry :
+						accountMonitor.runParams.sheets.entrySet()) {
+			try {
+				updateSheetById(entry);
+			} catch (Exception e) {
+				Utils.logToConsole("updateBySheet(): FAILED to update Google Sheet : " +
+						entry.getKey() + " : " + e.getClass().getCanonicalName() + " " + e.getMessage());
+				e.printStackTrace();
+				// If there's any failure, continue and update the next sheet.
+			}
+			
+		}
+	}
+
 	void updateGoogleSheets() {
 		synchronized(this) {
 			deleteOldData();
-			for (String deviceName : accountMonitor.deviceMonitors.keySet()) {
-				try {
-					String spreadSheetId = accountMonitor.deviceNameToSheetId.get(deviceName);
-					if (spreadSheetId != null && !spreadSheetId.isEmpty()) {
-						updateSheet(deviceName);
-					}
-				} catch (Exception e) {
-					Utils.logToConsole("updateGoogleSheets(): FAILED to update Google Sheet for : " + deviceName + " : " + e.getClass().getCanonicalName() + " " + e.getMessage());
-					e.printStackTrace();
-					// If there's any failure, continue and update the next sheet.
-				}
+			if (accountMonitor.runParams.sheets.size() > 0) {
+				updateBySheet();
+			} else {
+				updateByDevice();
 			}
 		}
 	}
