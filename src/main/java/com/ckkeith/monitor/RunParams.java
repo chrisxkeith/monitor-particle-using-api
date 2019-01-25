@@ -22,7 +22,6 @@ public class RunParams {
 	Integer		htmlWriteIntervalInSeconds = 5;
 	Integer		expectedEventRateInSeconds = 60 * 2;
 	String		devicesToReport = "";
-	String		deviceNameToSheetId = "";
 	Integer		csvTimeGranularityInSeconds = 60; // E.g. '60' == round to minutes, '30' == round to minutes and half-minutes.
 	Integer		sheetsWriteIntervalInSeconds = 10;
 	Hashtable<String, ArrayList<Dataset>> sheets =
@@ -42,18 +41,6 @@ public class RunParams {
 			return nl.item(0).getTextContent();
 		}
 		return defaultValue;
-	}
-
-	private static String getDeviceList(Element root) {
-		String ret = "";
-		NodeList nl = root.getElementsByTagName("deviceNameToSheetId");
-		for (int i = 0; i < nl.getLength(); i++) {
-			ret += nl.item(i).getTextContent();
-			if (i < nl.getLength() - 1) {
-				ret += "|";
-			}
-		}
-		return ret;
 	}
 
 	private ArrayList<Dataset> buildDatasetList(NodeList datasetElems) throws Exception {
@@ -123,7 +110,6 @@ public class RunParams {
 		rp.csvTimeGranularityInSeconds = getInteger(root, "csvTimeGranularityInSeconds", rp.csvTimeGranularityInSeconds);
 		rp.sheetsWriteIntervalInSeconds = getInteger(root, "sheetsWriteIntervalInSeconds", rp.sheetsWriteIntervalInSeconds);
 		rp.devicesToReport = getString(root, "devicesToReport", rp.devicesToReport);
-		rp.deviceNameToSheetId = getDeviceList(root);
 		rp.loadSheets(root);
 		return rp;
 	}
@@ -135,7 +121,6 @@ public class RunParams {
 				+ ", sheetsWriteIntervalInSeconds = " + sheetsWriteIntervalInSeconds
 				+ ", expectedEventRateInSeconds = " + expectedEventRateInSeconds
 				+ ", devicesToReport = " + devicesToReport
-				+ ", deviceNameToSheetId = " + deviceNameToSheetId
 				+ ", csvTimeGranularityInSeconds = " + csvTimeGranularityInSeconds
 				+ ", sheetsWriteIntervalInSeconds = " + sheetsWriteIntervalInSeconds
 				;

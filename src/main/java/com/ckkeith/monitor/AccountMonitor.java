@@ -6,7 +6,9 @@ import java.io.PrintStream;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 public class AccountMonitor extends Thread {
 
@@ -18,9 +20,7 @@ public class AccountMonitor extends Thread {
 	private GoogleSheetsWriter googleSheetsWriter;
 	RunParams runParams;
 	Map<String, DeviceMonitor> deviceMonitors = new HashMap<String, DeviceMonitor>();
-
-	// TO (eventually) DO : replace with HashSet
-	Map<String, String> deviceNameToSheetId = new HashMap<String, String>();
+	Set<String> deviceNames = new HashSet<String>();
 
 	public AccountMonitor(String credentials) throws Exception {
 		String[] creds = credentials.split("\t");
@@ -37,18 +37,18 @@ public class AccountMonitor extends Thread {
 		logFileName = Utils.getLogFileName(accountName, "devices-overview.txt");
 		runParams = RunParams.loadFromXML(getParamFilePath());
 		Utils.logToConsole(accountName + ": " + runParams.toString());
-		String[] mapEntries = runParams.deviceNameToSheetId.split("\\|");
-		for (String s : mapEntries) {
-			String[] kv = s.split(":");
-			if (kv.length == 2) {
-				deviceNameToSheetId.put(kv[0], kv[1]);
+		for (Map.Entry<String, ArrayList<RunParams.Dataset>> entry : runParams.sheets.entrySet()) {
+			for (RunParams.Dataset ds : entry.getValue()) {
+				for (String deviceName : ds.microcontrollers.keySet()) {
+					deviceNames.add(deviceName);
+				}
 			}
 		}
-		if (deviceNameToSheetId.size() == 0) {
-			Utils.logToConsole("No deviceNameToSheetId for " + accountName);
+		if (deviceNames.size() == 0) {
+			Utils.logToConsole("No deviceNames for " + accountName);
 			System.exit(-1);
 		}
-}
+	}
 
 	private String getParamFilePath() throws Exception {
 		return Utils.getHomeDir() + File.separator + "Documents" + File.separator + "tmp" + File.separator
@@ -70,7 +70,7 @@ public class AccountMonitor extends Thread {
 					device = device.getDevice("Bearer " + accessToken);
 					DeviceMonitor dm = new DeviceMonitor(this, device, c);
 					Utils.logWithGSheetsDate(LocalDateTime.now(), dm.toTabbedString(), logFileName);
-					if (deviceNameToSheetId.get(device.getName()) != null && deviceMonitors.get(device.getName()) == null) {
+					if (deviceNames.contains(device.getName()) && deviceMonitors.get(device.getName()) == null) {
 						deviceMonitors.put(device.getName(), dm);
 						newDevices.add(dm);
 					}
