@@ -32,7 +32,6 @@ public class PivotDataApp extends Thread {
 	int linesSkipped = 0;
 	int totalCsvLinesOutput = 0;
 	int linesReadForSensorData = 0;
-	String directory;
 	AccountMonitor accountMonitor;
 	
 	class ReverseReader {
@@ -79,8 +78,10 @@ public class PivotDataApp extends Thread {
 				if (startTime != null) {
 					lim = startTime.format(Utils.googleSheetsDateFormat);
 				}
-				Utils.logToConsole("Read lines from " + filePath + " back up to " + ts +
-						". startTime: " + lim + ". previous line: " + previousLine);
+				if (Utils.isDebug) {
+					Utils.logToConsole("Read lines from " + filePath + " back up to " + ts +
+					". startTime: " + lim + ". previous line: " + previousLine);
+			}
 				return null;
 			}
 		}
@@ -326,21 +327,7 @@ public class PivotDataApp extends Thread {
 		readSensorValues(fn, firstSensorValues, outputRows);
 	}
 
-	String getTimeLimits(ConcurrentSkipListMap<String, ConcurrentSkipListMap<String, String>> outputRows) {
-		String firstTimeStamp = "none";
-		String lastTimeStamp = "none";
-		Set<String> keys = outputRows.keySet();
-		Iterator<String> itr = keys.iterator();
-		while (itr.hasNext()) {
-			lastTimeStamp = itr.next();
-			if (firstTimeStamp.equals("none")) {
-				firstTimeStamp = lastTimeStamp;
-			}
-		}
-		return firstTimeStamp + "\t" + lastTimeStamp;
-	}
-
-	String processFile(String fn, ConcurrentSkipListMap<String, String> firstSensorValues,
+	void processFile(String fn, ConcurrentSkipListMap<String, String> firstSensorValues,
 			ConcurrentSkipListMap<String, ConcurrentSkipListMap<String, String>> outputRows) throws Exception {
 		totalInputLines = 0;
 		linesSkipped = 0;
@@ -348,13 +335,9 @@ public class PivotDataApp extends Thread {
 		linesReadForSensorData = 0;
 
 		readData(fn, firstSensorValues, outputRows);
-		String timeLimits = getTimeLimits(outputRows);
-		if (timeLimits.contains("none")) {
-			return null;
-		}
 		writeData(fn.replace(".txt", ".csv"), firstSensorValues, outputRows);
-		return Utils.padWithSpaces(fn.replace(".txt", ".csv"), 100)
-				+ "\t" + timeLimits + "\t" + totalCsvLinesOutput;
+		Utils.logToConsole(Utils.padWithSpaces(fn.replace(".txt", ".csv"), 100)
+				+ "\t" + totalCsvLinesOutput);
 	}
 
 	private void processPath(Path p) {
@@ -364,11 +347,8 @@ public class PivotDataApp extends Thread {
 			ConcurrentSkipListMap<String, String> firstSensorValues =
 					new ConcurrentSkipListMap<String, String>();
 
-			String summary = processFile(p.toFile().getCanonicalPath(), firstSensorValues,
+			processFile(p.toFile().getCanonicalPath(), firstSensorValues,
 					outputRows);
-			if (summary != null) {
-				System.out.println(summary);
-			}
 		} catch (Exception e) {
 			System.out.println("processPath() : " + e.toString());
 			e.printStackTrace();
@@ -381,13 +361,11 @@ public class PivotDataApp extends Thread {
 
 	void processDirectory() {
 		synchronized(this) {
-			String titles = Utils.padWithSpaces("photon", 100) + "\t" + Utils.padWithSpaces("first", 23) + "\t"
-					+ Utils.padWithSpaces("last", 23) + "\tdatapoints";
-			System.out.println(titles);
 			try {
 				Predicate<Path> isParticleFile = i -> (checkPath(i));
 				Consumer<Path> processPath = i -> processPath(i);
-				Files.walk(Paths.get(directory)).filter(isParticleFile).forEach(processPath);
+				Files.walk(Paths.get(Utils.getLogFileDir(accountMonitor.accountName))).
+							filter(isParticleFile).forEach(processPath);
 			} catch (Exception e) {
 				System.out.println("processDirectory() : " + e.toString());
 				e.printStackTrace();
@@ -399,7 +377,7 @@ public class PivotDataApp extends Thread {
 		Utils.logToConsole(Utils.padWithSpaces(accountMonitor.accountName, 20) + "\tPivotDataApp thread starting.");
 		while (true) {
 			try {
-//				processDirectory();
+				processDirectory();
 				Thread.sleep(60 * 60 * 1000); // one hour
 			} catch (InterruptedException e) {
 				Utils.logToConsole(Utils.padWithSpaces(accountMonitor.accountName, 20) + "\tFailure in PivotDataApp.run().");
