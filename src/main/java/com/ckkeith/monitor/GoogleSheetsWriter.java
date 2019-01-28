@@ -17,11 +17,8 @@ public class GoogleSheetsWriter extends Thread {
 	private ConcurrentSkipListMap<String, String> sensorNames = new ConcurrentSkipListMap<String, String>();
 	private HashMap<String, Integer> mostRecentRowCount = new HashMap<String, Integer>();
 
-	public GoogleSheetsWriter(AccountMonitor accountMonitor, PivotDataApp pivotDataApp) {
+	public GoogleSheetsWriter(AccountMonitor accountMonitor) {
 		this.accountMonitor = accountMonitor;
-		if (pivotDataApp != null) {
-//			pivotDataApp.fillInData(this);
-		}
 	}
 
 	public void addData(EventData eventData) {

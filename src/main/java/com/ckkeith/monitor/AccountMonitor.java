@@ -56,7 +56,7 @@ public class AccountMonitor extends Thread {
 				+ "runparams.xml";
 	}
 
-	void startDeviceMonitors(PivotDataApp pivotDataApp) {
+	void startDeviceMonitors() {
 		ParticleCloud c = new ParticleCloud("Bearer " + accessToken, true, false);
 		ArrayList<DeviceMonitor> newDevices = new ArrayList<DeviceMonitor>();
 		for (ParticleDevice device : c.getDevices()) {
@@ -98,27 +98,26 @@ public class AccountMonitor extends Thread {
 		for (DeviceMonitor dm : newDevices) {
 			dm.start();
 		}
-		// if (htmlFileDataWriter == null && runParams.htmlWriteIntervalInSeconds > 0) {
-		// 	htmlFileDataWriter = new HtmlFileDataWriter(this);
-		// 	htmlFileDataWriter.start();
-		// }
 		if (googleSheetsWriter == null && runParams.sheetsWriteIntervalInSeconds > 0) {
-			googleSheetsWriter = new GoogleSheetsWriter(this, pivotDataApp);
+			googleSheetsWriter = new GoogleSheetsWriter(this);
 			googleSheetsWriter.start();
+		}
+	}
+
+	public void startPivot() {
+		try {
+			PivotDataApp pivotDataApp = new PivotDataApp(this);
+			pivotDataApp.start();
+		} catch (Exception e1) {
+			Utils.logToConsole("Unable to construct a PivotDataApp");
+			e1.printStackTrace();
 		}
 	}
 
 	public void run() {
 		Utils.logToConsole(Utils.padWithSpaces(this.accountName, 20) + "\tAccountMonitor thread starting.");
-		PivotDataApp	pivotDataApp = null;
-		try {
-			pivotDataApp = new PivotDataApp(Utils.getLogFileDir(accountName), runParams);
-		} catch (Exception e1) {
-			Utils.logToConsole("Unable to construct a PivotDataApp");
-			e1.printStackTrace();
-		}
-		startDeviceMonitors(pivotDataApp);
-// Eventually put while(true) loop here to write longer term data to Google Sheets
+		startDeviceMonitors();
+		startPivot();
 		Utils.logToConsole(Utils.padWithSpaces(this.accountName, 20) + "\tAccountMonitor thread exiting.");
 	}
 

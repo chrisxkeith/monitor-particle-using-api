@@ -33,7 +33,7 @@ public class PivotDataApp extends Thread {
 	int totalCsvLinesOutput = 0;
 	int linesReadForSensorData = 0;
 	String directory;
-	RunParams params;
+	AccountMonitor accountMonitor;
 	
 	class ReverseReader {
 		ReversedLinesFileReader fr;
@@ -237,7 +237,7 @@ public class PivotDataApp extends Thread {
 				String err = checkInputData(s);
 				if (err == null) {
 					String[] vals = getVals(s);
-					if (params.devicesToReport.length() == 0 || params.devicesToReport.contains(vals[2])) {
+					if (accountMonitor.runParams.devicesToReport.length() == 0 || accountMonitor.runParams.devicesToReport.contains(vals[2])) {
 						firstSensorValues.put(vals[2], vals[3]);
 					}
 				} else {
@@ -264,7 +264,9 @@ public class PivotDataApp extends Thread {
 	private String[] setTimeGranularity(String[] vals) {
 		LocalDateTime ldt = LocalDateTime.parse(vals[1], googleSheetsDateFormat);
 		int seconds = ldt.toLocalTime().toSecondOfDay();
-		int roundedSeconds = ((seconds + (params.csvTimeGranularityInSeconds / 2))/ params.csvTimeGranularityInSeconds) * params.csvTimeGranularityInSeconds;
+		int roundedSeconds = ((seconds + (accountMonitor.runParams.csvTimeGranularityInSeconds / 2))
+								/ accountMonitor.runParams.csvTimeGranularityInSeconds)
+								* accountMonitor.runParams.csvTimeGranularityInSeconds;
 		int dayFactor;
 		if (roundedSeconds < 86400) {
 			dayFactor = 0;
@@ -297,7 +299,7 @@ public class PivotDataApp extends Thread {
 							System.out.println("Starting to process\t" + currentDay);
 						}
 					}
-					if (params.devicesToReport.length() == 0 || params.devicesToReport.contains(vals[2])) {
+					if (accountMonitor.runParams.devicesToReport.length() == 0 || accountMonitor.runParams.devicesToReport.contains(vals[2])) {
 						ConcurrentSkipListMap<String, String> sensorValues = outputRows.get(vals[1]);
 						if (sensorValues == null) {
 							sensorValues = new ConcurrentSkipListMap<String, String>();
@@ -394,60 +396,19 @@ public class PivotDataApp extends Thread {
 	}
 
 	public void run() {
+		Utils.logToConsole(Utils.padWithSpaces(accountMonitor.accountName, 20) + "\tPivotDataApp thread starting.");
 		while (true) {
 			try {
-				processDirectory();
+//				processDirectory();
 				Thread.sleep(60 * 60 * 1000); // one hour
 			} catch (InterruptedException e) {
-				Utils.logToConsole("Failure in PivotDataApp.run()");
+				Utils.logToConsole(Utils.padWithSpaces(accountMonitor.accountName, 20) + "\tFailure in PivotDataApp.run().");
 				e.printStackTrace();
 			}
 		}
 	}
 
-	public PivotDataApp(String directory, RunParams params) {
-		this.directory = directory;
-		this.params = params;
-	}
-
-	private void backFillData(Path p, GoogleSheetsWriter googleSheetsWriter, LocalDateTime timeLimit) {
-		ReverseReader br = null;
-		try {
-			String fn = p.toFile().getCanonicalPath();
-			br = new ReverseReader(fn, timeLimit);
-			String s;
-			int dataPoints = 0;
-			while ((s = br.readLine()) != null) {
-				String err = checkInputData(s);
-				if (err == null) {
-					String[] vals = getVals(s);
-					ZonedDateTime zdt = ZonedDateTime.parse(vals[0], logDateFormat);
-					ZoneId caZone = ZoneId.of("America/Los_Angeles");
-					ZonedDateTime caZoned = zdt.withZoneSameInstant(caZone);
-					EventData sensorDataPoint = new EventData(caZoned.toLocalDateTime(), vals[4],
-							vals[2].replace(vals[4] + " ", ""), vals[3]);
-					googleSheetsWriter.addData(sensorDataPoint);
-					dataPoints++;
-				}
-			}
-			Utils.logToConsole("loadHtml: back filled " + dataPoints + " data points for " + fn);
-		} catch (Exception e) {
-			Utils.logToConsole("loadHtml() : " + e.getMessage());
-			e.printStackTrace();
-		}
-	}
-
-	public void fillInData(GoogleSheetsWriter googleSheetsWriter) {
-		synchronized (this) {
-			try {
-				LocalDateTime timeLimit = LocalDateTime.now().minusMinutes(this.params.dataIntervalInMinutes);
-				Predicate<Path> isParticleFile = i -> (checkPath(i));
-				Consumer<Path> processPath = i -> backFillData(i, googleSheetsWriter, timeLimit);
-				Files.walk(Paths.get(directory)).filter(isParticleFile).forEach(processPath);
-			} catch (Exception e) {
-				System.out.println("fillInData() : " + e.toString());
-				e.printStackTrace();
-			}
-		}
+	public PivotDataApp(AccountMonitor accountMonitor) {
+		this.accountMonitor = accountMonitor;
 	}
 }
