@@ -3,15 +3,22 @@
         <sheet>
             <!-- Blank sheetId indicates that it should be created. -->
             <sheetId>Some-Google-Sheet-Id</sheetId>
-            <duration>00:00:10:00</duration> <!-- days:hours:minutes:seconds -->
-            <dataGranularity>00:00:00:02</dataGranularity> <!-- days:hours:minutes:seconds -->
 
-             <!-- All zeros mean no interactive update, e.g., create and populate once only -->
-            <updateInterval>00:00:00:02</updateInterval> <!-- days:hours:minutes:seconds -->
+            <!-- days:hours:minutes:seconds previous to 'now', default : 10 minutes -->
+            <duration>00:00:10:00</duration>
+
+            <!-- days:hours:minutes:seconds, default : 5 seconds -->
+            <dataGranularity>00:00:00:02</dataGranularity>
+
+            <!-- days:hours:minutes:seconds, default : no updates -->
+            <!-- All zeros (or empty/missing) mean no interactive update, e.g., create and populate once only -->
+            <updateInterval>00:00:00:02</updateInterval>
 
              <!-- days:hours:minutes:seconds relative to midnight (local time) Saturday. -->
-             <!-- Must be blank or missing if sheetId specified. -->
+             <!-- default (if needed) : 00:00:05:00, e.g., daily 5 minutes after midnight. -->
+             <!-- Will be ignored if sheetId is specified. -->
             <createInterval></createInterval>
+
              <dataSet> <!-- must have at least one -->
                 <microcontrollerName>thermistor-test</microcontrollerName>
                 <sensors> <!-- must have at least one -->
@@ -22,8 +29,7 @@
         <sheet>
             <sheetId></sheetId>
             <duration>01:00:00:00</duration>
-            <dataGranularity>00:00:05:00</dataGranularity>
-            <updateInterval>00:00:00:00</updateInterval> 
+            <dataGranularity>00:00:02:00</dataGranularity>
             <createInterval>00:00:05:00</createInterval>
              <dataSet>
                 <microcontrollerName>thermistor2-test</microcontrollerName>
