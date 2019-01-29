@@ -31,5 +31,5 @@ target/
 .project
 .settings/
 credentials/
-src/main/resources/com/*
+src/main/resources/com/ckkeith/monitor/*.json
 tokens/

@@ -1,0 +1,59 @@
+<doc>
+    <dataIntervalInMinutes>11</dataIntervalInMinutes>
+    <deviceNameToSheetId>thermistor-test:15b2pZBHJI3LCryhKYlRfh8b3vpDwYXMcPqO6aBfXKrI</deviceNameToSheetId>
+    <deviceNameToSheetId>thermistor2-test:15b2pZBHJI3LCryhKYlRfh8b3vpDwYXMcPqO6aBfXKrI</deviceNameToSheetId>
+    <deviceNameToSheetId>photon-05:1hUxA830SyudgCyya54NVV--5H7mLhxkQsXJHYgwEkho</deviceNameToSheetId>
+    <deviceNameToSheetId>photon-06:1wjvss67O9lI2efVafDxKmFaaJSxLXnpB0pRbn8ZKj9g</deviceNameToSheetId>
+    <sheets>
+        <sheet>
+            <!-- blank sheetId indicates that it must be created -->
+            <sheetId>Some-Google-Sheet-Id</sheetId>
+             <dataSet> <!-- must have at least one -->
+                <microcontrollerName>thermistor-test</microcontrollerName>
+                <sensors> <!-- must have at least one -->
+                    <sensorName>Thermistor 01 sensor:</sensorName>
+                </sensors>
+            </dataSet>
+        </sheet>
+        <sheet>
+            <sheetId></sheetId>
+            <duration>00:00:00:10</duration> <!-- days:hours:minutes:seconds -->
+            <dataGranularity>00:00:00:01</dataGranularity> <!-- days:hours:minutes:seconds -->
+            <updateInterval>00:00:00:00</updateInterval> <!-- days:hours:minutes:seconds relative to midnight -->
+            <createInterval>00:00:00:00</createInterval> <!-- days:hours:minutes:seconds relative to midnight -->
+             <dataSet>
+                <microcontrollerName>thermistor-test</microcontrollerName>
+                <sensors>
+                    <sensorName>Thermistor 01 sensor:</sensorName>
+                </sensors>
+            </dataSet>
+        </sheet>
+        <sheet>
+            <sheetId>Some-Other-Google-Sheet-Id</sheetId>
+            <dataSet>
+                <microcontrollerName>thermistor-test</microcontrollerName>
+                <sensors>
+                    <sensorName>Thermistor 01 sensor:</sensorName>
+                </sensors>
+            </dataSet>
+            <dataSet>
+                <microcontrollerName>thermistor2-test</microcontrollerName>
+                <sensors>
+                    <sensorName>Thermistor 02 sensor:</sensorName>
+                </sensors>
+            </dataSet>
+            <dataSet>
+                <microcontrollerName>photon-05</microcontrollerName>
+                <sensors>
+                    <sensorName>Thermistor 05 sensor:</sensorName>
+                </sensors>
+            </dataSet>
+            <dataSet>
+                <microcontrollerName>photon-06</microcontrollerName>
+                <sensors>
+                    <sensorName>Thermistor 06 sensor:</sensorName>
+                </sensors>
+            </dataSet>
+        </sheet>
+    </sheets>
+</doc>
