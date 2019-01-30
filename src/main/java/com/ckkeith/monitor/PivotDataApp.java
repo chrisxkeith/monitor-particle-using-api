@@ -20,6 +20,21 @@ import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 public class PivotDataApp {
+
+	class SensorData {
+		SensorData(LocalDateTime localDateTime, String deviceName, String sensorName, String sensorValue) {
+			this.localDateTime = localDateTime;
+			this.deviceName = deviceName;
+			this.sensorName = sensorName;
+			this.sensorValue = sensorValue;
+		}
+		LocalDateTime	localDateTime;
+		String			deviceName;
+		String			sensorName;
+		String			sensorValue;
+	}
+
+	final private DateTimeFormatter googleSheetsDateFormat = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
 	final static String expectedInputData =
 			"logTimestamp<tab>GSheetsTimestamp<tab>sensorName<tab>sensorValue<tab>photonName";
 	/*
@@ -35,7 +50,7 @@ public class PivotDataApp {
 	AccountMonitor accountMonitor;
 	
 	private void writeCsv(String fileName, ConcurrentSkipListMap<String, String> firstSensorValues,
-			ConcurrentSkipListMap<String, ConcurrentSkipListMap<String, String>> outputRows) throws Exception {
+			ConcurrentSkipListMap<LocalDateTime, ConcurrentSkipListMap<String, String>> outputRows) throws Exception {
 		Set<String> sensorNames = firstSensorValues.keySet();
 		StringBuilder sb = new StringBuilder(" ");
 		Iterator<String> sensorIt = sensorNames.iterator();
@@ -47,11 +62,11 @@ public class PivotDataApp {
 			String sensorNameString = sb.toString();
 			csvStream.write(sensorNameString + System.getProperty("line.separator"));
 
-			Set<String> keys = outputRows.keySet();
-			Iterator<String> itr = keys.iterator();
+			Set<LocalDateTime> keys = outputRows.keySet();
+			Iterator<LocalDateTime> itr = keys.iterator();
 			while (itr.hasNext()) {
-				String timestamp = itr.next();
-				sb = new StringBuilder(timestamp);
+				LocalDateTime timestamp = itr.next();
+				sb = new StringBuilder(googleSheetsDateFormat.format(timestamp));
 				ConcurrentSkipListMap<String, String> entries = outputRows.get(timestamp);
 
 				sensorIt = sensorNames.iterator();
@@ -73,11 +88,10 @@ public class PivotDataApp {
 	}
 
 	private void writeData(String fileName, ConcurrentSkipListMap<String, String> firstSensorValues,
-			ConcurrentSkipListMap<String, ConcurrentSkipListMap<String, String>> outputRows) throws Exception {
+			ConcurrentSkipListMap<LocalDateTime, ConcurrentSkipListMap<String, String>> outputRows) throws Exception {
 		writeCsv(fileName, firstSensorValues, outputRows);
 	}
 
-	final private DateTimeFormatter googleSheetsDateFormat = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
 	final private DateTimeFormatter logDateFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssX");
 
 	private String checkInputData(String s) {
@@ -93,7 +107,7 @@ public class PivotDataApp {
 		return null;
 	}
 
-	private String[] mungeValues(String vals[]) throws Exception {
+	private SensorData mungeValues(String vals[]) throws Exception {
 		try {
 			if (vals.length < 4) {
 				String newVals[] = new String[4];
@@ -156,11 +170,11 @@ public class PivotDataApp {
 				}
 			}
 		}
-		return vals;
+		return new SensorData(LocalDateTime.parse(vals[1], googleSheetsDateFormat), vals[0], vals[2], vals[3]);
 	}
 
 	private void readSensorNames(String fn, ConcurrentSkipListMap<String, String> firstSensorValues,
-			ConcurrentSkipListMap<String, ConcurrentSkipListMap<String, String>> outputRows) throws Exception {
+			ConcurrentSkipListMap<LocalDateTime, ConcurrentSkipListMap<String, String>> outputRows) throws Exception {
 		BufferedReader br = null;
 		try {
 			br = new BufferedReader(new FileReader(fn));
@@ -169,10 +183,8 @@ public class PivotDataApp {
 				totalInputLines++;
 				String err = checkInputData(s);
 				if (err == null) {
-					String[] vals = getVals(s);
-					if (accountMonitor.runParams.devicesToReport.length() == 0 || accountMonitor.runParams.devicesToReport.contains(vals[2])) {
-						firstSensorValues.put(vals[2], vals[3]);
-					}
+					SensorData sensorData = getVals(s);
+					firstSensorValues.put(sensorData.sensorName, sensorData.sensorValue);
 				} else {
 					linesSkipped++;
 				}
@@ -186,20 +198,20 @@ public class PivotDataApp {
 		}
 	}
 
-	private String[] getVals(String s) throws Exception {
+	private SensorData getVals(String s) throws Exception {
 		String vals[] = s.split("\t");
 		String deviceName = "unknown device";
 		if (vals.length > 4) {
 			deviceName = vals[4];
 		}
-		String newVals[] = setTimeGranularity(mungeValues(vals));
-		newVals[2] = deviceName + " " + newVals[2];
-		return newVals;
+		SensorData sensorData = mungeValues(vals);
+		setTimeGranularity(sensorData);
+		sensorData.sensorName = deviceName + " " + sensorData.sensorName;
+		return sensorData;
 	}
 
-	private String[] setTimeGranularity(String[] vals) {
-		LocalDateTime ldt = LocalDateTime.parse(vals[1], googleSheetsDateFormat);
-		int seconds = ldt.toLocalTime().toSecondOfDay();
+	private void setTimeGranularity(SensorData sensorData) {
+		int seconds = sensorData.localDateTime.toLocalTime().toSecondOfDay();
 		int roundedSeconds = ((seconds + (accountMonitor.runParams.csvTimeGranularityInSeconds / 2))
 								/ accountMonitor.runParams.csvTimeGranularityInSeconds)
 								* accountMonitor.runParams.csvTimeGranularityInSeconds;
@@ -211,37 +223,26 @@ public class PivotDataApp {
 			dayFactor = 1;
 		}
 		LocalTime lt = LocalTime.ofSecondOfDay(roundedSeconds);
-		ldt = LocalDateTime.of(ldt.toLocalDate(), lt).plusDays(dayFactor);
-		vals[1] = ldt.format(googleSheetsDateFormat);
-		return vals;
+		sensorData.localDateTime = LocalDateTime.of(sensorData.localDateTime.toLocalDate(), lt).plusDays(dayFactor);
 	}
 
 	private void readSensorValues(String fn, ConcurrentSkipListMap<String, String> firstSensorValues,
-			ConcurrentSkipListMap<String, ConcurrentSkipListMap<String, String>> outputRows) throws Exception {
+			ConcurrentSkipListMap<LocalDateTime, ConcurrentSkipListMap<String, String>> outputRows) throws Exception {
 		BufferedReader br = null;
 		try {
-			String currentDay = "junk";
+			br = new BufferedReader(new FileReader(fn));
 			String s;
 			while ((s = br.readLine()) != null) {
 				String err = checkInputData(s);
 				if (err == null) {
 					linesReadForSensorData++;
-					String[] vals = getVals(s);
-					String thisDay = vals[1].substring(0, 11);
-					if (Utils.isDebug) {
-						if (!thisDay.equals(currentDay)) {
-							currentDay = thisDay;
-							System.out.println("Starting to process\t" + currentDay);
-						}
+					SensorData sensorData = getVals(s);
+					ConcurrentSkipListMap<String, String> sensorValues = outputRows.get(sensorData.localDateTime);
+					if (sensorValues == null) {
+						sensorValues = new ConcurrentSkipListMap<String, String>();
 					}
-					if (accountMonitor.runParams.devicesToReport.length() == 0 || accountMonitor.runParams.devicesToReport.contains(vals[2])) {
-						ConcurrentSkipListMap<String, String> sensorValues = outputRows.get(vals[1]);
-						if (sensorValues == null) {
-							sensorValues = new ConcurrentSkipListMap<String, String>();
-						}
-						sensorValues.put(vals[2], vals[3]);
-						outputRows.put(vals[1], sensorValues);
-					}
+					sensorValues.put(sensorData.sensorName, sensorData.sensorValue);
+					outputRows.put(sensorData.localDateTime, sensorValues);
 				}
 			}
 		} catch (Exception e) {
@@ -254,7 +255,7 @@ public class PivotDataApp {
 	}
 
 	private void readData(String fn, ConcurrentSkipListMap<String, String> firstSensorValues,
-			ConcurrentSkipListMap<String, ConcurrentSkipListMap<String, String>> outputRows) throws Exception {
+			ConcurrentSkipListMap<LocalDateTime, ConcurrentSkipListMap<String, String>> outputRows) throws Exception {
 		File f = new File(fn);
 		if (!f.exists()) {
 			System.out.println("No inputFile file : " + f.getCanonicalPath());
@@ -265,7 +266,7 @@ public class PivotDataApp {
 	}
 
 	void processFile(String fn, ConcurrentSkipListMap<String, String> firstSensorValues,
-			ConcurrentSkipListMap<String, ConcurrentSkipListMap<String, String>> outputRows) throws Exception {
+			ConcurrentSkipListMap<LocalDateTime, ConcurrentSkipListMap<String, String>> outputRows) throws Exception {
 		totalInputLines = 0;
 		linesSkipped = 0;
 		totalCsvLinesOutput = 0;
@@ -279,8 +280,8 @@ public class PivotDataApp {
 
 	private void processPath(Path p) {
 		try {
-			ConcurrentSkipListMap<String, ConcurrentSkipListMap<String, String>> outputRows =
-					new ConcurrentSkipListMap<String, ConcurrentSkipListMap<String, String>>();
+			ConcurrentSkipListMap<LocalDateTime, ConcurrentSkipListMap<String, String>> outputRows =
+					new ConcurrentSkipListMap<LocalDateTime, ConcurrentSkipListMap<String, String>>();
 			ConcurrentSkipListMap<String, String> firstSensorValues =
 					new ConcurrentSkipListMap<String, String>();
 
