@@ -24,6 +24,7 @@ public class RunParams {
 	String		devicesToReport = "";
 	Integer		csvTimeGranularityInSeconds = 60; // E.g. '60' == round to minutes, '30' == round to minutes and half-minutes.
 	Integer		sheetsWriteIntervalInSeconds = 10;
+	Boolean		writeLongTermData = false;
 	Hashtable<String, ArrayList<Dataset>> sheets =
 				new Hashtable<String, ArrayList<Dataset>>();
 
@@ -109,6 +110,7 @@ public class RunParams {
 		rp.expectedEventRateInSeconds = getInteger(root, "expectedEventRateInSeconds", rp.expectedEventRateInSeconds);
 		rp.csvTimeGranularityInSeconds = getInteger(root, "csvTimeGranularityInSeconds", rp.csvTimeGranularityInSeconds);
 		rp.sheetsWriteIntervalInSeconds = getInteger(root, "sheetsWriteIntervalInSeconds", rp.sheetsWriteIntervalInSeconds);
+		rp.writeLongTermData = getInteger(root, "writeLongTermData", 0) == 0 ? false : true;
 		rp.devicesToReport = getString(root, "devicesToReport", rp.devicesToReport);
 		rp.loadSheets(root);
 		return rp;
