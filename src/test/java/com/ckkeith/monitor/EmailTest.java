@@ -12,10 +12,10 @@ public class EmailTest extends TestCase {
 		try {
 			String ret = GMailer.printOneLabel();
 			System.out.println(ret);
-//			assertTrue(ret.contains("label"));
+			assertTrue(ret.contains("label"));
 		} catch (Exception e) {
 			e.printStackTrace();
-//			fail();
+			fail();
 		}
 	}
 }
