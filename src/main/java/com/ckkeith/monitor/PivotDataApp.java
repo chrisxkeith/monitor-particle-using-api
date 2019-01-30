@@ -1,9 +1,10 @@
 // Please credit chris.keith@gmail.com
 package com.ckkeith.monitor;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
 import java.io.FileWriter;
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -17,9 +18,8 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
-import org.apache.commons.io.input.ReversedLinesFileReader;
 
-public class PivotDataApp extends Thread {
+public class PivotDataApp {
 	final static String expectedInputData =
 			"logTimestamp<tab>GSheetsTimestamp<tab>sensorName<tab>sensorValue<tab>photonName";
 	/*
@@ -34,70 +34,6 @@ public class PivotDataApp extends Thread {
 	int linesReadForSensorData = 0;
 	AccountMonitor accountMonitor;
 	
-	class ReverseReader {
-		ReversedLinesFileReader fr;
-		String					filePath;
-		LocalDateTime			startTime;
-		String					previousLine;
-
-		@SuppressWarnings("deprecation")
-		ReverseReader(String filePath, LocalDateTime startTime) throws Exception {
-			this.filePath = filePath;
-			this.startTime = startTime;
-			this.previousLine = "no previous line";
-			fr = new ReversedLinesFileReader(new File(filePath));
-		}
-
-		private String readLine() throws Exception {
-			while (true) {
-				String ch = fr.readLine();
-				if (ch == null) {
-					fr.close();
-					Utils.logToConsole("Reached start of file: " + filePath + ". previous line: " + previousLine);
-					return null;
-				}
-				String[] chunks = ch.split("\t");
-				if (chunks.length == 0) {
-					continue;
-				}
-				LocalDateTime ldt;
-				try {
-					ldt = LocalDateTime.parse(chunks[0], logDateFormat);
-				} catch(Exception e ) {
-					if (Utils.isDebug) {
-						Utils.logToConsole("Does not start with a timestamp : " + ch);
-					}
-					continue;
-				}
-				if (startTime == null || startTime.isBefore(ldt)) {
-					previousLine = ch;
-					return ch;
-				}
-				String ts = ldt.format(Utils.googleSheetsDateFormat);
-				String lim = "no startTime";
-				if (startTime != null) {
-					lim = startTime.format(Utils.googleSheetsDateFormat);
-				}
-				if (Utils.isDebug) {
-					Utils.logToConsole("Read lines from " + filePath + " back up to " + ts +
-					". startTime: " + lim + ". previous line: " + previousLine);
-			}
-				return null;
-			}
-		}
-
-		void close() {
-			if (fr != null) {
-				try {
-					fr.close();
-				} catch (IOException e) {
-					Utils.logToConsole("close() : catch : " + e.getMessage());
-					e.printStackTrace();
-				}
-			}
-		}
-	}
-
 	private void writeCsv(String fileName, ConcurrentSkipListMap<String, String> firstSensorValues,
 			ConcurrentSkipListMap<String, ConcurrentSkipListMap<String, String>> outputRows) throws Exception {
 		Set<String> sensorNames = firstSensorValues.keySet();
@@ -223,15 +159,11 @@ public class PivotDataApp extends Thread {
 		return vals;
 	}
 
-	LocalDateTime getTimeLimit() {
-		return LocalDateTime.now().minusDays(14); // two weeks.
-	}
-
 	private void readSensorNames(String fn, ConcurrentSkipListMap<String, String> firstSensorValues,
 			ConcurrentSkipListMap<String, ConcurrentSkipListMap<String, String>> outputRows) throws Exception {
-		ReverseReader br = null;
+		BufferedReader br = null;
 		try {
-			br = new ReverseReader(fn, getTimeLimit());
+			br = new BufferedReader(new FileReader(fn));
 			String s;
 			while ((s = br.readLine()) != null) {
 				totalInputLines++;
@@ -246,6 +178,9 @@ public class PivotDataApp extends Thread {
 				}
 			}
 		} catch (Exception e) {
+			if (br != null) {
+				br.close();
+			}
 			Utils.logToConsole("readSensorNames() : " + e.getMessage());
 			e.printStackTrace();
 		}
@@ -283,9 +218,8 @@ public class PivotDataApp extends Thread {
 
 	private void readSensorValues(String fn, ConcurrentSkipListMap<String, String> firstSensorValues,
 			ConcurrentSkipListMap<String, ConcurrentSkipListMap<String, String>> outputRows) throws Exception {
-		ReverseReader br = null;
+		BufferedReader br = null;
 		try {
-			br = new ReverseReader(fn, getTimeLimit());
 			String currentDay = "junk";
 			String s;
 			while ((s = br.readLine()) != null) {
@@ -311,6 +245,9 @@ public class PivotDataApp extends Thread {
 				}
 			}
 		} catch (Exception e) {
+			if (br != null) {
+				br.close();
+			}
 			Utils.logToConsole("readSensorValues() : " + e.getMessage());
 			e.printStackTrace();
 		}
@@ -359,31 +296,18 @@ public class PivotDataApp extends Thread {
 		return p.toString().endsWith("_particle_log.txt");
 	}
 
-	void processDirectory() {
-		synchronized(this) {
-			try {
-				Predicate<Path> isParticleFile = i -> (checkPath(i));
-				Consumer<Path> processPath = i -> processPath(i);
-				Files.walk(Paths.get(Utils.getLogFileDir(accountMonitor.accountName))).
-							filter(isParticleFile).forEach(processPath);
-			} catch (Exception e) {
-				System.out.println("processDirectory() : " + e.toString());
-				e.printStackTrace();
-			}
+	public void writeLongTermData() {
+		Utils.logToConsole(accountMonitor.accountName + "PivotDataApp.processDirectory() started.");
+		try {
+			Predicate<Path> isParticleFile = i -> (checkPath(i));
+			Consumer<Path> processPath = i -> processPath(i);
+			Files.walk(Paths.get(Utils.getLogFileDir(accountMonitor.accountName))).
+						filter(isParticleFile).forEach(processPath);
+		} catch (Exception e) {
+			System.out.println("processDirectory() : " + e.toString());
+			e.printStackTrace();
 		}
-	}
-
-	public void run() {
-		Utils.logToConsole(Utils.padWithSpaces(accountMonitor.accountName, 20) + "\tPivotDataApp thread starting.");
-		while (true) {
-			try {
-				processDirectory();
-				Thread.sleep(60 * 60 * 1000); // one hour
-			} catch (InterruptedException e) {
-				Utils.logToConsole(Utils.padWithSpaces(accountMonitor.accountName, 20) + "\tFailure in PivotDataApp.run().");
-				e.printStackTrace();
-			}
-		}
+		Utils.logToConsole(accountMonitor.accountName + "PivotDataApp.processDirectory() finished.");
 	}
 
 	public PivotDataApp(AccountMonitor accountMonitor) {

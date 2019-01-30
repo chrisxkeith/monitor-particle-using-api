@@ -104,20 +104,12 @@ public class AccountMonitor extends Thread {
 		}
 	}
 
-	public void startPivot() {
-		try {
-			PivotDataApp pivotDataApp = new PivotDataApp(this);
-			pivotDataApp.start();
-		} catch (Exception e1) {
-			Utils.logToConsole("Unable to construct a PivotDataApp");
-			e1.printStackTrace();
-		}
-	}
-
 	public void run() {
 		Utils.logToConsole(Utils.padWithSpaces(this.accountName, 20) + "\tAccountMonitor thread starting.");
 		startDeviceMonitors();
-		startPivot();
+		if (runParams.writeLongTermData) {
+			(new PivotDataApp(this)).writeLongTermData();
+		}
 		Utils.logToConsole(Utils.padWithSpaces(this.accountName, 20) + "\tAccountMonitor thread exiting.");
 	}
 
