@@ -22,13 +22,17 @@ public class ParticleDeviceEvent extends AnyDeviceEvent {
 	}
 	
 	public void handleEvent(ParticleEvent e) {
-		LocalDateTime ldt = LocalDateTime.ofInstant(e.getPublishedAt().toInstant(), ZoneId.systemDefault());
-		String s = Utils.logWithGSheetsDate(ldt, e.toTabbedString(device), logFileName);
-		if (Utils.isDebug) {
-			Utils.logToConsole(s);
+		if (e.getName().equals("server")) {
+			accountMonitor.runParams.setParam(e.getData(), logFileName);
+		} else {
+			LocalDateTime ldt = LocalDateTime.ofInstant(e.getPublishedAt().toInstant(), ZoneId.systemDefault());
+			String s = Utils.logWithGSheetsDate(ldt, e.toTabbedString(device), logFileName);
+			if (Utils.isDebug) {
+				Utils.logToConsole(s);
+			}
+			mostRecentEvent = e;
+			accountMonitor.addDataPoint(ldt, device.getName(), e.getName(), e.getData());
 		}
-		mostRecentEvent = e;
-		accountMonitor.addDataPoint(ldt, device.getName(), e.getName(), e.getData());
 	}
 
 	@Override

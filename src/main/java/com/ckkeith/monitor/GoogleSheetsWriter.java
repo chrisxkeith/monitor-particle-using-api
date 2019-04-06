@@ -44,7 +44,7 @@ public class GoogleSheetsWriter extends Thread {
 	}
 
 	void deleteOldData() {
-		LocalDateTime start = LocalDateTime.now().minusMinutes(accountMonitor.runParams.dataIntervalInMinutes);
+		LocalDateTime start = LocalDateTime.now().minusMinutes(accountMonitor.runParams.sheetsDataIntervalInMinutes);
 		Set<LocalDateTime> keys = sensorData.keySet();
 		Iterator<LocalDateTime> itr = keys.iterator();
 		while (itr.hasNext()) {

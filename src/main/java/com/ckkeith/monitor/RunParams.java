@@ -18,7 +18,7 @@ public class RunParams {
 		}
 	};
 
-	Integer		dataIntervalInMinutes = 10;
+	Integer		sheetsDataIntervalInMinutes = 20;
 	Integer		htmlWriteIntervalInSeconds = 5;
 	Integer		expectedEventRateInSeconds = 60 * 2;
 	String		devicesToReport = "";
@@ -105,7 +105,7 @@ public class RunParams {
 	static RunParams loadFromXML(String filePath) throws Exception {
 		RunParams rp = new RunParams();
 		Element root = Utils.readTextFileIntoDOM(filePath).getDocumentElement();
-		rp.dataIntervalInMinutes = getInteger(root, "dataIntervalInMinutes", rp.dataIntervalInMinutes);
+		rp.sheetsDataIntervalInMinutes = getInteger(root, "sheetsDataIntervalInMinutes", rp.sheetsDataIntervalInMinutes);
 		rp.htmlWriteIntervalInSeconds = getInteger(root, "htmlWriteIntervalInSeconds", rp.htmlWriteIntervalInSeconds);
 		rp.expectedEventRateInSeconds = getInteger(root, "expectedEventRateInSeconds", rp.expectedEventRateInSeconds);
 		rp.csvTimeGranularityInSeconds = getInteger(root, "csvTimeGranularityInSeconds", rp.csvTimeGranularityInSeconds);
@@ -116,9 +116,38 @@ public class RunParams {
 		return rp;
 	}
 
+	public void setParam(String data, String logFileName) {
+		String[] kv = data.split("=");
+		if (kv.length != 2) {
+			Utils.log("Bad server input: " + data, logFileName);
+		} else {
+			String paramName = kv[0];
+			try {
+				Integer paramValue = Integer.parseInt(kv[1]);
+				if (paramName.equals("sheetsDataIntervalInMinutes")) {
+					sheetsDataIntervalInMinutes = paramValue;
+				} else if (paramName.equals("htmlWriteIntervalInSeconds")) {
+					htmlWriteIntervalInSeconds = paramValue;
+				} else if (paramName.equals("expectedEventRateInSeconds")) {
+					expectedEventRateInSeconds = paramValue;
+				} else if (paramName.equals("csvTimeGranularityInSeconds")) {
+					csvTimeGranularityInSeconds = paramValue;
+				} else if (paramName.equals("sheetsWriteIntervalInSeconds")) {
+					sheetsWriteIntervalInSeconds = paramValue;
+				} else {
+					Utils.log("Unknown server parameter: " + paramName + ", value: "
+							+ (new Integer(paramValue)).toString(), logFileName);
+				}
+				Utils.log(toString(), logFileName);
+			} catch (Exception e) {
+				Utils.log("Bad server input: " + data, logFileName);
+			} 
+		}
+	}
+
 	public String toString() {
 		return "RunParams : "
-				+ "dataIntervalInMinutes = " + dataIntervalInMinutes
+				+ "sheetsDataIntervalInMinutes = " + sheetsDataIntervalInMinutes
 				+ ", htmlWriteIntervalInSeconds = " + htmlWriteIntervalInSeconds
 				+ ", sheetsWriteIntervalInSeconds = " + sheetsWriteIntervalInSeconds
 				+ ", expectedEventRateInSeconds = " + expectedEventRateInSeconds
