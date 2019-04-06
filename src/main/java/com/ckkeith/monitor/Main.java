@@ -9,6 +9,29 @@ import java.util.ArrayList;
 public class Main {
 	private static ArrayList<AccountMonitor> monitors = new ArrayList<AccountMonitor>();
 
+	private static LocalDateTime getShutdownTime() {
+		// shutdown a little before midnight.
+		return LocalDateTime.now().withHour(23).withMinute(57);
+/*
+		// Shutdown a few minutes before the hour interval after system restarted.
+		// A new instance of this will be restarted by Task Scheduler.
+		LocalDateTime bootTime = Utils.getBootTime();
+		int bootMinute;
+		if (bootTime == null) {
+			bootMinute = 0;
+		} else {
+			bootMinute = bootTime.getMinute();
+		}
+		int hourIncrement = 1;
+		if (bootMinute > LocalDateTime.now().getMinute()) {
+			hourIncrement--;
+		}
+		return LocalDateTime.now().plusHours(hourIncrement).withMinute(bootMinute - 3);
+		// - 3 to increase the odds that this instance is gone
+		// before Task Scheduler tries to start a new one.
+*/
+	}
+
 	public static void main(String[] args) {
 		try {
 			if (!Utils.isDebug) {
@@ -26,23 +49,7 @@ public class Main {
 			if (Utils.runFromTerminal() || Utils.isDebug) {
 				Utils.logToConsole("Running from terminal, will not automatically shut down.");
 			} else {
-				// Shutdown a few minutes before the hour interval after system restarted.
-				// A new instance of this Will be restarted by Task Scheduler.
-				LocalDateTime bootTime = Utils.getBootTime();
-				int bootMinute;
-				if (bootTime == null) {
-					bootMinute = 0;
-				} else {
-					bootMinute = bootTime.getMinute();
-				}
-				int hourIncrement = 1;
-				if (bootMinute > LocalDateTime.now().getMinute()) {
-					hourIncrement--;
-				}
-				LocalDateTime then = LocalDateTime.now().plusHours(hourIncrement).withMinute(bootMinute - 3);
-				// - 3 to increase the odds that this instance is gone
-				// before Task Scheduler tries to start a new one.
-				Utils.sleepUntil("MonitorParticle main - waiting to System.exit(0).", then);
+				Utils.sleepUntil("MonitorParticle main - waiting to System.exit(0).", getShutdownTime());
 				System.exit(0);
 			}
 		} catch (Exception e) {
