@@ -9,6 +9,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentSkipListMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class GoogleSheetsWriter extends Thread {
 
@@ -132,8 +134,28 @@ public class GoogleSheetsWriter extends Thread {
 		}
 	}
 
+	// \x2D == '-'
+	private Pattern p = Pattern.compile("[a-zA-Z_0-9\\x2D]*");
+
+	private boolean validateSheetId(String sheetId) {
+		if (sheetId == null) {
+			Utils.logToConsole("Google Sheets id is null.");
+			return false;
+		}
+		Matcher m = p.matcher(sheetId);
+		if (!m.matches()) {
+			Utils.logToConsole("Incorrect Google Sheets id: " + sheetId);
+			return false;
+		}
+		return true;
+	}
+ 
 	private void updateSheetById(Map.Entry<String, ArrayList<RunParams.Dataset>>
 			entry) throws Exception {
+		String sheetId = entry.getKey();
+		if (!validateSheetId(sheetId)) {
+			return;
+		}
 		try {
 			List<Object> sensorNameRow = new ArrayList<Object>();
 
@@ -145,7 +167,6 @@ public class GoogleSheetsWriter extends Thread {
 			loadRows(sensorNameRow, entry, mostRecentDataRow, listOfRows);
 			addBlankRows(listOfRows, entry.getKey());
 			if (listOfRows.size() > 1) {
-				String sheetId = entry.getKey();
 				GSheetsUtility.updateData(accountMonitor.accountName, sheetId, "A1", listOfRows);
 				Utils.logToConsole("Updated Google Sheet : " + sheetId + ", rows : " + listOfRows.size()
 					+ ", columns : " + listOfRows.get(0).size());
@@ -185,9 +206,9 @@ public class GoogleSheetsWriter extends Thread {
 						accountMonitor.runParams.sheets.entrySet()) {
 			String spreadSheetId = entry.getKey();
 			try {
-				if (spreadSheetId != null) {
-						GSheetsUtility.clear(spreadSheetId, "Sheet1!A1:Z1000");
-						this.mostRecentRowCount.put(spreadSheetId, 0);
+				if (validateSheetId(spreadSheetId)) {
+					GSheetsUtility.clear(spreadSheetId, "Sheet1!A1:Z1000");
+					this.mostRecentRowCount.put(spreadSheetId, 0);
 				}
 			} catch (Exception e) {
 				Utils.logToConsole("initSheets(): FAILED to update Google Sheet : " +

@@ -2,8 +2,8 @@
 <doc>
     <sheets>
         <sheet>
-            <!-- Blank sheetId indicates that it should be created. -->
-            <sheetId>Some-Google-Sheet-Id</sheetId>
+            <!-- Must be created (and edit access given) manually. -->
+            <sheetId>Some.Google.Sheet.Id</sheetId>
 
             <!-- days:hours:minutes:seconds previous to 'now', default : 10 minutes -->
             <duration>00:00:10:00</duration>
@@ -40,7 +40,7 @@
             </dataSet>
         </sheet>
         <sheet>
-            <sheetId>Some-Other-Google-Sheet-Id</sheetId>
+            <sheetId>Some.Other.Google.Sheet.Id</sheetId>
             <dataSet>
                 <microcontrollerName>thermistor-test</microcontrollerName>
                 <sensors>
