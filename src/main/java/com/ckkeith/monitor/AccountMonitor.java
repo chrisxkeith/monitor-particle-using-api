@@ -35,7 +35,9 @@ public class AccountMonitor extends Thread {
 			throw new Exception("No account name specified.");
 		}
 		logFileName = Utils.getLogFileName(accountName, "devices-overview.txt");
-		runParams = RunParams.loadFromXML(getParamFilePath());
+		String paramFileName = getParamFilePath();
+		Utils.logToConsole(accountName + ": loading params from: " + paramFileName);
+		runParams = RunParams.loadFromXML(paramFileName);
 		Utils.logToConsole(accountName + ": " + runParams.toString());
 		for (Map.Entry<String, ArrayList<RunParams.Dataset>> entry : runParams.sheets.entrySet()) {
 			for (RunParams.Dataset ds : entry.getValue()) {
