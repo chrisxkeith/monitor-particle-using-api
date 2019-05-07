@@ -167,6 +167,10 @@ public class GoogleSheetsWriter extends Thread {
 			loadRows(sensorNameRow, entry, mostRecentDataRow, listOfRows);
 			addBlankRows(listOfRows, entry.getKey());
 			if (listOfRows.size() > 1) {
+				String itemForChecking = (String)listOfRows.get(1).get(0);
+				if (itemForChecking == null || itemForChecking.isEmpty()) {
+					Utils.logToConsole("Empty timestamp!");
+				}
 				GSheetsUtility.updateData(accountMonitor.accountName, sheetId, "A1", listOfRows);
 				Utils.logToConsole("Updated Google Sheet : " + sheetId + ", rows : " + listOfRows.size()
 					+ ", columns : " + listOfRows.get(0).size());
