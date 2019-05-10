@@ -33,10 +33,10 @@ cp -R JParticle/src/* monitor-particle-using-api/src/					; if [ $? -ne 0 ] ; th
 cd ~/Documents/Github/monitor-particle-using-api	  					; if [ $? -ne 0 ] ; then exit -6 ; fi
 mkdir -p src/main/resources/com/ckkeith/monitor/	  					; if [ $? -ne 0 ] ; then exit -6 ; fi
 
-echo Now copy your GCP client_secret.json file into:
+echo "Now copy your GCP client_secret.json/credentials.json files into:"
 echo "~/Documents/Github/monitor-particle-using-api/src/main/resources/com/ckkeith/monitor/"
-echo Then run : ~/Documents/Github/monitor-particle-using-api/scripts/run.sh
-echo You should get a browser window asking you to verify your credentials.
-echo After that (in a couple of minutes), you should see output something like:
-echo 2019-05-10T10:04:48-07  chris.keith@gmail.com   AccountMonitor thread starting.
+echo "Then run : ~/Documents/Github/monitor-particle-using-api/scripts/run.sh"
+echo "You should get a browser window asking you to verify your credentials."
+echo "After that (in a couple of minutes), you should see output something like:"
+echo "2019-05-10T10:04:48-07  chris.keith@gmail.com   AccountMonitor thread starting."
 echo "Use Ctrl-C (Cmd-C? on mac) to quit."
