@@ -1,5 +1,7 @@
 package com.ckkeith.monitor;
 
+import java.util.TreeMap;
+
 import org.json.JSONObject;
 
 import junit.framework.TestCase;
@@ -25,13 +27,16 @@ public class StoveThermistorTest extends TestCase {
 			JSONObject eventJson = new JSONObject("{ coreid : 'fubar', "
 					+ "data : '|2018-07-06T21:30:00Z|85|85|853|85|8|0.022000',"
 					+ "published_at : '2018-07-06 21:30:00.000Z', ttl : 1 }");
-			ParticleEvent e = new ParticleEvent(new Event("Thermistor 01 sensor:", eventJson));
+			TreeMap<String, Device> devices = new TreeMap<String, Device>();
+			Device device = new Device(deviceJson);
+			devices.put("yowza", device);
+			ParticleEvent e = new ParticleEvent(new Event(devices, "Thermistor 01 sensor:", eventJson));
 			String warn = stoveThermistorEvent.checkStoveLeftOn(e);
 			assertTrue(warn.equals("subject line : no message yet"));
 			eventJson = new JSONObject("{ coreid : 'fubar', "
 					+ "data : '|2018-07-06T22:35:00Z|85|85|853|85|8|0.022000',"
 					+ "published_at : '2018-07-06 22:35:00.000Z', ttl : 1 }");
-			e = new ParticleEvent(new Event("This is just a test", eventJson));
+			e = new ParticleEvent(new Event(devices, "This is just a test", eventJson));
 			warn = stoveThermistorEvent.checkStoveLeftOn(e);
 			assertTrue(warn.contains("temperature"));
 		} catch (Exception e) {

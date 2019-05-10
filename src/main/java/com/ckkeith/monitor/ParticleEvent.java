@@ -14,7 +14,7 @@ public class ParticleEvent {
 	
 	public String toTabbedString(ParticleDevice device) {
 		StringBuilder sb = new StringBuilder();
-		sb.append(event.name).append("\t")
+		sb.append(event.eventName).append("\t")
 			.append(event.data).append("\t")
 			.append(device.getName());
 		return sb.toString();
@@ -25,7 +25,7 @@ public class ParticleEvent {
 	}
 
 	public String getName() {
-		return event.name;
+		return event.eventName;
 	}
 
 	public String getData() {
