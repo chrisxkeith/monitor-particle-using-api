@@ -1,6 +1,6 @@
 # monitor-particle-using-api
 
-Install Git client, Java JDK and maven as described here : https://github.com/chrisxkeith/commute-time-aggregator/blob/master/README.md . You may not need Spring Tool Suite immediately, but will need it to do any development. 
+Install Git client, Java JDK and maven as described here : https://github.com/chrisxkeith/commute-time-aggregator/blob/master/README.md . You can also use Visual Studio Code for development instead of Spring Tool Suite. 
 
 Assumes that you have flashed https://github.com/chrisxkeith/particle-photon-sensor-test-bed onto one or more Particle microcontrollers.
 
