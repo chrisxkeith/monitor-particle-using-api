@@ -1,3 +1,5 @@
+# Currently doesn't run because of security.
+
 # run.sh seems to (sometimes) leave processes running.
 # Try Powershell to see if it works better.
 
