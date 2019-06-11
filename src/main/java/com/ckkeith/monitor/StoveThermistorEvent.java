@@ -19,8 +19,6 @@ public class StoveThermistorEvent extends ParticleDeviceEvent {
 		}
 	}
 
-	private final int temperatureLimit = 80; // degrees F
-	private final int timeLimit = 60; // minutes before alert is logged.
 	private final int SEND_INTERVAL_IN_MINUTES = 30;
 
 	ThermistorData lastDataSeen = null;
@@ -38,7 +36,7 @@ public class StoveThermistorEvent extends ParticleDeviceEvent {
 			// For the future : Is there any case to be made for turning off the email at some point?
 			// E.g., a sensor going bad?
 
-			GMailer.sendMessageX("chris.keith@gmail.com", "chris.keith@gmail.com", warn, body);
+			GMailer.sendMessageX(this.accountMonitor.runParams.emailTo, this.accountMonitor.runParams.emailTo, warn, body);
 			lastSent = LocalDateTime.now();
 		}
 	}
@@ -54,13 +52,13 @@ public class StoveThermistorEvent extends ParticleDeviceEvent {
 				subjectLine = "No sensor data : " + e.getData();
 			} else {
 				ThermistorData t = new ThermistorData(fields);
-				if (t.degreesInF > this.temperatureLimit) {
+				if (t.degreesInF > this.accountMonitor.runParams.temperatureLimit) {
 					if (lastDataOverLimit == null) {
 						lastDataOverLimit = t;
 					} else {
 						long minutes = Duration.between(lastDataOverLimit.deviceTime, t.deviceTime).toMinutes();
-						if (minutes > timeLimit) {
-							subjectLine = "Warning: stove top temperature has been over " + temperatureLimit + " degrees F for "
+						if (minutes > this.accountMonitor.runParams.timeLimit) {
+							subjectLine = "Warning: stove top temperature has been over " + this.accountMonitor.runParams.temperatureLimit + " degrees F for "
 									+ minutes + " minutes starting at " + dateFormatter.format(lastDataOverLimit.deviceTime);
 							String body = "Sent from sensor '" + e.getName() + "' on Photon '" + e.getCoreId() +  "' by server '" + Utils.getHostName()
 									+ "'. Raw data: " + e.getData();

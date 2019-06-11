@@ -27,7 +27,10 @@ public class RunParams {
 	Boolean		writeLongTermData = false;
 	Hashtable<String, ArrayList<Dataset>> sheets =
 				new Hashtable<String, ArrayList<Dataset>>();
-
+	int			temperatureLimit = 80; // degrees F
+	int			timeLimit = 60; // minutes before alert is logged.
+	String		emailTo = "chris.keith@gmail.com";
+			
 	private static Integer getInteger(Element root, String name, Integer defaultValue) {
 		NodeList nl = root.getElementsByTagName(name);
 		if (nl.getLength() > 0) {
@@ -112,6 +115,9 @@ public class RunParams {
 		rp.sheetsWriteIntervalInSeconds = getInteger(root, "sheetsWriteIntervalInSeconds", rp.sheetsWriteIntervalInSeconds);
 		rp.writeLongTermData = getInteger(root, "writeLongTermData", 0) == 0 ? false : true;
 		rp.devicesToReport = getString(root, "devicesToReport", rp.devicesToReport);
+		rp.temperatureLimit = getInteger(root, "temperatureLimit", 80);
+		rp.timeLimit = getInteger(root, "timeLimit", 60);
+		rp.emailTo = getString(root, "emailTo", "chris.keith@gmail.com");
 		rp.loadSheets(root);
 		return rp;
 	}
@@ -154,6 +160,9 @@ public class RunParams {
 				+ ", devicesToReport = " + devicesToReport
 				+ ", csvTimeGranularityInSeconds = " + csvTimeGranularityInSeconds
 				+ ", sheetsWriteIntervalInSeconds = " + sheetsWriteIntervalInSeconds
+				+ ", temperatureLimit = " + temperatureLimit
+				+ ", timeLimit = " + timeLimit
+				+ ", emailTo = " + emailTo
 				;
 	}
 }

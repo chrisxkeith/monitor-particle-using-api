@@ -35,7 +35,7 @@ public class StoveThermistorTest extends TestCase {
 			assertTrue(warn.equals("subject line : no message yet"));
 			eventJson = new JSONObject("{ coreid : 'fubar', "
 					+ "data : '|2018-07-06T22:35:00Z|85|85|853|85|8|0.022000',"
-					+ "published_at : '2018-07-06 22:35:00.000Z', ttl : 1 }");
+					+ "published_at : '2018-07-06 23:31:00.000Z', ttl : 1 }");
 			e = new ParticleEvent(new Event(devices, "This is just a test", eventJson));
 			warn = stoveThermistorEvent.checkStoveLeftOn(e);
 			assertTrue(warn.contains("temperature"));
