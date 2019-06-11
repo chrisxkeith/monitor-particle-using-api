@@ -3,6 +3,7 @@ package com.ckkeith.monitor;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 
 public class StoveThermistorEvent extends ParticleDeviceEvent {
@@ -16,6 +17,10 @@ public class StoveThermistorEvent extends ParticleDeviceEvent {
 		ThermistorData(String fields[]) {
 			deviceTime = LocalDateTime.parse(fields[1], logDateFormat);
 			degreesInF = Double.parseDouble(fields[2]);
+		}
+		ThermistorData(ParticleEvent e) {
+			this.deviceTime = e.getPublishedAt().toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+			this.degreesInF = Double.parseDouble(e.getData());
 		}
 	}
 
@@ -47,33 +52,34 @@ public class StoveThermistorEvent extends ParticleDeviceEvent {
 	public String checkStoveLeftOn(ParticleEvent e) {
 		String subjectLine = "subject line : no message yet";
 		try {
+			ThermistorData t;
 			String fields[] = e.getData().split("\\|");
 			if (fields.length < 3) {
-				subjectLine = "No sensor data : " + e.getData();
+				t = new ThermistorData(e);
 			} else {
-				ThermistorData t = new ThermistorData(fields);
-				if (t.degreesInF > this.accountMonitor.runParams.temperatureLimit) {
-					if (lastDataOverLimit == null) {
-						lastDataOverLimit = t;
-					} else {
-						long minutes = Duration.between(lastDataOverLimit.deviceTime, t.deviceTime).toMinutes();
-						if (minutes > this.accountMonitor.runParams.timeLimit) {
-							subjectLine = "Warning: stove top temperature has been over " + this.accountMonitor.runParams.temperatureLimit + " degrees F for "
-									+ minutes + " minutes starting at " + dateFormatter.format(lastDataOverLimit.deviceTime);
-							String body = "Sent from sensor '" + e.getName() + "' on Photon '" + e.getCoreId() +  "' by server '" + Utils.getHostName()
-									+ "'. Raw data: " + e.getData();
-							Utils.logWithGSheetsDate(LocalDateTime.now(), subjectLine, logFileName);
-							sendEmail(subjectLine, body);
-						}
-					}
-				} else {
-					lastDataOverLimit = null;
-					lastSent = null;
-				}
-				lastDataSeen = t;
+				t = new ThermistorData(fields);
 			}
+			if (t.degreesInF > this.accountMonitor.runParams.temperatureLimit) {
+				if (lastDataOverLimit == null) {
+					lastDataOverLimit = t;
+				} else {
+					long minutes = Duration.between(lastDataOverLimit.deviceTime, t.deviceTime).toMinutes();
+					if (minutes > this.accountMonitor.runParams.timeLimit) {
+						subjectLine = "Warning: stove top temperature has been over " + this.accountMonitor.runParams.temperatureLimit + " degrees F for "
+								+ minutes + " minutes starting at " + dateFormatter.format(lastDataOverLimit.deviceTime);
+						String body = "Sent from sensor '" + e.getName() + "' on Photon '" + e.getCoreId() +  "' by server '" + Utils.getHostName()
+								+ "'. Raw data: " + e.getData();
+						Utils.logWithGSheetsDate(LocalDateTime.now(), subjectLine, logFileName);
+						sendEmail(subjectLine, body);
+					}
+				}
+			} else {
+				lastDataOverLimit = null;
+				lastSent = null;
+			}
+			lastDataSeen = t;
 		} catch (Exception ex) {
-			subjectLine = ex.getMessage();
+			subjectLine = ex.getClass().getCanonicalName() + " " + ex.getMessage();
 		}
 		return subjectLine;
 	}

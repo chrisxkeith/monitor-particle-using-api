@@ -14,6 +14,24 @@ public class StoveThermistorTest extends TestCase {
 		super(testName);
 	}
 
+	private void doTest(AccountMonitor accountMonitor, ParticleDevice d, JSONObject deviceJson,
+					String firstEvent, String secondEvent) throws Exception {
+		StoveThermistorEvent stoveThermistorEvent = new StoveThermistorEvent(accountMonitor, d);
+		JSONObject eventJson = new JSONObject(firstEvent);
+		TreeMap<String, Device> devices = new TreeMap<String, Device>();
+		Device device = new Device(deviceJson);
+		devices.put("yowza", device);
+		ParticleEvent e = new ParticleEvent(new Event(devices, "Thermistor 01 sensor:", eventJson));
+		String warn = stoveThermistorEvent.checkStoveLeftOn(e);
+		System.out.println("warn: " + warn);
+		assertTrue(warn.equals("subject line : no message yet"));
+		eventJson = new JSONObject(secondEvent);
+		e = new ParticleEvent(new Event(devices, "This is just a test", eventJson));
+		warn = stoveThermistorEvent.checkStoveLeftOn(e);
+		System.out.println("warn: " + warn);
+		assertTrue(warn.contains("temperature"));
+	}
+
 	public void testDetectStoveLeftOn() {
 		try {
 			JSONObject deviceJson = new JSONObject(
@@ -23,22 +41,18 @@ public class StoveThermistorTest extends TestCase {
 					+ "name : 'yowza', last_ip_address : '0.0.0.0' }");
 			ParticleDevice d = new ParticleDevice(new Device(deviceJson));
 			AccountMonitor accountMonitor = new AccountMonitor("junk	chris.keith@gmail.com");
-			StoveThermistorEvent stoveThermistorEvent = new StoveThermistorEvent(accountMonitor, d);
-			JSONObject eventJson = new JSONObject("{ coreid : 'fubar', "
-					+ "data : '|2018-07-06T21:30:00Z|85|85|853|85|8|0.022000',"
-					+ "published_at : '2018-07-06 21:30:00.000Z', ttl : 1 }");
-			TreeMap<String, Device> devices = new TreeMap<String, Device>();
-			Device device = new Device(deviceJson);
-			devices.put("yowza", device);
-			ParticleEvent e = new ParticleEvent(new Event(devices, "Thermistor 01 sensor:", eventJson));
-			String warn = stoveThermistorEvent.checkStoveLeftOn(e);
-			assertTrue(warn.equals("subject line : no message yet"));
-			eventJson = new JSONObject("{ coreid : 'fubar', "
-					+ "data : '|2018-07-06T22:35:00Z|85|85|853|85|8|0.022000',"
+			doTest(accountMonitor, d, deviceJson, "{ coreid : 'fubar', "
+					+ "data : '|2018-07-06T21:30:00Z|91|85|853|85|8|0.022000',"
+					+ "published_at : '2018-07-06 21:30:00.000Z', ttl : 1 }", 
+				"{ coreid : 'fubar', "
+					+ "data : '|2018-07-06T23:35:00Z|91|85|853|85|8|0.022000',"
 					+ "published_at : '2018-07-06 23:31:00.000Z', ttl : 1 }");
-			e = new ParticleEvent(new Event(devices, "This is just a test", eventJson));
-			warn = stoveThermistorEvent.checkStoveLeftOn(e);
-			assertTrue(warn.contains("temperature"));
+			doTest(accountMonitor, d, deviceJson, "{ coreid : 'fubar', "
+					+ "data : '91',"
+					+ "published_at : '2018-07-06 21:30:00.000Z', ttl : 1 }", 
+				"{ coreid : 'fubar', "
+					+ "data : '91',"
+					+ "published_at : '2018-07-06 24:31:00.000Z', ttl : 1 }");
 		} catch (Exception e) {
 			e.printStackTrace();
 			fail();
