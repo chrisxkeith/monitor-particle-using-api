@@ -3,6 +3,10 @@ package com.ckkeith.monitor;
 
 import java.io.PrintStream;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Map;
 
 public class DeviceMonitor extends Thread {
 
@@ -56,14 +60,31 @@ public class DeviceMonitor extends Thread {
 	}
 
 	private void subscribe() throws Exception {
-		ParticleDeviceEvent cb;
-		if (device.getName().contains("thermistor")) {
-			cb = new StoveThermistorEvent(accountMonitor, device);
-		} else {
-			cb = new ParticleDeviceEvent(accountMonitor, device);
+		for (Map.Entry<String, ArrayList<RunParams.Dataset>> entry :
+						accountMonitor.runParams.sheets.entrySet()) {
+			Iterator<RunParams.Dataset> datasetIt = entry.getValue().iterator();
+			while (datasetIt.hasNext()) {
+				RunParams.Dataset d = datasetIt.next();
+				for (Map.Entry<String, HashSet<String>> mc : d.microcontrollers.entrySet()) {
+					if (mc.getKey().equals(device.getName())) {
+						for (String sensorName : mc.getValue()) {
+							ParticleDeviceEvent cb;
+							if (sensorName.contains("thermistor")
+									|| sensorName.contains("IR ") 
+									|| sensorName.contains("heat") 
+									|| sensorName.contains("temperature")) {
+								cb = new TemperatureEvent(accountMonitor, device);
+							} else {
+								cb = new ParticleDeviceEvent(accountMonitor, device);
+							}
+							cloud.subscribe(cb);
+							accountMonitor.addEventSubscriber(device.getName(), cb);
+							log("Subscribed to: " + sensorName + ": " + cb.getClass().getName());
+						}
+					}
+				}
+			}
 		}
-		cloud.subscribe(cb);
-		accountMonitor.addEventSubscriber(device.getName(), cb);
 	}
 
 	public void run() {
