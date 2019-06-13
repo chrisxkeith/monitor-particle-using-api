@@ -24,8 +24,6 @@ public class TemperatureEvent extends ParticleDeviceEvent {
 		}
 	}
 
-	private final int SEND_INTERVAL_IN_MINUTES = 30;
-
 	ThermistorData lastDataSeen = null;
 	ThermistorData lastDataOverLimit = null;
 
@@ -37,10 +35,7 @@ public class TemperatureEvent extends ParticleDeviceEvent {
 
 	private void sendEmail(String warn, String body) {
 		if (lastSent == null
-				|| Duration.between(lastSent, LocalDateTime.now()).toMinutes() > SEND_INTERVAL_IN_MINUTES) {
-			// For the future : Is there any case to be made for turning off the email at some point?
-			// E.g., a sensor going bad?
-
+				|| Duration.between(lastSent, LocalDateTime.now()).toMinutes() > this.accountMonitor.runParams.resendIntervalInMinutes) {
 			GMailer.sendMessageX(this.accountMonitor.runParams.emailTo, this.accountMonitor.runParams.emailTo, warn, body);
 			lastSent = LocalDateTime.now();
 		}

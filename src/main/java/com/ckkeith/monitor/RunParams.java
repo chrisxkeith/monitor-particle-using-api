@@ -30,6 +30,10 @@ public class RunParams {
 	int			temperatureLimit = 80; // degrees F
 	int			timeLimit = 60; // minutes before alert is logged.
 	String		emailTo = "chris.keith@gmail.com";
+
+	 // If temperature doesn't go down (after sending email) in resendIntervalInMinutes,
+	 // keep resending emails until it does.
+	 Integer	resendIntervalInMinutes = 10;
 			
 	private static Integer getInteger(Element root, String name, Integer defaultValue) {
 		NodeList nl = root.getElementsByTagName(name);
@@ -118,6 +122,7 @@ public class RunParams {
 		rp.temperatureLimit = getInteger(root, "temperatureLimit", 80);
 		rp.timeLimit = getInteger(root, "timeLimit", 60);
 		rp.emailTo = getString(root, "emailTo", "chris.keith@gmail.com");
+		rp.resendIntervalInMinutes= getInteger(root, "resendIntervalInMinutes", 10);
 		rp.loadSheets(root);
 		return rp;
 	}
@@ -163,6 +168,7 @@ public class RunParams {
 				+ ", temperatureLimit = " + temperatureLimit
 				+ ", timeLimit = " + timeLimit
 				+ ", emailTo = " + emailTo
+				+ ", resendIntervalInMinutes = " + resendIntervalInMinutes
 				;
 	}
 }
