@@ -30,6 +30,7 @@ public class RunParams {
 	int			temperatureLimit = 80; // degrees F
 	int			timeLimit = 60; // minutes before alert is logged.
 	String		emailTo = "chris.keith@gmail.com";
+	Integer		dataSampleRate = 1; // to reduce number of data rows in csv files when necessary.
 
 	 // If temperature doesn't go down (after sending email) in resendIntervalInMinutes,
 	 // keep resending emails until it does.
@@ -122,7 +123,8 @@ public class RunParams {
 		rp.temperatureLimit = getInteger(root, "temperatureLimit", 80);
 		rp.timeLimit = getInteger(root, "timeLimit", 60);
 		rp.emailTo = getString(root, "emailTo", "chris.keith@gmail.com");
-		rp.resendIntervalInMinutes= getInteger(root, "resendIntervalInMinutes", 10);
+		rp.resendIntervalInMinutes = getInteger(root, "resendIntervalInMinutes", 10);
+		rp.dataSampleRate = getInteger(root, "dataSampleRate", 1);
 		rp.loadSheets(root);
 		return rp;
 	}
@@ -169,6 +171,7 @@ public class RunParams {
 				+ ", timeLimit = " + timeLimit
 				+ ", emailTo = " + emailTo
 				+ ", resendIntervalInMinutes = " + resendIntervalInMinutes
+				+ ", dataSampleRate = " + dataSampleRate
 				;
 	}
 }

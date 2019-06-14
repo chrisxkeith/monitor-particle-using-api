@@ -61,25 +61,29 @@ public class PivotDataApp {
 		FileWriter		csvStream = new FileWriter(fileName, false);
 		try {
 			csvStream.write(sensorNameString + System.getProperty("line.separator"));
+			int c = 0;
 			Set<LocalDateTime> keys = outputRows.keySet();
 			Iterator<LocalDateTime> itr = keys.iterator();
 			while (itr.hasNext()) {
 				LocalDateTime timestamp = itr.next();
-				sb = new StringBuilder(googleSheetsDateFormat.format(timestamp));
-				ConcurrentSkipListMap<String, String> entries = outputRows.get(timestamp);
-
-				sensorIt = sensorNames.iterator();
-				while (sensorIt.hasNext()) {
-					String sensorName = sensorIt.next();
-					String val = entries.get(sensorName);
-					if (val == null) {
-						val = "";
+				if (c % accountMonitor.runParams.dataSampleRate == 0) {
+					sb = new StringBuilder(googleSheetsDateFormat.format(timestamp));
+					ConcurrentSkipListMap<String, String> entries = outputRows.get(timestamp);
+	
+					sensorIt = sensorNames.iterator();
+					while (sensorIt.hasNext()) {
+						String sensorName = sensorIt.next();
+						String val = entries.get(sensorName);
+						if (val == null) {
+							val = "";
+						}
+						entries.put(sensorName, val);
+						sb.append("\t").append(val);
 					}
-					entries.put(sensorName, val);
-					sb.append("\t").append(val);
+					csvStream.write(sb.append(System.getProperty("line.separator")).toString());
+					totalCsvLinesOutput++;
 				}
-				csvStream.write(sb.append(System.getProperty("line.separator")).toString());
-				totalCsvLinesOutput++;
+				c++;
 			}
 		} finally {
 			if (csvStream != null) {
