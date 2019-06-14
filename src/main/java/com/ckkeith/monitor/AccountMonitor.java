@@ -108,10 +108,10 @@ public class AccountMonitor extends Thread {
 
 	public void run() {
 		Utils.logToConsole(Utils.padWithSpaces(this.accountName, 20) + "\tAccountMonitor thread starting.");
-		startDeviceMonitors();
 		if (runParams.writeLongTermData) {
 			(new PivotDataApp(this)).writeLongTermData();
 		}
+		startDeviceMonitors();
 		Utils.logToConsole(Utils.padWithSpaces(this.accountName, 20) + "\tAccountMonitor thread exiting.");
 	}
 
