@@ -49,11 +49,6 @@ public class PivotDataApp {
 	int linesReadForSensorData = 0;
 	AccountMonitor accountMonitor;
 	
-	DateTimeFormatter fileSuffix = DateTimeFormatter.ofPattern("yyyyMMdd");;
-	String buildFileName(String prefix, LocalDateTime ldt) {
-		return prefix.replace(".csv", "") + "_" + ldt.format(fileSuffix) + ".csv";
-	}
-
 	private void writeCsv(String fileName, ConcurrentSkipListMap<String, String> firstSensorValues,
 			ConcurrentSkipListMap<LocalDateTime, ConcurrentSkipListMap<String, String>> outputRows) throws Exception {
 		Set<String> sensorNames = firstSensorValues.keySet();
@@ -63,22 +58,13 @@ public class PivotDataApp {
 			sb.append("\t").append(sensorIt.next());
 		}
 		String			sensorNameString = sb.toString();
-		LocalDateTime	endOfDay = LocalDateTime.now().withYear(0).withMonth(1).withDayOfMonth(1).withHour(23).withMinute(59).withSecond(59);
-		FileWriter		csvStream = null;
+		FileWriter		csvStream = new FileWriter(fileName, false);
 		try {
+			csvStream.write(sensorNameString + System.getProperty("line.separator"));
 			Set<LocalDateTime> keys = outputRows.keySet();
 			Iterator<LocalDateTime> itr = keys.iterator();
 			while (itr.hasNext()) {
 				LocalDateTime timestamp = itr.next();
-				if (timestamp.isAfter(endOfDay)) {
-					if (csvStream != null) {
-						csvStream.close();
-						Utils.logToConsole("Finished writing: " + buildFileName(fileName, endOfDay));
-					}
-					endOfDay = timestamp.withHour(23).withMinute(59).withSecond(59);
-					csvStream = new FileWriter(buildFileName(fileName, endOfDay), false);
-					csvStream.write(sensorNameString + System.getProperty("line.separator"));
-				}
 				sb = new StringBuilder(googleSheetsDateFormat.format(timestamp));
 				ConcurrentSkipListMap<String, String> entries = outputRows.get(timestamp);
 
