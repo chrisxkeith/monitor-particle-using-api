@@ -91,9 +91,9 @@ public class PivotDataApp {
 					Integer gap = thisMinute - lastMinute;
 					if (gap > accountMonitor.runParams.gapTriggerInMinutes) {
 						System.out.println(
-							googleSheetsDateFormat.format(lastSampleTime) + "\t" + 
-							googleSheetsDateFormat.format(timestamp) + "\t" + 
-							gap.toString() + "\t" +
+							googleSheetsDateFormat.format(lastSampleTime) + "," + 
+							googleSheetsDateFormat.format(timestamp) + "," + 
+							gap.toString() + "," +
 							fileName);
 					}
 				}
