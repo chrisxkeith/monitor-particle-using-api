@@ -62,6 +62,7 @@ public class PivotDataApp {
 		try {
 			csvStream.write(sensorNameString + System.getProperty("line.separator"));
 			int c = 0;
+			LocalDateTime lastSampleTime = null;
 			Set<LocalDateTime> keys = outputRows.keySet();
 			Iterator<LocalDateTime> itr = keys.iterator();
 			while (itr.hasNext()) {
@@ -84,6 +85,18 @@ public class PivotDataApp {
 					totalCsvLinesOutput++;
 				}
 				c++;
+				if (lastSampleTime != null) {
+					Integer lastMinute = lastSampleTime.toLocalTime().toSecondOfDay() / 60;
+					Integer thisMinute = timestamp.toLocalTime().toSecondOfDay() / 60;
+					Integer gap = thisMinute - lastMinute;
+					if (gap > accountMonitor.runParams.gapTriggerInMinutes) {
+						System.out.println(fileName + "\t" + 
+							googleSheetsDateFormat.format(lastSampleTime) + "\t" + 
+							googleSheetsDateFormat.format(timestamp) + "\t" + 
+							gap.toString());
+					}
+				}
+				lastSampleTime = timestamp;
 			}
 		} finally {
 			if (csvStream != null) {

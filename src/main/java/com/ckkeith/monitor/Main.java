@@ -9,6 +9,7 @@ import java.util.ArrayList;
 public class Main {
 	private static ArrayList<AccountMonitor> monitors = new ArrayList<AccountMonitor>();
 
+	@SuppressWarnings("unused")
 	private static LocalDateTime getShutdownTime() {
 		// shutdown a little before midnight.
 		return LocalDateTime.now().withHour(23).withMinute(57);
