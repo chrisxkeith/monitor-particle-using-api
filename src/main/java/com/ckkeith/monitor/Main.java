@@ -46,12 +46,15 @@ public class Main {
 					monitors.add(m);
 				}
 			}
+			String isRunningFrom;
 			if (Utils.runFromTerminal() || Utils.isDebug) {
-				Utils.logToConsole("Running from terminal, will not automatically shut down.");
+				isRunningFrom = "terminal / debug";
 			} else {
+				isRunningFrom = "Task Scheduler / automatic";
 //				Utils.sleepUntil("MonitorParticle main - waiting to System.exit(0).", getShutdownTime());
 //				System.exit(0);
 			}
+			Utils.logToConsole("Running from " + isRunningFrom);
 		} catch (Exception e) {
 			Utils.logToConsole("main() :\t" + e.getClass().getName() + "\t" + e.getMessage());
 			e.printStackTrace(new PrintStream(System.out));
