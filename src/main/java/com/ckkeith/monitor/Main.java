@@ -49,8 +49,8 @@ public class Main {
 			if (Utils.runFromTerminal() || Utils.isDebug) {
 				Utils.logToConsole("Running from terminal, will not automatically shut down.");
 			} else {
-				Utils.sleepUntil("MonitorParticle main - waiting to System.exit(0).", getShutdownTime());
-				System.exit(0);
+//				Utils.sleepUntil("MonitorParticle main - waiting to System.exit(0).", getShutdownTime());
+//				System.exit(0);
 			}
 		} catch (Exception e) {
 			Utils.logToConsole("main() :\t" + e.getClass().getName() + "\t" + e.getMessage());
