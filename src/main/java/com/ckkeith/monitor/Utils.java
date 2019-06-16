@@ -90,12 +90,16 @@ public class Utils {
 
 	final static public DateTimeFormatter googleSheetsDateFormat =
 			DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
-	public static String logWithGSheetsDate(LocalDateTime ldt, String s, String logFileName) {
+	public static String logWithGSheetsDate(LocalDateTime ldt, String s, String logFileName, String sep) {
 		String d = logDateFormat.format(new java.util.Date());
 		String d2 = googleSheetsDateFormat.format(ldt);
-		String logString = d + "\t" + d2 + "\t" + s;
+		String logString = d + sep + d2 + sep + s;
 		logRaw(logString, logFileName);
 		return logString;
+	}
+
+	public static String logWithGSheetsDate(LocalDateTime ldt, String s, String logFileName) {
+		return logWithGSheetsDate(ldt, s, logFileName, "\t");
 	}
 
 	public static LocalDateTime getLocalDateTime(String str) {

@@ -108,6 +108,7 @@ public class AccountMonitor extends Thread {
 
 	public void run() {
 		Utils.logToConsole(Utils.padWithSpaces(this.accountName, 20) + "\tAccountMonitor thread starting.");
+		Utils.logWithGSheetsDate(LocalDateTime.now(), "AccountMonitor thread starting.", logFileName, ",");
 		if (runParams.writeLongTermData) {
 			(new PivotDataApp(this)).writeLongTermData();
 		}
