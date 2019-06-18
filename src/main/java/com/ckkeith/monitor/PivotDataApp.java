@@ -57,6 +57,7 @@ public class PivotDataApp {
 		while (sensorIt.hasNext()) {
 			sb.append("\t").append(sensorIt.next());
 		}
+		LocalDateTime	lastSampleTime = null;
 		String			sensorNameString = sb.toString();
 		FileWriter		csvStream = new FileWriter(fileName, false);
 		try {
@@ -65,21 +66,32 @@ public class PivotDataApp {
 			Iterator<LocalDateTime> itr = keys.iterator();
 			while (itr.hasNext()) {
 				LocalDateTime timestamp = itr.next();
-					sb = new StringBuilder(googleSheetsDateFormat.format(timestamp));
-					ConcurrentSkipListMap<String, String> entries = outputRows.get(timestamp);
-	
-					sensorIt = sensorNames.iterator();
-					while (sensorIt.hasNext()) {
-						String sensorName = sensorIt.next();
-						String val = entries.get(sensorName);
-						if (val == null) {
-							val = "";
-						}
-						entries.put(sensorName, val);
-						sb.append("\t").append(val);
+				if (lastSampleTime != null) {
+					Integer lastSecond = lastSampleTime.toLocalTime().toSecondOfDay();
+					Integer thisSecond = timestamp.toLocalTime().toSecondOfDay();
+					while (thisSecond - lastSecond > accountMonitor.runParams.csvTimeGranularityInSeconds) {
+						sb = new StringBuilder(googleSheetsDateFormat.format(timestamp));
+						csvStream.write(sb.append(System.getProperty("line.separator")).toString());
+						totalCsvLinesOutput++;
+						lastSecond += accountMonitor.runParams.csvTimeGranularityInSeconds;
 					}
-					csvStream.write(sb.append(System.getProperty("line.separator")).toString());
-					totalCsvLinesOutput++;
+				}
+				sb = new StringBuilder(googleSheetsDateFormat.format(timestamp));
+				ConcurrentSkipListMap<String, String> entries = outputRows.get(timestamp);
+
+				sensorIt = sensorNames.iterator();
+				while (sensorIt.hasNext()) {
+					String sensorName = sensorIt.next();
+					String val = entries.get(sensorName);
+					if (val == null) {
+						val = "";
+					}
+					entries.put(sensorName, val);
+					sb.append("\t").append(val);
+				}
+				csvStream.write(sb.append(System.getProperty("line.separator")).toString());
+				totalCsvLinesOutput++;
+				lastSampleTime = timestamp;
 			}
 		} finally {
 			if (csvStream != null) {
@@ -344,6 +356,7 @@ public class PivotDataApp {
 		ConcurrentSkipListMap<LocalDateTime, ConcurrentSkipListMap<String, String>> outputRows =
 			new ConcurrentSkipListMap<LocalDateTime, ConcurrentSkipListMap<String, String>>();
 
+		int savedGranularity = accountMonitor.runParams.csvTimeGranularityInSeconds;
 		accountMonitor.runParams.csvTimeGranularityInSeconds = 10 * 60;
 		createGapEvents(firstSensorValues, outputRows, inputRows);
 		firstSensorValues.put("exception", "0");
@@ -368,6 +381,7 @@ public class PivotDataApp {
 			}
 			writeCsv(fullPath + ".tsv", firstSensorValues, outputRows);
 		} finally {
+			accountMonitor.runParams.csvTimeGranularityInSeconds = savedGranularity;
 			if (br != null) {
 				br.close();
 			}
