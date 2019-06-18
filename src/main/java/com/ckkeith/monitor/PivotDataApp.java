@@ -48,7 +48,9 @@ public class PivotDataApp {
 	int totalCsvLinesOutput = 0;
 	int linesReadForSensorData = 0;
 	AccountMonitor accountMonitor;
-	
+
+	private final String otherMachineName = "2018-ck-nuc";
+
 	private void writeCsv(String fileName, ConcurrentSkipListMap<String, String> firstSensorValues,
 			ConcurrentSkipListMap<LocalDateTime, ConcurrentSkipListMap<String, String>> outputRows) throws Exception {
 		Set<String> sensorNames = firstSensorValues.keySet();
@@ -325,9 +327,9 @@ public class PivotDataApp {
 
 		readData(fn, firstSensorValues, outputRows);
 		writeCsv(fn.replace(".txt", ".csv"), firstSensorValues, outputRows);
-		processMasterLog(outputRows);
 		Utils.logToConsole(Utils.padWithSpaces(fn.replace(".txt", ".csv"), 100)
 				+ "\t" + totalCsvLinesOutput);
+		processMasterLog(outputRows);
 	}
 
 	private void processPath(Path p) {
@@ -361,7 +363,7 @@ public class PivotDataApp {
 		createGapEvents(firstSensorValues, outputRows, inputRows);
 		firstSensorValues.put("exception", "0");
 
-		String fullPath = Utils.getMasterLogFileDir() + File.separator + "monitor.log";
+		String fullPath = getMasterLogFilePath();
 		BufferedReader	br = new BufferedReader(new FileReader(fullPath));
 		try {
 			boolean first = true;
@@ -386,7 +388,9 @@ public class PivotDataApp {
 				}
 			}
 			writeCsv(fullPath + ".tsv", firstSensorValues, outputRows);
-		} finally {
+			Utils.logToConsole(Utils.padWithSpaces(fullPath + ".tsv", 100)
+					+ "\t" + new Integer(outputRows.size() + 1).toString());
+	} finally {
 			accountMonitor.runParams.csvTimeGranularityInSeconds = savedGranularity;
 			if (br != null) {
 				br.close();
@@ -394,12 +398,22 @@ public class PivotDataApp {
 		}
 	}
 
+	private String getLogFileDir() throws Exception {
+		String logFileDir = Utils.getLogFileDir(accountMonitor.accountName).toLowerCase();
+		return logFileDir.replace(Utils.getHostName().toLowerCase(), otherMachineName.toLowerCase());
+	}
+
+	private String getMasterLogFilePath() throws Exception {
+		String fullPath = Utils.getMasterLogFileDir() + File.separator + "monitor.log";
+		return fullPath.replace(Utils.getHostName().toLowerCase(), otherMachineName.toLowerCase());
+	}
+
 	public void writeLongTermData() {
 		Utils.logToConsole(accountMonitor.accountName + "PivotDataApp.writeLongTermData() started.");
 		try {
 			Predicate<Path> isParticleFile = i -> (checkPath(i));
 			Consumer<Path> processPath = i -> processPath(i);
-			String logFileDir = Utils.getLogFileDir(accountMonitor.accountName);
+			String logFileDir = getLogFileDir();
 			Files.walk(Paths.get(logFileDir)).
 						filter(isParticleFile).forEach(processPath);
 		} catch (Exception e) {
