@@ -129,9 +129,9 @@ public class PivotDataApp {
 				Integer thisMinute = timestamp.toLocalTime().toSecondOfDay() / 60;
 				Integer gap = thisMinute - lastMinute;
 				if (gap > accountMonitor.runParams.gapTriggerInMinutes) {
-					addEvent(outputRows, lastSampleTime.minusSeconds(1), sensorName, "3");
+					addEvent(outputRows, lastSampleTime.minusSeconds(accountMonitor.runParams.csvTimeGranularityInSeconds), sensorName, "3");
 					addEvent(outputRows, lastSampleTime, sensorName, "0");
-					addEvent(outputRows, timestamp.minusSeconds(1), sensorName, "0");
+					addEvent(outputRows, timestamp.minusSeconds(accountMonitor.runParams.csvTimeGranularityInSeconds), sensorName, "0");
 					addEvent(outputRows, timestamp, sensorName, "3");
 				}
 			}
