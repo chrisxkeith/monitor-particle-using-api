@@ -311,18 +311,63 @@ public class PivotDataApp {
 		return p.toString().endsWith("_particle_log.txt");
 	}
 
+	private void processMasterLog() throws Exception {
+		String fullPath = Utils.getMasterLogFileDir() + File.separator + "monitor.log";
+		BufferedReader	br = new BufferedReader(new FileReader(fullPath));
+		FileWriter		tsvFile = new FileWriter(fullPath + ".tsv", false);
+		tsvFile.write("\tException\tStartup\tmessage" + System.getProperty("line.separator"));
+
+		try {
+			String s;
+			while ((s = br.readLine()) != null) {
+				String[] vals = s.split("\t");
+				if (vals.length > 1) {
+					if (s.contains("xception") || s.contains("Running from")) {
+						LocalDateTime ldt = LocalDateTime.parse(vals[0], logDateFormat);
+						String newVals[] = new String[vals.length + 2];
+						newVals[0] = googleSheetsDateFormat.format(ldt);
+						if (s.contains("xception")) {
+							newVals[1] = "1";
+							newVals[2] = "0";
+						} else {
+							newVals[1] = "0";
+							newVals[2] = "1";
+						}
+						for (int i = 3; i < newVals.length; i++) {
+							newVals[i] = vals[i - 2];
+						}
+						StringBuilder sb = new StringBuilder();
+						for (int i = 0; i < newVals.length; i++) {
+							sb.append(newVals[i]).append("\t");
+						}
+						tsvFile.write(sb.append(System.getProperty("line.separator")).toString());
+					}
+				}
+			}
+		} finally {
+			if (br != null) {
+				br.close();
+			}
+			if (tsvFile != null) {
+				tsvFile.close();
+			}
+		}
+	}
+
 	public void writeLongTermData() {
-		Utils.logToConsole(accountMonitor.accountName + "PivotDataApp.processDirectory() started.");
+		Utils.logToConsole(accountMonitor.accountName + "PivotDataApp.writeLongTermData() started.");
 		try {
 			Predicate<Path> isParticleFile = i -> (checkPath(i));
 			Consumer<Path> processPath = i -> processPath(i);
-			Files.walk(Paths.get(Utils.getLogFileDir(accountMonitor.accountName))).
+			String logFileDir = Utils.getLogFileDir(accountMonitor.accountName);
+			Files.walk(Paths.get(logFileDir)).
 						filter(isParticleFile).forEach(processPath);
+			processMasterLog();
 		} catch (Exception e) {
-			System.out.println("processDirectory() : " + e.toString());
+			System.out.println("writeLongTermData() : " + e.toString());
 			e.printStackTrace();
 		}
-		Utils.logToConsole(accountMonitor.accountName + "PivotDataApp.processDirectory() finished.");
+		Utils.logToConsole(accountMonitor.accountName + "PivotDataApp.writeLongTermData() finished.");
 	}
 
 	public PivotDataApp(AccountMonitor accountMonitor) {

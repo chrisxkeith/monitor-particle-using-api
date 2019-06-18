@@ -128,13 +128,18 @@ public class Utils {
 		}
 	}
 
-	public static String getLogFileDir(String accountName) throws Exception {
+	public static String getMasterLogFileDir() throws Exception {
 		String d = Utils.getHomeDir();
-		String acctId = getSafeName(accountName);
 		String machineName = getSafeName(getHostName());
 		String path = d + File.separator + "Documents" + File.separator
 				+ "tmp" + File.separator + machineName;
 		mkdir(path);	// looks like mkdir will only create a directory at one level.
+		return path;
+	}
+
+	public static String getLogFileDir(String accountName) throws Exception {
+		String path = getMasterLogFileDir();
+		String acctId = getSafeName(accountName);
 		path += File.separator + acctId;
 		mkdir(path);
 		return path;
