@@ -360,22 +360,28 @@ public class PivotDataApp {
 		accountMonitor.runParams.csvTimeGranularityInSeconds = 10 * 60;
 		createGapEvents(firstSensorValues, outputRows, inputRows);
 		firstSensorValues.put("exception", "0");
-		firstSensorValues.put("startup", "0");
 
 		String fullPath = Utils.getMasterLogFileDir() + File.separator + "monitor.log";
 		BufferedReader	br = new BufferedReader(new FileReader(fullPath));
 		try {
+			boolean first = true;
 			String s;
 			while ((s = br.readLine()) != null) {
 				String[] vals = s.split("\t");
 				if (vals.length > 1) {
-					if (s.contains("xception") || s.contains("Running from")) {
+					try {
 						LocalDateTime ldt = setTimeGranularity(LocalDateTime.parse(vals[0], logDateFormat));
-						if (s.contains("xception")) {
-							addEvent(outputRows, ldt, "exception", "1");
-						} else {
-							addEvent(outputRows, ldt, "startup", "2");
+						if (first) {
+							addEvent(outputRows, ldt, "exception", "0");
+							first = false;
 						}
+						if (s.contains("xception")) {
+							addEvent(outputRows, ldt.minusSeconds(accountMonitor.runParams.csvTimeGranularityInSeconds), "exception", "0");
+							addEvent(outputRows, ldt, "exception", "1");
+							addEvent(outputRows, ldt.plusSeconds(accountMonitor.runParams.csvTimeGranularityInSeconds), "exception", "0");
+						}
+					} catch (Exception e) {
+						// just go on to find a log line starting with a correctly formatted timestamp.
 					}
 				}
 			}
