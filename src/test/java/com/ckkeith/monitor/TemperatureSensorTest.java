@@ -14,13 +14,15 @@ public class TemperatureSensorTest extends TestCase {
 		super(testName);
 	}
 
+	private String testDeviceName = "automated-test-device";
+
 	private void doTest(AccountMonitor accountMonitor, ParticleDevice d, JSONObject deviceJson,
 					String firstEvent, String secondEvent) throws Exception {
 		TemperatureEvent TemperatureEvent = new TemperatureEvent(accountMonitor, d);
 		JSONObject eventJson = new JSONObject(firstEvent);
 		TreeMap<String, Device> devices = new TreeMap<String, Device>();
 		Device device = new Device(deviceJson);
-		devices.put("yowza", device);
+		devices.put(testDeviceName, device);
 		ParticleEvent e = new ParticleEvent(new Event(devices, "Thermistor 01 sensor:", eventJson));
 		String warn = TemperatureEvent.checkStoveLeftOn(e);
 		System.out.println("warn: " + warn);
@@ -38,7 +40,7 @@ public class TemperatureSensorTest extends TestCase {
 					"{ cellular : false, id : 'fubar', platform_id : 0, "
 					+ "product_id : 0, status : 'junk', "
 					+ "connected : true, last_heard : '2018-01-01 00:00:00.000Z', "
-					+ "name : 'yowza', last_ip_address : '0.0.0.0' }");
+					+ "name : '" + testDeviceName + "', last_ip_address : '0.0.0.0' }");
 			ParticleDevice d = new ParticleDevice(new Device(deviceJson));
 			AccountMonitor accountMonitor = new AccountMonitor("junk	chris.keith@gmail.com");
 			doTest(accountMonitor, d, deviceJson, "{ coreid : 'fubar', "
