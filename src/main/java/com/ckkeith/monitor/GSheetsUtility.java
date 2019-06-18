@@ -103,7 +103,7 @@ public class GSheetsUtility {
 				.update(spreadSheetId, targetCell, updateBody).setValueInputOption("USER_ENTERED").execute();
 	}
 
-	public static void deleteRow(String spreadSheetId, int startRowIndex, int endRowIndex) throws Exception {
+	public static void deleteRows(String spreadSheetId, int startRowIndex, int endRowIndex) throws Exception {
 		BatchUpdateSpreadsheetRequest content = new BatchUpdateSpreadsheetRequest();
 		Request request = new Request();
 		request.setDeleteDimension(new DeleteDimensionRequest().setRange(new DimensionRange()

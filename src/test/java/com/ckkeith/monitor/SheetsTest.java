@@ -53,7 +53,7 @@ public class SheetsTest extends TestCase {
 
 	void doTestDelete(String spreadSheetId, Integer rowToStart) throws Exception {
 		for (Integer i = rowToStart; i > 0; i--) {
-			GSheetsUtility.deleteRow(spreadSheetId, i - 1, 1);
+			GSheetsUtility.deleteRows(spreadSheetId, i - 1, 1);
 			List<List<Object>>  values = GSheetsUtility.getRange(spreadSheetId, "Sheet1!A1:B10");
 			System.out.println("Deleted (I hope) row " + i);
 			printData(values);

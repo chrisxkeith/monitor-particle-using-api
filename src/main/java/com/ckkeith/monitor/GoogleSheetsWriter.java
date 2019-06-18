@@ -166,10 +166,13 @@ public class GoogleSheetsWriter extends Thread {
 			loadRows(sensorNameRow, mostRecentDataRow, listOfRows);
 			addBlankRows(listOfRows, entry.getKey());
 			if (listOfRows.size() > 1) {
-				String itemForChecking = (String)listOfRows.get(1).get(0);
-				if (itemForChecking == null || itemForChecking.isEmpty()) {
-					Utils.logToConsole("Empty timestamp!");
+				for (Integer i = 0; i < listOfRows.size(); i++) {
+					String itemForChecking = (String)listOfRows.get(i).get(0);
+					if (itemForChecking == null || itemForChecking.isEmpty()) {
+						Utils.logToConsole("Empty timestamp in data: " + sheetId + ", on row : " + i.toString());
+					}
 				}
+				GSheetsUtility.deleteRows(sheetId, 0, 1000); // for the future, keep previous count around and only delete those rows.
 				GSheetsUtility.updateData(accountMonitor.accountName, sheetId, "A1", listOfRows);
 				Utils.logToConsole("Updated Google Sheet : " + sheetId + ", rows : " + listOfRows.size()
 					+ ", columns : " + listOfRows.get(0).size());
