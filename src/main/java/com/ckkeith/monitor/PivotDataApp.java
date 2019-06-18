@@ -61,13 +61,10 @@ public class PivotDataApp {
 		FileWriter		csvStream = new FileWriter(fileName, false);
 		try {
 			csvStream.write(sensorNameString + System.getProperty("line.separator"));
-			int c = 0;
-			LocalDateTime lastSampleTime = null;
 			Set<LocalDateTime> keys = outputRows.keySet();
 			Iterator<LocalDateTime> itr = keys.iterator();
 			while (itr.hasNext()) {
 				LocalDateTime timestamp = itr.next();
-				if (c % accountMonitor.runParams.dataSampleRate == 0) {
 					sb = new StringBuilder(googleSheetsDateFormat.format(timestamp));
 					ConcurrentSkipListMap<String, String> entries = outputRows.get(timestamp);
 	
@@ -83,26 +80,50 @@ public class PivotDataApp {
 					}
 					csvStream.write(sb.append(System.getProperty("line.separator")).toString());
 					totalCsvLinesOutput++;
-				}
-				c++;
-				if (lastSampleTime != null) {
-					Integer lastMinute = lastSampleTime.toLocalTime().toSecondOfDay() / 60;
-					Integer thisMinute = timestamp.toLocalTime().toSecondOfDay() / 60;
-					Integer gap = thisMinute - lastMinute;
-					if (gap > accountMonitor.runParams.gapTriggerInMinutes) {
-						System.out.println(
-							googleSheetsDateFormat.format(lastSampleTime) + "," + 
-							googleSheetsDateFormat.format(timestamp) + "," + 
-							gap.toString() + "," +
-							fileName);
-					}
-				}
-				lastSampleTime = timestamp;
 			}
 		} finally {
 			if (csvStream != null) {
 				csvStream.close();
 			}
+		}
+	}
+
+	private void addEvent(ConcurrentSkipListMap<LocalDateTime, ConcurrentSkipListMap<String, String>> outputRows,
+						LocalDateTime ldt,
+						String sensorName,
+						String sensorValue) {
+		ConcurrentSkipListMap<String, String> sensorValues = outputRows.get(ldt);
+		if (sensorValues == null) {
+			sensorValues = new ConcurrentSkipListMap<String, String>();
+		}
+		sensorValues.put(sensorName, sensorValue);
+		outputRows.put(ldt, sensorValues);
+	}
+
+	private void createGapEvents(ConcurrentSkipListMap<String, String> firstSensorValues,
+			ConcurrentSkipListMap<LocalDateTime, ConcurrentSkipListMap<String, String>> outputRows,
+			ConcurrentSkipListMap<LocalDateTime, ConcurrentSkipListMap<String, String>> inputRows) throws Exception {
+		String sensorName = "gap";
+		firstSensorValues.put(sensorName, "3");
+		LocalDateTime lastSampleTime = null;
+		Set<LocalDateTime> keys = inputRows.keySet();
+		Iterator<LocalDateTime> itr = keys.iterator();
+		while (itr.hasNext()) {
+			LocalDateTime timestamp = setTimeGranularity(itr.next());
+			if (lastSampleTime == null) {
+				addEvent(outputRows, timestamp, sensorName, "3");
+			} else {
+				Integer lastMinute = lastSampleTime.toLocalTime().toSecondOfDay() / 60;
+				Integer thisMinute = timestamp.toLocalTime().toSecondOfDay() / 60;
+				Integer gap = thisMinute - lastMinute;
+				if (gap > accountMonitor.runParams.gapTriggerInMinutes) {
+					addEvent(outputRows, lastSampleTime.minusSeconds(1), sensorName, "3");
+					addEvent(outputRows, lastSampleTime, sensorName, "0");
+					addEvent(outputRows, timestamp.minusSeconds(1), sensorName, "0");
+					addEvent(outputRows, timestamp, sensorName, "3");
+				}
+			}
+			lastSampleTime = timestamp;
 		}
 	}
 
@@ -224,8 +245,8 @@ public class PivotDataApp {
 		return sensorData;
 	}
 
-	private void setTimeGranularity(SensorData sensorData) {
-		int seconds = sensorData.localDateTime.toLocalTime().toSecondOfDay();
+	private LocalDateTime setTimeGranularity(LocalDateTime ldt) {
+		int seconds = ldt.toLocalTime().toSecondOfDay();
 		int roundedSeconds = ((seconds + (accountMonitor.runParams.csvTimeGranularityInSeconds / 2))
 								/ accountMonitor.runParams.csvTimeGranularityInSeconds)
 								* accountMonitor.runParams.csvTimeGranularityInSeconds;
@@ -237,7 +258,11 @@ public class PivotDataApp {
 			dayFactor = 1;
 		}
 		LocalTime lt = LocalTime.ofSecondOfDay(roundedSeconds);
-		sensorData.localDateTime = LocalDateTime.of(sensorData.localDateTime.toLocalDate(), lt).plusDays(dayFactor);
+		return LocalDateTime.of(ldt.toLocalDate(), lt).plusDays(dayFactor);
+	}
+
+	private void setTimeGranularity(SensorData sensorData) {
+		sensorData.localDateTime = setTimeGranularity(sensorData.localDateTime);
 	}
 
 	private void readSensorValues(String fn, ConcurrentSkipListMap<String, String> firstSensorValues,
@@ -288,6 +313,7 @@ public class PivotDataApp {
 
 		readData(fn, firstSensorValues, outputRows);
 		writeCsv(fn.replace(".txt", ".csv"), firstSensorValues, outputRows);
+		processMasterLog(outputRows);
 		Utils.logToConsole(Utils.padWithSpaces(fn.replace(".txt", ".csv"), 100)
 				+ "\t" + totalCsvLinesOutput);
 	}
@@ -311,45 +337,39 @@ public class PivotDataApp {
 		return p.toString().endsWith("_particle_log.txt");
 	}
 
-	private void processMasterLog() throws Exception {
+	private void processMasterLog(
+			ConcurrentSkipListMap<LocalDateTime, ConcurrentSkipListMap<String, String>> inputRows) throws Exception {
+		ConcurrentSkipListMap<String, String> firstSensorValues =
+			new ConcurrentSkipListMap<String, String>();
+		ConcurrentSkipListMap<LocalDateTime, ConcurrentSkipListMap<String, String>> outputRows =
+			new ConcurrentSkipListMap<LocalDateTime, ConcurrentSkipListMap<String, String>>();
+
+		accountMonitor.runParams.csvTimeGranularityInSeconds = 10 * 60;
+		createGapEvents(firstSensorValues, outputRows, inputRows);
+		firstSensorValues.put("exception", "0");
+		firstSensorValues.put("startup", "0");
+
 		String fullPath = Utils.getMasterLogFileDir() + File.separator + "monitor.log";
 		BufferedReader	br = new BufferedReader(new FileReader(fullPath));
-		FileWriter		tsvFile = new FileWriter(fullPath + ".tsv", false);
-		tsvFile.write("\tException\tStartup\tmessage" + System.getProperty("line.separator"));
-
 		try {
 			String s;
 			while ((s = br.readLine()) != null) {
 				String[] vals = s.split("\t");
 				if (vals.length > 1) {
 					if (s.contains("xception") || s.contains("Running from")) {
-						LocalDateTime ldt = LocalDateTime.parse(vals[0], logDateFormat);
-						String newVals[] = new String[vals.length + 2];
-						newVals[0] = googleSheetsDateFormat.format(ldt);
+						LocalDateTime ldt = setTimeGranularity(LocalDateTime.parse(vals[0], logDateFormat));
 						if (s.contains("xception")) {
-							newVals[1] = "1";
-							newVals[2] = "0";
+							addEvent(outputRows, ldt, "exception", "1");
 						} else {
-							newVals[1] = "0";
-							newVals[2] = "1";
+							addEvent(outputRows, ldt, "startup", "2");
 						}
-						for (int i = 3; i < newVals.length; i++) {
-							newVals[i] = vals[i - 2];
-						}
-						StringBuilder sb = new StringBuilder();
-						for (int i = 0; i < newVals.length; i++) {
-							sb.append(newVals[i]).append("\t");
-						}
-						tsvFile.write(sb.append(System.getProperty("line.separator")).toString());
 					}
 				}
 			}
+			writeCsv(fullPath + ".tsv", firstSensorValues, outputRows);
 		} finally {
 			if (br != null) {
 				br.close();
-			}
-			if (tsvFile != null) {
-				tsvFile.close();
 			}
 		}
 	}
@@ -362,7 +382,6 @@ public class PivotDataApp {
 			String logFileDir = Utils.getLogFileDir(accountMonitor.accountName);
 			Files.walk(Paths.get(logFileDir)).
 						filter(isParticleFile).forEach(processPath);
-			processMasterLog();
 		} catch (Exception e) {
 			System.out.println("writeLongTermData() : " + e.toString());
 			e.printStackTrace();
