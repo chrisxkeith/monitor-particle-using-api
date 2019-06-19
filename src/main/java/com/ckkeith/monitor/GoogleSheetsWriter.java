@@ -169,7 +169,8 @@ public class GoogleSheetsWriter extends Thread {
 				for (Integer i = 0; i < listOfRows.size(); i++) {
 					String itemForChecking = (String)listOfRows.get(i).get(0);
 					if (itemForChecking == null || itemForChecking.isEmpty()) {
-						Utils.logToConsole("WARNING : Empty timestamp in data: " + sheetId + ", on row : " + i.toString());
+						listOfRows.remove(i);
+						Utils.logToConsole("WARNING : Removed row: " +  i.toString() + " on sheet: " + sheetId);
 					}
 				}
 				GSheetsUtility.deleteRows(sheetId, 0, 1000); // for the future, keep previous count around and only delete those rows.
