@@ -118,23 +118,34 @@ public class PivotDataApp {
 			ConcurrentSkipListMap<LocalDateTime, ConcurrentSkipListMap<String, String>> outputRows,
 			ConcurrentSkipListMap<LocalDateTime, ConcurrentSkipListMap<String, String>> inputRows) throws Exception {
 		String sensorName = "gap";
-		firstSensorValues.put(sensorName, "3");
+		String sensorValue = "2";
+		firstSensorValues.put(sensorName, sensorValue);
+
+		int dayToStart = LocalDateTime.now().getDayOfYear() - accountMonitor.runParams.daysOfGapData;
+		int yearToStart = LocalDateTime.now().getYear();
+		if (dayToStart < 1) {
+			yearToStart--;
+			dayToStart += 365;
+		}
 		LocalDateTime lastSampleTime = null;
 		Set<LocalDateTime> keys = inputRows.keySet();
 		Iterator<LocalDateTime> itr = keys.iterator();
 		while (itr.hasNext()) {
 			LocalDateTime timestamp = setTimeGranularity(itr.next());
+			if ((timestamp.getYear() < yearToStart) || (timestamp.getDayOfYear() < dayToStart)) {
+				continue;
+			}
 			if (lastSampleTime == null) {
-				addEvent(outputRows, timestamp, sensorName, "3");
+				addEvent(outputRows, timestamp, sensorName, sensorValue);
 			} else {
 				Integer lastMinute = lastSampleTime.toLocalTime().toSecondOfDay() / 60;
 				Integer thisMinute = timestamp.toLocalTime().toSecondOfDay() / 60;
 				Integer gap = thisMinute - lastMinute;
 				if (gap > accountMonitor.runParams.gapTriggerInMinutes) {
-					addEvent(outputRows, lastSampleTime.minusSeconds(accountMonitor.runParams.csvTimeGranularityInSeconds), sensorName, "3");
+					addEvent(outputRows, lastSampleTime.minusSeconds(accountMonitor.runParams.csvTimeGranularityInSeconds), sensorName, sensorValue);
 					addEvent(outputRows, lastSampleTime, sensorName, "0");
 					addEvent(outputRows, timestamp.minusSeconds(accountMonitor.runParams.csvTimeGranularityInSeconds), sensorName, "0");
-					addEvent(outputRows, timestamp, sensorName, "3");
+					addEvent(outputRows, timestamp, sensorName, sensorValue);
 				}
 			}
 			lastSampleTime = timestamp;

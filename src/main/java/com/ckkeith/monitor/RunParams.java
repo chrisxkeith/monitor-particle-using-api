@@ -32,6 +32,7 @@ public class RunParams {
 	String		emailTo = "chris.keith@gmail.com";
 	Integer		dataSampleRate = 1; // to reduce number of data rows in csv files when necessary.
 	Integer		gapTriggerInMinutes = 10; // Display gaps in the data if they are longer than this.
+	Integer		daysOfGapData = 30; // Go back this many days for gap data.
 
 	 // If temperature doesn't go down (after sending email) in resendIntervalInMinutes,
 	 // keep resending emails until it does.
@@ -127,6 +128,7 @@ public class RunParams {
 		rp.resendIntervalInMinutes = getInteger(root, "resendIntervalInMinutes", 10);
 		rp.dataSampleRate = getInteger(root, "dataSampleRate", 1);
 		rp.gapTriggerInMinutes = getInteger(root, "gapTriggerInMinutes", 10);
+		rp.daysOfGapData = getInteger(root, "daysOfGapData", 30);
 		rp.loadSheets(root);
 		return rp;
 	}
@@ -175,6 +177,7 @@ public class RunParams {
 				+ ", resendIntervalInMinutes = " + resendIntervalInMinutes
 				+ ", dataSampleRate = " + dataSampleRate
 				+ ", gapTriggerInMinutes = " + gapTriggerInMinutes
+				+ ", daysOfGapData = " + daysOfGapData
 				;
 	}
 }
