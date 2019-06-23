@@ -155,6 +155,7 @@ public class GoogleSheetsWriter extends Thread {
 		if (!validateSheetId(sheetId)) {
 			return;
 		}
+		String opToDo = "unknown";
 		try {
 			List<Object> sensorNameRow = new ArrayList<Object>();
 
@@ -173,13 +174,15 @@ public class GoogleSheetsWriter extends Thread {
 						Utils.logToConsole("WARNING : Removed row: " +  i.toString() + " on sheet: " + sheetId);
 					}
 				}
+				opToDo = "deleteRows";
 				GSheetsUtility.deleteRows(sheetId, 0, 1000); // for the future: keep previous count around and only delete those rows.
-				GSheetsUtility.updateData(accountMonitor.accountName, sheetId, "A1", listOfRows);
+				opToDo = "updateData";
+				GSheetsUtility.updateData(sheetId, "A1", listOfRows);
 				Utils.logToConsole("Updated Google Sheet : " + sheetId + ", rows : " + listOfRows.size()
 					+ ", columns : " + listOfRows.get(0).size());
 			}
 		} catch (Exception e) {
-			Utils.logToConsole("updateSheetById(): FAILED to update Google Sheet : " +
+			Utils.logToConsole("updateSheetById(): " + opToDo + " FAILED, Google Sheet : " +
 				entry.getKey() + " : " + e.getClass().getCanonicalName() + " " + e.getMessage());
 			e.printStackTrace();
 			throw e;

@@ -389,7 +389,6 @@ public class PivotDataApp {
 							first = false;
 						}
 						if (s.contains("xception")) {
-							// Utils.logToConsole(s);
 							addEvent(outputRows, ldt.minusSeconds(accountMonitor.runParams.csvTimeGranularityInSeconds), "exception", "0");
 							addEvent(outputRows, ldt, "exception", "1");
 							addEvent(outputRows, ldt.plusSeconds(accountMonitor.runParams.csvTimeGranularityInSeconds), "exception", "0");

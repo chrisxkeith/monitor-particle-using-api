@@ -19,6 +19,7 @@ import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.client.util.store.FileDataStoreFactory;
 import com.google.api.services.sheets.v4.Sheets;
 import com.google.api.services.sheets.v4.Sheets.Spreadsheets.BatchUpdate;
+import com.google.api.services.sheets.v4.Sheets.Spreadsheets.Values.Update;
 import com.google.api.services.sheets.v4.SheetsScopes;
 import com.google.api.services.sheets.v4.model.BatchUpdateSpreadsheetRequest;
 import com.google.api.services.sheets.v4.model.ClearValuesRequest;
@@ -97,10 +98,22 @@ public class GSheetsUtility {
 				.execute();
 	}
 
-	public static void updateData(String accountName, String spreadSheetId, String targetCell, List<List<Object>> values) throws Exception {
-        ValueRange updateBody = new ValueRange().setValues(values);
-		getSheetsService().spreadsheets().values()
-				.update(spreadSheetId, targetCell, updateBody).setValueInputOption("USER_ENTERED").execute();
+	public static void updateData(String spreadSheetId, String targetCell, List<List<Object>> values) throws Exception {
+        String opToDo = "setValues";
+        try {
+            ValueRange updateBody = new ValueRange().setValues(values);
+            opToDo = "update";
+            Update update = getSheetsService().spreadsheets().values().update(spreadSheetId, targetCell, updateBody);
+            opToDo = "setValueInputOption";
+            update = update.setValueInputOption("USER_ENTERED");
+            opToDo = "execute";
+            update.execute();
+        } catch (Exception e) {
+			Utils.logToConsole("updateData(): FAILED to : " + opToDo + ", spreadSheetId : " +
+                        spreadSheetId + " : " + e.getClass().getCanonicalName() + " " + e.getMessage());
+			e.printStackTrace();
+			throw e;
+        }
 	}
 
 	public static void deleteRows(String spreadSheetId, int startRowIndex, int endRowIndex) throws Exception {
