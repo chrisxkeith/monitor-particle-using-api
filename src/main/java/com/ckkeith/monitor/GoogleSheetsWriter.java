@@ -166,14 +166,14 @@ public class GoogleSheetsWriter extends Thread {
 			loadRows(sensorNameRow, mostRecentDataRow, listOfRows);
 			addBlankRows(listOfRows, entry.getKey());
 			if (listOfRows.size() > 1) {
-				for (Integer i = 0; i < listOfRows.size(); i++) {
+				for (Integer i = listOfRows.size() - 1; i >= 0; i--) {
 					String itemForChecking = (String)listOfRows.get(i).get(0);
 					if (itemForChecking == null || itemForChecking.isEmpty()) {
-						listOfRows.remove(i);
+						listOfRows.remove(listOfRows.get(i));
 						Utils.logToConsole("WARNING : Removed row: " +  i.toString() + " on sheet: " + sheetId);
 					}
 				}
-				GSheetsUtility.deleteRows(sheetId, 0, 1000); // for the future, keep previous count around and only delete those rows.
+				GSheetsUtility.deleteRows(sheetId, 0, 1000); // for the future: keep previous count around and only delete those rows.
 				GSheetsUtility.updateData(accountMonitor.accountName, sheetId, "A1", listOfRows);
 				Utils.logToConsole("Updated Google Sheet : " + sheetId + ", rows : " + listOfRows.size()
 					+ ", columns : " + listOfRows.get(0).size());
