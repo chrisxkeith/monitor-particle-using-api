@@ -125,6 +125,11 @@ public class PivotDataApp {
 			}
 			if (lastSampleTime != null) {
 				Integer lastMinute = lastSampleTime.toLocalTime().toSecondOfDay() / 60;
+				int lastDay = lastSampleTime.getDayOfYear();
+				while (lastDay < timestamp.getDayOfYear()) {
+					lastMinute -= 24 * 60;
+					lastDay++;
+				}
 				Integer thisMinute = timestamp.toLocalTime().toSecondOfDay() / 60;
 				Integer gap = thisMinute - lastMinute;
 				if (gap > accountMonitor.runParams.gapTriggerInMinutes) {
@@ -294,11 +299,12 @@ public class PivotDataApp {
 				}
 			}
 		} catch (Exception e) {
+			Utils.logToConsole("readSensorValues() : " + e.getMessage());
+			e.printStackTrace();
+		} finally {
 			if (br != null) {
 				br.close();
 			}
-			Utils.logToConsole("readSensorValues() : " + e.getMessage());
-			e.printStackTrace();
 		}
 	}
 
