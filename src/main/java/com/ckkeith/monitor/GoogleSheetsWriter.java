@@ -77,7 +77,7 @@ public class GoogleSheetsWriter extends Thread {
 	private void initFirstRow(List<Object> sensorNameRow,
 			Map.Entry<String, ArrayList<RunParams.Dataset>> entry,
 			List<Object> mostRecentDataRow) {
-		sensorNameRow.add(""); // time stamp column
+		sensorNameRow.add("timestamp");
 		mostRecentDataRow.add(Utils.googleSheetsDateFormat.format(LocalDateTime.now().withYear(1980)));
 		Iterator<RunParams.Dataset> datasetIt = entry.getValue().iterator();
 		while (datasetIt.hasNext()) {
