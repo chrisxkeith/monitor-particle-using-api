@@ -6,12 +6,12 @@ set userhome=%HOMEDRIVE%%HOMEPATH%
 mkdir %userhome%\Documents\tmp\%COMPUTERNAME%
 set log=%userhome%\Documents\tmp\%COMPUTERNAME%\monitor.log
 
-rem ----- Put timestamp in log
-
 echo %DATE% %TIME% >> %log%
 set >> %log%
 
 pushd %userhome%\Documents\Github\monitor-particle-using-api
 git pull 2>&1 >> %log%
-mvn clean install exec:java -D maven.test.skip=true -D exec.mainClass="com.ckkeith.monitor.Main" 2>&1 >> %log%
+call mvn clean install exec:java -D maven.test.skip=true -D exec.mainClass="com.ckkeith.monitor.Main" 2>&1 >> %log%
+echo %DATE% %TIME% >> %log%
+echo mvn clean install... finished >> %log%
 popd
