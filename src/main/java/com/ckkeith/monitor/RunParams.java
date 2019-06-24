@@ -20,7 +20,6 @@ public class RunParams {
 
 	Integer		sheetsDataIntervalInMinutes = 20;
 	Integer		htmlWriteIntervalInSeconds = 5;
-	Integer		expectedEventRateInSeconds = 60 * 2;
 	String		devicesToReport = "";
 	Integer		csvTimeGranularityInSeconds = 60; // E.g. '60' == round to minutes, '30' == round to minutes and half-minutes.
 	Integer		sheetsWriteIntervalInSeconds = 10;
@@ -30,7 +29,6 @@ public class RunParams {
 	int			temperatureLimit = 80; // degrees F
 	int			timeLimit = 60; // minutes before alert is logged.
 	String		emailTo = "chris.keith@gmail.com";
-	Integer		dataSampleRate = 1; // to reduce number of data rows in csv files when necessary.
 	Integer		gapTriggerInMinutes = 10; // Display gaps in the data if they are longer than this.
 	Integer		daysOfGapData = 30; // Go back this many days for gap data.
 
@@ -117,7 +115,6 @@ public class RunParams {
 		Element root = Utils.readTextFileIntoDOM(filePath).getDocumentElement();
 		rp.sheetsDataIntervalInMinutes = getInteger(root, "sheetsDataIntervalInMinutes", rp.sheetsDataIntervalInMinutes);
 		rp.htmlWriteIntervalInSeconds = getInteger(root, "htmlWriteIntervalInSeconds", rp.htmlWriteIntervalInSeconds);
-		rp.expectedEventRateInSeconds = getInteger(root, "expectedEventRateInSeconds", rp.expectedEventRateInSeconds);
 		rp.csvTimeGranularityInSeconds = getInteger(root, "csvTimeGranularityInSeconds", rp.csvTimeGranularityInSeconds);
 		rp.sheetsWriteIntervalInSeconds = getInteger(root, "sheetsWriteIntervalInSeconds", rp.sheetsWriteIntervalInSeconds);
 		rp.writeLongTermData = getInteger(root, "writeLongTermData", 0) == 0 ? false : true;
@@ -126,7 +123,6 @@ public class RunParams {
 		rp.timeLimit = getInteger(root, "timeLimit", 60);
 		rp.emailTo = getString(root, "emailTo", "chris.keith@gmail.com");
 		rp.resendIntervalInMinutes = getInteger(root, "resendIntervalInMinutes", 10);
-		rp.dataSampleRate = getInteger(root, "dataSampleRate", 1);
 		rp.gapTriggerInMinutes = getInteger(root, "gapTriggerInMinutes", 10);
 		rp.daysOfGapData = getInteger(root, "daysOfGapData", 30);
 		rp.loadSheets(root);
@@ -145,8 +141,6 @@ public class RunParams {
 					sheetsDataIntervalInMinutes = paramValue;
 				} else if (paramName.equals("htmlWriteIntervalInSeconds")) {
 					htmlWriteIntervalInSeconds = paramValue;
-				} else if (paramName.equals("expectedEventRateInSeconds")) {
-					expectedEventRateInSeconds = paramValue;
 				} else if (paramName.equals("csvTimeGranularityInSeconds")) {
 					csvTimeGranularityInSeconds = paramValue;
 				} else if (paramName.equals("sheetsWriteIntervalInSeconds")) {
@@ -167,7 +161,6 @@ public class RunParams {
 				+ "sheetsDataIntervalInMinutes = " + sheetsDataIntervalInMinutes
 				+ ", htmlWriteIntervalInSeconds = " + htmlWriteIntervalInSeconds
 				+ ", sheetsWriteIntervalInSeconds = " + sheetsWriteIntervalInSeconds
-				+ ", expectedEventRateInSeconds = " + expectedEventRateInSeconds
 				+ ", devicesToReport = " + devicesToReport
 				+ ", csvTimeGranularityInSeconds = " + csvTimeGranularityInSeconds
 				+ ", sheetsWriteIntervalInSeconds = " + sheetsWriteIntervalInSeconds
@@ -175,7 +168,6 @@ public class RunParams {
 				+ ", timeLimit = " + timeLimit
 				+ ", emailTo = " + emailTo
 				+ ", resendIntervalInMinutes = " + resendIntervalInMinutes
-				+ ", dataSampleRate = " + dataSampleRate
 				+ ", gapTriggerInMinutes = " + gapTriggerInMinutes
 				+ ", daysOfGapData = " + daysOfGapData
 				;
