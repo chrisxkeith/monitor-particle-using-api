@@ -362,19 +362,22 @@ public class PivotDataApp {
 				yearToStart--;
 				dayToStart += 365;
 			}
+			String previousTime = null;
 			String s;
 			while ((s = br.readLine()) != null) {
 				String[] vals = s.split("\t");
 				if (vals.length > 1) {
 					try {
-						LocalDateTime timestamp = LocalDateTime.parse(vals[0], logDateFormat);
+						String thisTime = vals[0];
+						LocalDateTime timestamp = LocalDateTime.parse(thisTime, logDateFormat);
 						if ((timestamp.getYear() < yearToStart) || (timestamp.getDayOfYear() < dayToStart)) {
 							continue;
 						}
-						if (s.contains("xception")) {
+						if (s.contains("xception") && !thisTime.equals(previousTime)) {
 							addLogLine(tsvStream, timestamp, s);
 							outputLines++;
 						}
+						previousTime = thisTime;
 					} catch (Exception e) {
 						// just go on to find a log line starting with a correctly formatted timestamp.
 					}
