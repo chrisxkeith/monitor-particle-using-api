@@ -107,7 +107,7 @@ public class PivotDataApp {
 		tsvStream.write(logLine);
 	}
 
-	private void createGapEvents(FileWriter tsvStream,
+	private int createGapEvents(FileWriter tsvStream,
 			ConcurrentSkipListMap<LocalDateTime, ConcurrentSkipListMap<String, String>> inputRows) throws Exception {
 		int dayToStart = LocalDateTime.now().getDayOfYear() - accountMonitor.runParams.daysOfGapData;
 		int yearToStart = LocalDateTime.now().getYear();
@@ -115,6 +115,7 @@ public class PivotDataApp {
 			yearToStart--;
 			dayToStart += 365;
 		}
+		int outputLines = 0;
 		LocalDateTime lastSampleTime = null;
 		Set<LocalDateTime> keys = inputRows.keySet();
 		Iterator<LocalDateTime> itr = keys.iterator();
@@ -135,10 +136,12 @@ public class PivotDataApp {
 				if (gap > accountMonitor.runParams.gapTriggerInMinutes) {
 					addLogLine(tsvStream, lastSampleTime, "Gap started");
 					addLogLine(tsvStream, timestamp, "Gap ended");
+					outputLines += 2;
 				}
 			}
 			lastSampleTime = timestamp;
 		}
+		return outputLines;
 	}
 
 	final private DateTimeFormatter logDateFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssX");
@@ -352,14 +355,9 @@ public class PivotDataApp {
 		return p.toString().endsWith("_particle_log.txt");
 	}
 
-	private void processMasterLog(ConcurrentSkipListMap<LocalDateTime, ConcurrentSkipListMap<String, String>> outputRows) throws Exception {
-		String		fullPath = getMasterLogFilePath();
-		String		outputFile = fullPath.replace("monitor.log", "exeptions-and-gaps.tsv");
-		FileWriter	tsvStream = new FileWriter(outputFile, false);
-		Integer		outputLines = 0;
-
-		createGapEvents(tsvStream, outputRows);
-
+	@SuppressWarnings("unused")
+	private int createExceptionEvents(FileWriter tsvStream, String fullPath) throws Exception {
+		int outputLines = 0;
 		BufferedReader	br = new BufferedReader(new FileReader(fullPath));
 		try {
 			int dayToStart = LocalDateTime.now().getDayOfYear() - accountMonitor.runParams.daysOfGapData;
@@ -389,11 +387,24 @@ public class PivotDataApp {
 					}
 				}
 			}
-			Utils.logToConsole(Utils.padWithSpaces(outputFile + "\t" + outputLines.toString(), 100));
-	} finally {
+		} finally {
 			if (br != null) {
 				br.close();
 			}
+		}
+		return outputLines;
+	}
+
+	private void processMasterLog(ConcurrentSkipListMap<LocalDateTime, ConcurrentSkipListMap<String, String>> outputRows) throws Exception {
+		String		fullPath = getMasterLogFilePath();
+		String		outputFile = fullPath.replace("monitor.log", "exeptions-and-gaps.tsv");
+		FileWriter	tsvStream = new FileWriter(outputFile, false);
+
+		try {
+			Integer	outputLines = createGapEvents(tsvStream, outputRows);
+			// outputLines += this.createExceptionEvents(tsvStream, fullPath);
+			Utils.logToConsole(Utils.padWithSpaces(outputFile + "\t" + outputLines.toString(), 100));
+		} finally {
 			if (tsvStream != null) {
 				tsvStream.close();
 			}
