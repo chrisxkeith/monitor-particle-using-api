@@ -10,12 +10,9 @@ public class Main {
 	private static ArrayList<AccountMonitor> monitors = new ArrayList<AccountMonitor>();
 
 	@SuppressWarnings("unused")
-	private static LocalDateTime getShutdownTime() {
-		// shutdown a little before midnight.
-		return LocalDateTime.now().withHour(23).withMinute(57);
-/*
+	private static LocalDateTime getHourlyShutdownTime() {
 		// Shutdown a few minutes before the hour interval after system restarted.
-		// A new instance of this will be restarted by Task Scheduler.
+		// A new instance of this should be restarted by Task Scheduler.
 		LocalDateTime bootTime = Utils.getBootTime();
 		int bootMinute;
 		if (bootTime == null) {
@@ -30,7 +27,11 @@ public class Main {
 		return LocalDateTime.now().plusHours(hourIncrement).withMinute(bootMinute - 3);
 		// - 3 to increase the odds that this instance is gone
 		// before Task Scheduler tries to start a new one.
-*/
+	}
+
+	private static LocalDateTime getShutdownTime() {
+		// Shutdown a few minutes before midnight.
+		return LocalDateTime.now().withHour(23).withMinute(57);
 	}
 
 	public static void main(String[] args) {
@@ -52,8 +53,8 @@ public class Main {
 				isRunningFrom = "terminal / debug";
 			} else {
 				isRunningFrom = "Task Scheduler / automatic";
-//				Utils.sleepUntil("MonitorParticle main - waiting to System.exit(0).", getShutdownTime());
-//				System.exit(0);
+				Utils.sleepUntil("MonitorParticle main - waiting to System.exit(0).", getShutdownTime());
+				System.exit(0);
 			}
 			Utils.logToConsole("Running from " + isRunningFrom);
 		} catch (Exception e) {
