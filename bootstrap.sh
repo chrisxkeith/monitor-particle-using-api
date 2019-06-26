@@ -24,9 +24,6 @@ mkdir -p ~/Documents/Github												; if [ $? -ne 0 ] ; then exit -6 ; fi
 cd ~/Documents/Github													; if [ $? -ne 0 ] ; then exit -6 ; fi
 rm -rf JParticle/														; if [ $? -ne 0 ] ; then exit -6 ; fi
 git clone https://github.com/Walter-Stroebel/JParticle.git				; if [ $? -ne 0 ] ; then exit -6 ; fi
-pushd JParticle/														; if [ $? -ne 0 ] ; then exit -6 ; fi
-git checkout a033fbb789bf10be526d6212abe3c680decc1754					; if [ $? -ne 0 ] ; then exit -6 ; fi	
-popd																	; if [ $? -ne 0 ] ; then exit -6 ; fi
 
 git clone https://github.com/chrisxkeith/monitor-particle-using-api.git	; if [ $? -ne 0 ] ; then exit -6 ; fi
 cp -R JParticle/src/* monitor-particle-using-api/src/					; if [ $? -ne 0 ] ; then exit -6 ; fi
