@@ -49,8 +49,6 @@ public class PivotDataApp {
 	int linesReadForSensorData = 0;
 	AccountMonitor accountMonitor;
 
-	private final String otherMachineName = "2018-ck-nuc";
-
 	private void writeCsv(String fileName, ConcurrentSkipListMap<String, String> firstSensorValues,
 			ConcurrentSkipListMap<LocalDateTime, ConcurrentSkipListMap<String, String>> outputRows) throws Exception {
 		Set<String> sensorNames = firstSensorValues.keySet();
@@ -139,6 +137,7 @@ public class PivotDataApp {
 						"\t" + googleSheetsDateFormat.format(timestamp) +
 						"\t" + gap.toString() +
 						"\t" + hhmm + ":00" +
+						"\t" + Utils.getHostName() +
 						System.getProperty("line.separator"));
 					tsvStream.write(logLine);
 					outputLines++;
@@ -402,7 +401,7 @@ public class PivotDataApp {
 
 	private void processMasterLog(ConcurrentSkipListMap<LocalDateTime, ConcurrentSkipListMap<String, String>> outputRows) throws Exception {
 		String		fullPath = getMasterLogFilePath();
-		String		outputFile = fullPath.replace("monitor.log", "exeptions-and-gaps.tsv");
+		String		outputFile = fullPath.replace("monitor.log", "gaps.tsv");
 		FileWriter	tsvStream = new FileWriter(outputFile, false);
 
 		try {
@@ -415,6 +414,9 @@ public class PivotDataApp {
 			}
 		}
 	}
+
+	private final String[] otherMachines = { "2018-ck-nuc", "2012-xps" };
+	private String otherMachineName;
 
 	private String getLogFileDir() throws Exception {
 		String logFileDir = Utils.getLogFileDir(accountMonitor.accountName).toLowerCase();
@@ -429,11 +431,14 @@ public class PivotDataApp {
 	public void writeLongTermData() {
 		Utils.logToConsole(accountMonitor.accountName + "PivotDataApp.writeLongTermData() started.");
 		try {
-			Predicate<Path> isParticleFile = i -> (checkPath(i));
-			Consumer<Path> processPath = i -> processPath(i);
-			String logFileDir = getLogFileDir();
-			Files.walk(Paths.get(logFileDir)).
-						filter(isParticleFile).forEach(processPath);
+			for (String s : otherMachines) {
+				otherMachineName = s;
+				Predicate<Path> isParticleFile = i -> (checkPath(i));
+				Consumer<Path> processPath = i -> processPath(i);
+				String logFileDir = getLogFileDir();
+				Files.walk(Paths.get(logFileDir)).
+							filter(isParticleFile).forEach(processPath);
+			}
 		} catch (Exception e) {
 			System.out.println("writeLongTermData() : " + e.toString());
 			e.printStackTrace();
