@@ -134,9 +134,14 @@ public class PivotDataApp {
 				Integer thisMinute = timestamp.toLocalTime().toSecondOfDay() / 60;
 				Integer gap = thisMinute - lastMinute;
 				if (gap > accountMonitor.runParams.gapTriggerInMinutes) {
-					addLogLine(tsvStream, lastSampleTime, "Gap started");
-					addLogLine(tsvStream, timestamp, "Gap ended");
-					outputLines += 2;
+					String hhmm = (new Integer(gap / 60)).toString() + ":" + (new Integer(gap % 60)).toString();
+					String logLine = (googleSheetsDateFormat.format(lastSampleTime) + 
+						"\t" + googleSheetsDateFormat.format(timestamp) +
+						"\t" + gap.toString() +
+						"\t" + hhmm + ":00" +
+						System.getProperty("line.separator"));
+					tsvStream.write(logLine);
+					outputLines++;
 				}
 			}
 			lastSampleTime = timestamp;
