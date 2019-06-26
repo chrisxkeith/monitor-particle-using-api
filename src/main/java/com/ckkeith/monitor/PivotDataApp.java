@@ -105,6 +105,8 @@ public class PivotDataApp {
 		tsvStream.write(logLine);
 	}
 
+	private String otherMachineName;
+
 	private int createGapEvents(FileWriter tsvStream,
 			ConcurrentSkipListMap<LocalDateTime, ConcurrentSkipListMap<String, String>> inputRows) throws Exception {
 		int dayToStart = LocalDateTime.now().getDayOfYear() - accountMonitor.runParams.daysOfGapData;
@@ -137,7 +139,7 @@ public class PivotDataApp {
 						"\t" + googleSheetsDateFormat.format(timestamp) +
 						"\t" + gap.toString() +
 						"\t" + hhmm + ":00" +
-						"\t" + Utils.getHostName() +
+						"\t" + this.otherMachineName +
 						System.getProperty("line.separator"));
 					tsvStream.write(logLine);
 					outputLines++;
@@ -416,7 +418,6 @@ public class PivotDataApp {
 	}
 
 	private final String[] otherMachines = { "2018-ck-nuc", "2012-xps" };
-	private String otherMachineName;
 
 	private String getLogFileDir() throws Exception {
 		String logFileDir = Utils.getLogFileDir(accountMonitor.accountName).toLowerCase();
