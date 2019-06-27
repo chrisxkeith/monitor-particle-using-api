@@ -70,7 +70,15 @@ public class GSheetsUtility {
     	if (sheetsService == null) {
             // Build a new authorized API client service.
             final NetHttpTransport HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
-            sheetsService = new Sheets.Builder(HTTP_TRANSPORT, JSON_FACTORY, getCredentials(HTTP_TRANSPORT))
+                Credential credentials = null;
+                try {
+                        credentials = getCredentials(HTTP_TRANSPORT);
+                } catch (Exception e) {
+                        Utils.logToConsole("Unable to get Google Cloud credentials. No credentials file?");
+                        e.printStackTrace();
+                        System.exit(-1);
+                }
+            sheetsService = new Sheets.Builder(HTTP_TRANSPORT, JSON_FACTORY, credentials)
                     .setApplicationName(APPLICATION_NAME)
                     .build();
     	}
