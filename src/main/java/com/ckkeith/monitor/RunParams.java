@@ -129,33 +129,6 @@ public class RunParams {
 		return rp;
 	}
 
-	public void setParam(String data, String logFileName) {
-		String[] kv = data.split("=");
-		if (kv.length != 2) {
-			Utils.log("Bad server input: " + data, logFileName);
-		} else {
-			String paramName = kv[0];
-			try {
-				Integer paramValue = Integer.parseInt(kv[1]);
-				if (paramName.equals("sheetsDataIntervalInMinutes")) {
-					sheetsDataIntervalInMinutes = paramValue;
-				} else if (paramName.equals("htmlWriteIntervalInSeconds")) {
-					htmlWriteIntervalInSeconds = paramValue;
-				} else if (paramName.equals("csvTimeGranularityInSeconds")) {
-					csvTimeGranularityInSeconds = paramValue;
-				} else if (paramName.equals("sheetsWriteIntervalInSeconds")) {
-					sheetsWriteIntervalInSeconds = paramValue;
-				} else {
-					Utils.log("Unknown server parameter: " + paramName + ", value: "
-							+ (new Integer(paramValue)).toString(), logFileName);
-				}
-				Utils.log(toString(), logFileName);
-			} catch (Exception e) {
-				Utils.log("Bad server input: " + data, logFileName);
-			} 
-		}
-	}
-
 	public String toString() {
 		return "RunParams : "
 				+ "sheetsDataIntervalInMinutes = " + sheetsDataIntervalInMinutes

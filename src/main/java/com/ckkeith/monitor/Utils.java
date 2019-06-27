@@ -49,7 +49,7 @@ public class Utils {
 	public static final boolean isDebug = java.lang.management.ManagementFactory.getRuntimeMXBean().getInputArguments()
 			.toString().indexOf("jdwp") >= 0;
 
-	private static final SimpleDateFormat logDateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssX");
+	public static final SimpleDateFormat logDateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssX");
 
 	public static String padWithSpaces(String s, int length) {
 		StringBuffer ret = new StringBuffer(s);

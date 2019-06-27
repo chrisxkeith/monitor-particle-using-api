@@ -21,9 +21,20 @@ public class ParticleDeviceEvent extends AnyDeviceEvent {
 		this.logFileName = Utils.getLogFileName(accountMonitor.accountName, device2.getName() + "_particle_log.txt");
 	}
 	
+	private void handleServerEvent(ParticleEvent e) {
+		String subject = "";
+		String body = "coreId: " + e.getCoreId() + ", publishedAt: " + Utils.logDateFormat.format(e.getPublishedAt());
+		if ("send test email".equalsIgnoreCase(e.getData())) {
+			subject = "Test email requested.";
+		} else {
+			subject = "Unknown server event: " + e.getData();
+		}
+		GMailer.sendMessageX(this.accountMonitor.runParams.emailTo, this.accountMonitor.runParams.emailTo, subject, body);
+	}
+
 	public void handleEvent(ParticleEvent e) {
 		if (e.getName().equals("server")) {
-			accountMonitor.runParams.setParam(e.getData(), logFileName);
+			handleServerEvent(e);
 		} else {
 			LocalDateTime ldt = LocalDateTime.ofInstant(e.getPublishedAt().toInstant(), ZoneId.systemDefault());
 			String s = Utils.logWithGSheetsDate(ldt, e.toTabbedString(device), logFileName);
