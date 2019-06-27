@@ -100,11 +100,6 @@ public class PivotDataApp {
 		}
 	}
 
-	private void addLogLine(FileWriter tsvStream, LocalDateTime ldt, String s) throws Exception {
-		String logLine = (googleSheetsDateFormat.format(ldt) +"\t" + s + System.getProperty("line.separator"));
-		tsvStream.write(logLine);
-	}
-
 	private String otherMachineName;
 
 	private int createGapEvents(FileWriter tsvStream,
@@ -361,7 +356,6 @@ public class PivotDataApp {
 		return p.toString().endsWith("_particle_log.txt");
 	}
 
-	@SuppressWarnings("unused")
 	private int createExceptionEvents(FileWriter tsvStream, String fullPath) throws Exception {
 		int outputLines = 0;
 		BufferedReader	br = new BufferedReader(new FileReader(fullPath));
@@ -384,7 +378,9 @@ public class PivotDataApp {
 							continue;
 						}
 						if (s.contains("xception") && !thisTime.equals(previousTime)) {
-							addLogLine(tsvStream, timestamp, s);
+							String logLine = googleSheetsDateFormat.format(timestamp) +"\t" + 
+										this.otherMachineName + "\t" + vals[1] + System.getProperty("line.separator");
+							tsvStream.write(logLine);
 							outputLines++;
 						}
 						previousTime = thisTime;
@@ -401,20 +397,30 @@ public class PivotDataApp {
 		return outputLines;
 	}
 
-	private void processMasterLog(ConcurrentSkipListMap<LocalDateTime, ConcurrentSkipListMap<String, String>> outputRows) throws Exception {
-		String		fullPath = getMasterLogFilePath();
-		String		outputFile = fullPath.replace("monitor.log", "gaps.tsv");
+	private void processGapsOrExceptions(String fullPath, String newFn,
+						ConcurrentSkipListMap<LocalDateTime, ConcurrentSkipListMap<String, String>> outputRows) throws Exception {
+		String		outputFile = fullPath.replace("monitor.log", newFn + ".tsv");
 		FileWriter	tsvStream = new FileWriter(outputFile, false);
 
 		try {
-			Integer	outputLines = createGapEvents(tsvStream, outputRows);
-			// outputLines += this.createExceptionEvents(tsvStream, fullPath);
+			Integer	outputLines;
+			if ("gaps".equals(newFn)) {
+				outputLines = createGapEvents(tsvStream, outputRows);
+			} else {
+				outputLines = createExceptionEvents(tsvStream, fullPath);
+			}
 			Utils.logToConsole(Utils.padWithSpaces(outputFile + "\t" + outputLines.toString(), 100));
 		} finally {
 			if (tsvStream != null) {
 				tsvStream.close();
 			}
 		}
+	}
+
+	private void processMasterLog(ConcurrentSkipListMap<LocalDateTime, ConcurrentSkipListMap<String, String>> outputRows) throws Exception {
+		String		fullPath = getMasterLogFilePath();
+		processGapsOrExceptions(fullPath, "gaps", outputRows);
+		processGapsOrExceptions(fullPath, "exceptions", outputRows);
 	}
 
 	private final String[] otherMachines = { "2018-ck-nuc", "2012-xps" };
