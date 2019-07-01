@@ -2,7 +2,6 @@ package com.ckkeith.monitor;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -15,9 +14,10 @@ import java.util.regex.Pattern;
 public class GoogleSheetsWriter extends Thread {
 
 	private AccountMonitor accountMonitor;
-	private ConcurrentSkipListMap<LocalDateTime, ConcurrentSkipListMap<String, String>> sensorData = new ConcurrentSkipListMap<LocalDateTime, ConcurrentSkipListMap<String, String>>();
-	private ConcurrentSkipListMap<String, String> sensorNames = new ConcurrentSkipListMap<String, String>();
-	private HashMap<String, Integer> mostRecentRowCount = new HashMap<String, Integer>();
+	private ConcurrentSkipListMap<LocalDateTime, ConcurrentSkipListMap<String, String>> sensorData =
+		new ConcurrentSkipListMap<LocalDateTime, ConcurrentSkipListMap<String, String>>();
+	private ConcurrentSkipListMap<String, String> sensorNames = 
+		new ConcurrentSkipListMap<String, String>();
 
 	public GoogleSheetsWriter(AccountMonitor accountMonitor) {
 		this.accountMonitor = accountMonitor;
@@ -57,27 +57,11 @@ public class GoogleSheetsWriter extends Thread {
 		}
 	}
 
-	// In case there are fewer rows than before,
-	// fill in with blanks to avoid junk data at right end of graph.
-	private void addBlankRows(List<List<Object>> listOfRows, String deviceName) {
-		int blankRowsToAdd = this.mostRecentRowCount.get(deviceName) - listOfRows.size();
-		List<Object> blankRow = new ArrayList<Object>();
-		int numColumns = sensorNames.keySet().size();
-		while (numColumns > 0) {
-			blankRow.add("");
-			numColumns--;
-		}
-		this.mostRecentRowCount.put(deviceName, listOfRows.size());
-		while (blankRowsToAdd > 0) {
-			listOfRows.add(blankRow);
-			blankRowsToAdd--;
-		}
-	}
-
 	private void initFirstRow(List<Object> sensorNameRow,
 			Map.Entry<String, ArrayList<RunParams.Dataset>> entry,
 			List<Object> mostRecentDataRow) {
 		sensorNameRow.add("timestamp");
+		// Put a blank row with a timestamp that is sure to be less than any timestamp in the data.
 		mostRecentDataRow.add(Utils.googleSheetsDateFormat.format(LocalDateTime.now().withYear(1980)));
 		Iterator<RunParams.Dataset> datasetIt = entry.getValue().iterator();
 		while (datasetIt.hasNext()) {
@@ -165,7 +149,6 @@ public class GoogleSheetsWriter extends Thread {
 			List<List<Object>> listOfRows = new ArrayList<List<Object>>();
 			listOfRows.add(sensorNameRow);
 			loadRows(sensorNameRow, mostRecentDataRow, listOfRows);
-			addBlankRows(listOfRows, entry.getKey());
 			if (listOfRows.size() > 1) {
 				for (Integer i = listOfRows.size() - 1; i >= 0; i--) {
 					String itemForChecking = (String)listOfRows.get(i).get(0);
@@ -218,7 +201,6 @@ public class GoogleSheetsWriter extends Thread {
 			try {
 				if (validateSheetId(spreadSheetId)) {
 					GSheetsUtility.clear(spreadSheetId, "Sheet1!A1:Z1000");
-					this.mostRecentRowCount.put(spreadSheetId, 0);
 				}
 			} catch (Exception e) {
 				Utils.logToConsole("initSheets(): FAILED to update Google Sheet : " +
