@@ -102,6 +102,30 @@ public class PivotDataApp {
 
 	private String otherMachineName;
 
+	private int addGap(LocalDateTime lastSampleTime, LocalDateTime timestamp,
+					FileWriter tsvStream) throws Exception {
+		Integer lastMinute = lastSampleTime.toLocalTime().toSecondOfDay() / 60;
+		int lastDay = lastSampleTime.getDayOfYear();
+		while (lastDay < timestamp.getDayOfYear()) {
+			lastMinute -= 24 * 60;
+			lastDay++;
+		}
+		Integer thisMinute = timestamp.toLocalTime().toSecondOfDay() / 60;
+		Integer gap = thisMinute - lastMinute;
+		if (gap > accountMonitor.runParams.gapTriggerInMinutes) {
+			String hhmm = (new Integer(gap / 60)).toString() + ":" + (new Integer(gap % 60)).toString();
+			String logLine = (googleSheetsDateFormat.format(lastSampleTime) + 
+				"\t" + googleSheetsDateFormat.format(timestamp) +
+				"\t" + gap.toString() +
+				"\t" + hhmm + ":00" +
+				"\t" + this.otherMachineName +
+				System.getProperty("line.separator"));
+			tsvStream.write(logLine);
+			return 1;
+		}
+		return 0;
+	}
+
 	private int createGapEvents(FileWriter tsvStream,
 			ConcurrentSkipListMap<LocalDateTime, ConcurrentSkipListMap<String, String>> inputRows) throws Exception {
 		int dayToStart = LocalDateTime.now().getDayOfYear() - accountMonitor.runParams.daysOfGapData;
@@ -120,29 +144,15 @@ public class PivotDataApp {
 				continue;
 			}
 			if (lastSampleTime != null) {
-				Integer lastMinute = lastSampleTime.toLocalTime().toSecondOfDay() / 60;
-				int lastDay = lastSampleTime.getDayOfYear();
-				while (lastDay < timestamp.getDayOfYear()) {
-					lastMinute -= 24 * 60;
-					lastDay++;
-				}
-				Integer thisMinute = timestamp.toLocalTime().toSecondOfDay() / 60;
-				Integer gap = thisMinute - lastMinute;
-				if (gap > accountMonitor.runParams.gapTriggerInMinutes) {
-					String hhmm = (new Integer(gap / 60)).toString() + ":" + (new Integer(gap % 60)).toString();
-					String logLine = (googleSheetsDateFormat.format(lastSampleTime) + 
-						"\t" + googleSheetsDateFormat.format(timestamp) +
-						"\t" + gap.toString() +
-						"\t" + hhmm + ":00" +
-						"\t" + this.otherMachineName +
-						System.getProperty("line.separator"));
-					tsvStream.write(logLine);
-					outputLines++;
-				}
+				outputLines += addGap(lastSampleTime, timestamp, tsvStream);
 			}
 			lastSampleTime = timestamp;
 		}
-		return outputLines;
+		if (lastSampleTime != null) {
+			// This will be correct ONLY if the log files are less than accountMonitor.runParams.gapTriggerInMinutes old.
+			outputLines += addGap(lastSampleTime, LocalDateTime.now(), tsvStream);
+		}
+	return outputLines;
 	}
 
 	final private DateTimeFormatter logDateFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssX");
