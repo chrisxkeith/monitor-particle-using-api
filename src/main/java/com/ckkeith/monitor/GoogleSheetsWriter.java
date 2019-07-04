@@ -74,6 +74,7 @@ public class GoogleSheetsWriter extends Thread {
 			}
 			mostRecentDataRow.add("");
 		}
+		sensorNameRow.add(Utils.getHostName());
 	}
 
 	int findSensorIndex(List<Object> sensorNameRow, String fullSensorName) {

@@ -135,8 +135,7 @@ public class GSheetsUtility {
 		List<Request> requests = new ArrayList<Request>();
 		requests.add(request);
 		content.setRequests(requests);
-		BatchUpdate batchUpdate = getSheetsService().spreadsheets().batchUpdate(spreadSheetId, content);
-		System.out.println("batchUpdate: " + batchUpdate.toString());
+		getSheetsService().spreadsheets().batchUpdate(spreadSheetId, content);
 	}
 
 	public static void clear(String spreadSheetId, String range) throws Exception {
