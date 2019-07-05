@@ -75,6 +75,7 @@ public class GoogleSheetsWriter extends Thread {
 			mostRecentDataRow.add("TBD"); // string is for helping to debug.
 		}
 		sensorNameRow.add(Utils.getHostName());
+		sensorNameRow.add(Utils.googleSheetsDateFormat.format(LocalDateTime.now()));
 	}
 
 	int findSensorIndex(List<Object> sensorNameRow, String fullSensorName) {
@@ -116,18 +117,6 @@ public class GoogleSheetsWriter extends Thread {
 				mostRecentDataRow.addAll(sensorDataRow);
 			}
 		}
-		// Erratic bug puts (or leaves) out-of-order timestamped rows at end of data in Google Sheet.
-		// Current suspicion is that the delete rows call is not happening (message lost or ignored?).
-		// Fill out to the expected number of rows with blank rows.
-		List<Object> blankRow = new ArrayList<Object>(mostRecentDataRow.size());
-		for (int i = 0; i < mostRecentDataRow.size(); i++) {
-			blankRow.add("");
-		}
-		int expectedSize = (60 / accountMonitor.runParams.sheetsWriteIntervalInSeconds) *
-				(accountMonitor.runParams.sheetsDataIntervalInMinutes + 1); // + 1 is fudge factor.
-		for (int i = listOfRows.size(); i <= expectedSize; i++) {
-			listOfRows.add(blankRow);
-		}
 	}
 
 	// \x2D == '-'
@@ -163,6 +152,13 @@ public class GoogleSheetsWriter extends Thread {
 			listOfRows.add(sensorNameRow);
 			loadRows(sensorNameRow, mostRecentDataRow, listOfRows);
 			if (listOfRows.size() > 1) {
+				for (Integer i = listOfRows.size() - 1; i >= 0; i--) {
+					String itemForChecking = (String)listOfRows.get(i).get(0);
+					if (itemForChecking == null || itemForChecking.isEmpty()) {
+						listOfRows.remove(listOfRows.get(i));
+						Utils.logToConsole("WARNING : Removed row: " +  i.toString() + " on sheet: " + sheetId);
+					}
+				}
 				opToDo = "deleteRows";
 				GSheetsUtility.deleteRows(sheetId, 0, 1000); // for the future: keep previous count around and only delete those rows.
 				opToDo = "updateData";
