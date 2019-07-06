@@ -88,6 +88,9 @@ public class GoogleSheetsWriter extends Thread {
 		}
 		return -1;
 	}
+
+	int previousRowCount = 0;
+
 	void loadRows(List<Object> sensorNameRow,
 					List<Object> mostRecentDataRow,
 					List<List<Object>> listOfRows) {
@@ -116,6 +119,16 @@ public class GoogleSheetsWriter extends Thread {
 				mostRecentDataRow.clear();
 				mostRecentDataRow.addAll(sensorDataRow);
 			}
+		}
+		// Erratic bug leaves out-of-order timestamped rows at end of data in Google Sheet.	
+		// Current suspicion is that the delete rows call is not happening (message lost or ignored?).	
+		// Fill out to the previous number of rows with blank rows.	
+		List<Object> blankRow = new ArrayList<Object>(mostRecentDataRow.size());	
+		for (int i = 0; i < mostRecentDataRow.size(); i++) {	
+			blankRow.add("");	
+		}
+		for (int i = listOfRows.size(); i <= previousRowCount; i++) {	// first time through, previousRowCount == 0
+			listOfRows.add(blankRow);	
 		}
 	}
 
@@ -152,17 +165,11 @@ public class GoogleSheetsWriter extends Thread {
 			listOfRows.add(sensorNameRow);
 			loadRows(sensorNameRow, mostRecentDataRow, listOfRows);
 			if (listOfRows.size() > 1) {
-				for (Integer i = listOfRows.size() - 1; i >= 0; i--) {
-					String itemForChecking = (String)listOfRows.get(i).get(0);
-					if (itemForChecking == null || itemForChecking.isEmpty()) {
-						listOfRows.remove(listOfRows.get(i));
-						Utils.logToConsole("WARNING : Removed row: " +  i.toString() + " on sheet: " + sheetId);
-					}
-				}
 				opToDo = "deleteRows";
 				GSheetsUtility.deleteRows(sheetId, 0, 1000); // for the future: keep previous count around and only delete those rows.
 				opToDo = "updateData";
 				GSheetsUtility.updateData(sheetId, "A1", listOfRows);
+				previousRowCount = listOfRows.size();
 				Utils.logToConsole("Updated Google Sheet : " + sheetId + ", rows : " + listOfRows.size()
 					+ ", columns : " + listOfRows.get(0).size());
 			}
