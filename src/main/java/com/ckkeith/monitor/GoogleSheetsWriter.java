@@ -59,7 +59,8 @@ public class GoogleSheetsWriter extends Thread {
 
 	private void initFirstRow(List<Object> sensorNameRow,
 			Map.Entry<String, ArrayList<RunParams.Dataset>> entry,
-			List<Object> mostRecentDataRow) {
+			List<Object> mostRecentDataRow,
+			LocalDateTime updateTime) {
 		sensorNameRow.add("timestamp");
 		// Put a blank row with a timestamp that is sure to be less than any timestamp in the data.
 		mostRecentDataRow.add(Utils.googleSheetsDateFormat.format(LocalDateTime.now().withYear(1980)));
@@ -74,8 +75,10 @@ public class GoogleSheetsWriter extends Thread {
 			}
 			mostRecentDataRow.add("TBD"); // string is for helping to debug.
 		}
+		mostRecentDataRow.add(Utils.getHostName());
+		mostRecentDataRow.add(Utils.googleSheetsDateFormat.format(updateTime));
 		sensorNameRow.add(Utils.getHostName());
-		sensorNameRow.add(Utils.googleSheetsDateFormat.format(LocalDateTime.now()));
+		sensorNameRow.add(Utils.googleSheetsDateFormat.format(updateTime));
 	}
 
 	int findSensorIndex(List<Object> sensorNameRow, String fullSensorName) {
@@ -93,7 +96,8 @@ public class GoogleSheetsWriter extends Thread {
 
 	void loadRows(List<Object> sensorNameRow,
 					List<Object> mostRecentDataRow,
-					List<List<Object>> listOfRows) {
+					List<List<Object>> listOfRows,
+					LocalDateTime updateTime) {
 		Iterator<LocalDateTime> itr = sensorData.keySet().iterator();
 		while (itr.hasNext()) {
 			LocalDateTime timestamp = itr.next();
@@ -154,27 +158,24 @@ public class GoogleSheetsWriter extends Thread {
 		if (!validateSheetId(sheetId)) {
 			return;
 		}
-		String opToDo = "unknown";
 		try {
 			List<Object> sensorNameRow = new ArrayList<Object>();
+			LocalDateTime	updateTime = LocalDateTime.now();
 
 			// Keep most recent data values around to fill out potential 'holes' in the graph.
 			List<Object> mostRecentDataRow = new ArrayList<Object>();
-			initFirstRow(sensorNameRow, entry, mostRecentDataRow);
+			initFirstRow(sensorNameRow, entry, mostRecentDataRow, updateTime);
 			List<List<Object>> listOfRows = new ArrayList<List<Object>>();
 			listOfRows.add(sensorNameRow);
-			loadRows(sensorNameRow, mostRecentDataRow, listOfRows);
+			loadRows(sensorNameRow, mostRecentDataRow, listOfRows, updateTime);
 			if (listOfRows.size() > 1) {
-				opToDo = "deleteRows";
-				GSheetsUtility.deleteRows(sheetId, 0, 1000); // for the future: keep previous count around and only delete those rows.
-				opToDo = "updateData";
 				GSheetsUtility.updateData(sheetId, "A1", listOfRows);
 				previousRowCount = listOfRows.size();
 				Utils.logToConsole("Updated Google Sheet : " + sheetId + ", rows : " + listOfRows.size()
 					+ ", columns : " + listOfRows.get(0).size());
 			}
 		} catch (Exception e) {
-			Utils.logToConsole("updateSheetById(): " + opToDo + " FAILED, Google Sheet : " +
+			Utils.logToConsole("updateSheetById(): FAILED, Google Sheet : " +
 				entry.getKey() + " : " + e.getClass().getCanonicalName() + " " + e.getMessage());
 			e.printStackTrace();
 			throw e;
