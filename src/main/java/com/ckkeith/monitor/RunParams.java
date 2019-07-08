@@ -26,7 +26,7 @@ public class RunParams {
 	Boolean		writeLongTermData = false;
 	Hashtable<String, ArrayList<Dataset>> sheets =
 				new Hashtable<String, ArrayList<Dataset>>();
-	int			temperatureLimit = 80; // degrees F
+	int			temperatureLimit = 90; // degrees F
 	int			timeLimit = 60; // minutes before alert is logged.
 	String		emailTo = "chris.keith@gmail.com";
 	Integer		gapTriggerInMinutes = 10; // Display gaps in the data if they are longer than this.
