@@ -10,9 +10,13 @@ public class Main {
 	private static ArrayList<AccountMonitor> monitors = new ArrayList<AccountMonitor>();
 
 	@SuppressWarnings("unused")
+	private static LocalDateTime getDailyShutdownTime() {
+		// Shutdown a few minutes before midnight.
+		return LocalDateTime.now().withHour(23).withMinute(57);
+	}
+
 	private static LocalDateTime getHourlyShutdownTime() {
 		// Shutdown a few minutes before the hour interval after system restarted.
-		// A new instance of this should be restarted by Task Scheduler.
 		LocalDateTime bootTime = Utils.getBootTime();
 		int bootMinute;
 		if (bootTime == null) {
@@ -30,8 +34,8 @@ public class Main {
 	}
 
 	private static LocalDateTime getShutdownTime() {
-		// Shutdown a few minutes before midnight.
-		return LocalDateTime.now().withHour(23).withMinute(57);
+		// A new instance of this should be restarted by Task Scheduler.
+		return getHourlyShutdownTime();
 	}
 
 	public static void main(String[] args) {
