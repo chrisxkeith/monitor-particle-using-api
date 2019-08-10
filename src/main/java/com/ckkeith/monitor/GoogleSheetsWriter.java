@@ -69,14 +69,13 @@ public class GoogleSheetsWriter extends Thread {
 			RunParams.Dataset d = datasetIt.next();
 			for (Map.Entry<String, HashSet<String>> mc : d.microcontrollers.entrySet()) {
 				for (String sensorName : mc.getValue()) {
-					String fullSensorName = mc.getKey() + sensorName;
-					sensorNameRow.add(fullSensorName);
+					sensorNameRow.add(sensorName);
 				}
 			}
 			mostRecentDataRow.add("TBD"); // string is for helping to debug.
 		}
-		mostRecentDataRow.add(Utils.getHostName());
-		mostRecentDataRow.add(Utils.googleSheetsDateFormat.format(updateTime));
+//		mostRecentDataRow.add(Utils.getHostName());
+//		mostRecentDataRow.add(Utils.googleSheetsDateFormat.format(updateTime));
 		sensorNameRow.add(Utils.getHostName());
 		sensorNameRow.add(Utils.googleSheetsDateFormat.format(updateTime));
 	}
@@ -84,8 +83,8 @@ public class GoogleSheetsWriter extends Thread {
 	int findSensorIndex(List<Object> sensorNameRow, String fullSensorName) {
 		int i = 0;
 		for (Object n : sensorNameRow.toArray()) {
-			if (((String)n).equals(fullSensorName)) {
-				return i;
+			if (fullSensorName.endsWith((String)n)) {
+					return i;
 			}
 			i++;
 		}
