@@ -18,6 +18,7 @@ public class GoogleSheetsWriter extends Thread {
 		new ConcurrentSkipListMap<LocalDateTime, ConcurrentSkipListMap<String, String>>();
 	private ConcurrentSkipListMap<String, String> sensorNames = 
 		new ConcurrentSkipListMap<String, String>();
+	private Integer previousRowCount = 0;
 
 	public GoogleSheetsWriter(AccountMonitor accountMonitor) {
 		this.accountMonitor = accountMonitor;
@@ -72,12 +73,12 @@ public class GoogleSheetsWriter extends Thread {
 					sensorNameRow.add(sensorName);
 				}
 			}
-			mostRecentDataRow.add("TBD"); // string is for helping to debug.
+			mostRecentDataRow.add("TBD"); // different photons may report at different times. Start with a placeholder.
 		}
-//		mostRecentDataRow.add(Utils.getHostName());
-//		mostRecentDataRow.add(Utils.googleSheetsDateFormat.format(updateTime));
 		sensorNameRow.add(Utils.getHostName());
 		sensorNameRow.add(Utils.googleSheetsDateFormat.format(updateTime));
+		sensorNameRow.add(Utils.googleSheetsDateFormat.format(Utils.getBootTime()));
+		sensorNameRow.add(previousRowCount.toString());
 	}
 
 	int findSensorIndex(List<Object> sensorNameRow, String fullSensorName) {
@@ -90,8 +91,6 @@ public class GoogleSheetsWriter extends Thread {
 		}
 		return -1;
 	}
-
-	int previousRowCount = 0;
 
 	void loadRows(List<Object> sensorNameRow,
 					List<Object> mostRecentDataRow,
@@ -127,8 +126,9 @@ public class GoogleSheetsWriter extends Thread {
 		// Current suspicion is that the delete rows call is not happening (message lost or ignored?).	
 		// Fill out to the previous number of rows with blank rows.	
 		List<Object> blankRow = new ArrayList<Object>(mostRecentDataRow.size());	
-		for (int i = 0; i < mostRecentDataRow.size(); i++) {	
+		for (int i = 0; i < mostRecentDataRow.size(); i++) {
 			blankRow.add("");	
+			blankRow.add("blank");	
 		}
 		for (int i = listOfRows.size(); i <= previousRowCount; i++) {	// first time through, previousRowCount == 0
 			listOfRows.add(blankRow);	
