@@ -73,7 +73,7 @@ public class GoogleSheetsWriter extends Thread {
 					sensorNameRow.add(sensorName);
 				}
 			}
-			mostRecentDataRow.add("TBD"); // different photons may report at different times. Start with a placeholder.
+			mostRecentDataRow.add("0"); // different photons may report at different times. Start with a placeholder.
 		}
 		sensorNameRow.add(Utils.getHostName());
 		sensorNameRow.add(Utils.googleSheetsDateFormat.format(updateTime));
@@ -124,7 +124,8 @@ public class GoogleSheetsWriter extends Thread {
 		}
 		// Erratic bug leaves out-of-order timestamped rows at end of data in Google Sheet.	
 		// Current suspicion is that the delete rows call is not happening (message lost or ignored?).	
-		// Fill out to the previous number of rows with blank rows.	
+		// Fill out to the previous number of rows with blank rows.
+/*
 		List<Object> blankRow = new ArrayList<Object>(mostRecentDataRow.size());	
 		for (int i = 0; i < mostRecentDataRow.size(); i++) {
 			blankRow.add("");	
@@ -133,6 +134,7 @@ public class GoogleSheetsWriter extends Thread {
 		for (int i = listOfRows.size(); i <= previousRowCount; i++) {	// first time through, previousRowCount == 0
 			listOfRows.add(blankRow);	
 		}
+*/
 	}
 
 	// \x2D == '-'
