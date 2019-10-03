@@ -75,10 +75,10 @@ public class GoogleSheetsWriter extends Thread {
 			}
 			mostRecentDataRow.add(" "); // different photons may report at different times. Start with a placeholder.
 		}
-		sensorNameRow.add(Utils.getHostName());
-		sensorNameRow.add(Utils.googleSheetsDateFormat.format(updateTime));
-		sensorNameRow.add(Utils.googleSheetsDateFormat.format(Utils.getBootTime()));
-		sensorNameRow.add(previousRowCount.toString());
+		sensorNameRow.add("Last update: " + Utils.googleSheetsDateFormat.format(updateTime));
+		sensorNameRow.add("Row count: " + previousRowCount.toString());
+		sensorNameRow.add("Host: " + Utils.getHostName());
+		sensorNameRow.add("Booted: " + Utils.googleSheetsDateFormat.format(Utils.getBootTime()));
 	}
 
 	int findSensorIndex(List<Object> sensorNameRow, String fullSensorName) {
