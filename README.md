@@ -8,6 +8,6 @@ See https://github.com/chrisxkeith/monitor-particle-using-api/blob/master/bootst
 
 You will need to create and install a Google Cloud Platform credential file (e.g., client_secret.json) in order for the email functionality to work. The file should be put into the src/main/resources/com/ckkeith/monitor/ directory.
 
-Email addresses (To: and From:) are currently hardcoded. You will need to find them (search for chris.keith@gmail.com) and change them.
+You will also need to create a runparams.xml file. See https://github.com/chrisxkeith/monitor-particle-using-api/blob/master/src/main/java/com/ckkeith/monitor/RunParams.java .
 
-If you want to convert 'one sensor data point per row' to 'multiple sensors data points per row' you can try https://github.com/chrisxkeith/pivot-table-sort-of .
+Email addresses (To: and From:) are currently hardcoded. You will need to find them (search for chris.keith@gmail.com) and change them.
