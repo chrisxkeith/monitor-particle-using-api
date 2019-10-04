@@ -251,7 +251,7 @@ public class HtmlFileDataWriter extends Thread {
 	}
 	
 	public void run() {
-		Utils.logToConsole("HtmlFileDataWriter thread starting.");
+		Utils.logToConsole("HtmlFileDataWriter thread starting : " + Utils.getCurrentThreadString());
 		try {
 			while (true) {
 				writeHtml();
@@ -261,5 +261,6 @@ public class HtmlFileDataWriter extends Thread {
 			Utils.logToConsole(e.getMessage());
 			e.printStackTrace();
 		}
+		Utils.logToConsole("HtmlFileDataWriter thread exiting : " + Utils.getCurrentThreadString());
 	}
 }

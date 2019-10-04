@@ -223,7 +223,7 @@ public class GoogleSheetsWriter extends Thread {
 	}
 
 	public void run() {
-		Utils.logToConsole(this.getClass().getName() + ": thread starting.");
+		Utils.logToConsole(this.getClass().getName() + ": thread starting : " + Utils.getCurrentThreadString());
 		if (accountMonitor.runParams.sheetsWriteIntervalInSeconds > 0) {
 			initSheets();
 			while (true) {
@@ -237,6 +237,6 @@ public class GoogleSheetsWriter extends Thread {
 				}
 			}
 		}
-		Utils.logToConsole(this.getClass().getName() + ": thread exiting.");
+		Utils.logToConsole(this.getClass().getName() + ": thread exiting : " + Utils.getCurrentThreadString());
 	}
 }

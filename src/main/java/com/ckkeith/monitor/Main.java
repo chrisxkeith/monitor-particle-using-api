@@ -39,6 +39,7 @@ public class Main {
 	}
 
 	public static void main(String[] args) {
+		Utils.logToConsole("main thread starting : " + Utils.getCurrentThreadString());
 		try {
 			if (!Utils.isDebug) {
 				Utils.displayEnv();
@@ -65,5 +66,6 @@ public class Main {
 			Utils.logToConsole("main() :\t" + e.getClass().getName() + "\t" + e.getMessage());
 			e.printStackTrace(new PrintStream(System.out));
 		}
+		Utils.logToConsole("main thread ending : " + Utils.getCurrentThreadString());
 	}
 }

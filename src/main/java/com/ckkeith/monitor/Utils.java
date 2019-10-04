@@ -320,5 +320,10 @@ public class Utils {
             fstream.close();
             Utils.logToConsole("Dumped: " + tmpFileName);
         }
-    }
+	}
+	
+	public static String getCurrentThreadString() {
+		Thread currentThread = Thread.currentThread();
+		return currentThread.getName() + "[" + currentThread.getId() + "]";
+	}
 }

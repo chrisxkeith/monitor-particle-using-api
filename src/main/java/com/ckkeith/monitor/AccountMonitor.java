@@ -107,13 +107,15 @@ public class AccountMonitor extends Thread {
 	}
 
 	public void run() {
-		Utils.logToConsole(Utils.padWithSpaces(this.accountName, 20) + "\tAccountMonitor thread starting.");
+		Utils.logToConsole(Utils.padWithSpaces(this.accountName, 20) +
+				"\tAccountMonitor thread starting : " + Utils.getCurrentThreadString());
 		Utils.logWithGSheetsDate(LocalDateTime.now(), "AccountMonitor thread starting.", logFileName, ",");
 		if (runParams.writeLongTermData) {
 			(new PivotDataApp(this)).writeLongTermData();
 		}
 		startDeviceMonitors();
-		Utils.logToConsole(Utils.padWithSpaces(this.accountName, 20) + "\tAccountMonitor thread exiting.");
+		Utils.logToConsole(Utils.padWithSpaces(this.accountName, 20) +
+				"\tAccountMonitor thread exiting : " + Utils.getCurrentThreadString());
 	}
 
 	public void addEventSubscriber(String name, ParticleDeviceEvent cb) {
