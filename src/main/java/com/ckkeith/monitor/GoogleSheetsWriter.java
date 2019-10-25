@@ -70,7 +70,7 @@ public class GoogleSheetsWriter extends Thread {
 			RunParams.Dataset d = datasetIt.next();
 			for (Map.Entry<String, HashSet<String>> mc : d.microcontrollers.entrySet()) {
 				for (String sensorName : mc.getValue()) {
-					sensorNameRow.add(sensorName);
+					sensorNameRow.add(this.accountMonitor.getMappedSensorName(sensorName));
 				}
 			}
 			mostRecentDataRow.add(" "); // different photons may report at different times. Start with a placeholder.
