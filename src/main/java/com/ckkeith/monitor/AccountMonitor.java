@@ -112,8 +112,9 @@ public class AccountMonitor extends Thread {
 		Utils.logWithGSheetsDate(LocalDateTime.now(), "AccountMonitor thread starting.", logFileName, ",");
 		if (runParams.writeLongTermData) {
 			(new PivotDataApp(this)).writeLongTermData();
+		} else {
+			startDeviceMonitors();
 		}
-		startDeviceMonitors();
 		Utils.logToConsole(Utils.padWithSpaces(this.accountName, 20) +
 				"\tAccountMonitor thread exiting : " + Utils.getCurrentThreadString());
 	}

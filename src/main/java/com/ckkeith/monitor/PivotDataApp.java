@@ -49,6 +49,12 @@ public class PivotDataApp {
 	int linesReadForSensorData = 0;
 	AccountMonitor accountMonitor;
 
+	/* 
+	TODO:
+	Rename sensors with clearer locations (C++ photon code and Java code).
+	Write each day's data into a separate file.
+	Fill out data to have entries for all 24 hours (can be blank, but need timestamps to handle comparing different photons).
+	*/
 	private void writeCsv(String fileName, ConcurrentSkipListMap<String, String> firstSensorValues,
 			ConcurrentSkipListMap<LocalDateTime, ConcurrentSkipListMap<String, String>> outputRows) throws Exception {
 		Set<String> sensorNames = firstSensorValues.keySet();
@@ -100,7 +106,9 @@ public class PivotDataApp {
 		}
 	}
 
-	private String otherMachineName;
+	private String machineName;
+	ConcurrentSkipListMap<LocalDateTime, ConcurrentSkipListMap<String, String>> outputRows = null;
+	ConcurrentSkipListMap<String, String> firstSensorValues = null;
 
 	private int addGap(LocalDateTime lastSampleTime, LocalDateTime timestamp,
 					FileWriter tsvStream) throws Exception {
@@ -118,7 +126,7 @@ public class PivotDataApp {
 				"\t" + googleSheetsDateFormat.format(timestamp) +
 				"\t" + gap.toString() +
 				"\t" + hhmm + ":00" +
-				"\t" + this.otherMachineName +
+				"\t" + this.machineName +
 				System.getProperty("line.separator"));
 			tsvStream.write(logLine);
 			return 1;
@@ -337,23 +345,15 @@ public class PivotDataApp {
 			ConcurrentSkipListMap<LocalDateTime, ConcurrentSkipListMap<String, String>> outputRows) throws Exception {
 		totalInputLines = 0;
 		linesSkipped = 0;
-		totalCsvLinesOutput = 0;
 		linesReadForSensorData = 0;
 
+		Utils.logToConsole("Starting to read data from: " + fn);
 		readData(fn, firstSensorValues, outputRows);
-		writeCsv(fn.replace(".txt", ".csv"), firstSensorValues, outputRows);
-		Utils.logToConsole(Utils.padWithSpaces(fn.replace(".txt", ".csv"), 100)
-				+ "\t" + totalCsvLinesOutput);
-		processMasterLog(outputRows);
+		Utils.logToConsole("Finished reading " + totalInputLines + " lines from: " + fn);
 	}
 
 	private void processPath(Path p) {
 		try {
-			ConcurrentSkipListMap<LocalDateTime, ConcurrentSkipListMap<String, String>> outputRows =
-					new ConcurrentSkipListMap<LocalDateTime, ConcurrentSkipListMap<String, String>>();
-			ConcurrentSkipListMap<String, String> firstSensorValues =
-					new ConcurrentSkipListMap<String, String>();
-
 			processFile(p.toFile().getCanonicalPath(), firstSensorValues,
 					outputRows);
 		} catch (Exception e) {
@@ -389,7 +389,7 @@ public class PivotDataApp {
 						}
 						if (s.contains("xception") && !thisTime.equals(previousTime)) {
 							String logLine = googleSheetsDateFormat.format(timestamp) +"\t" + 
-										this.otherMachineName + "\t" + vals[1] + System.getProperty("line.separator");
+										this.machineName + "\t" + vals[1] + System.getProperty("line.separator");
 							tsvStream.write(logLine);
 							outputLines++;
 						}
@@ -433,32 +433,40 @@ public class PivotDataApp {
 		processGapsOrExceptions(fullPath, "exceptions", outputRows);
 	}
 
-	private final String[] otherMachines = { "2018-ck-nuc", "2012-xps" };
-
 	private String getLogFileDir() throws Exception {
 		String logFileDir = Utils.getLogFileDir(accountMonitor.accountName).toLowerCase();
-		return logFileDir.replace(Utils.getHostName().toLowerCase(), otherMachineName.toLowerCase());
+		return logFileDir.replace(Utils.getHostName().toLowerCase(), machineName.toLowerCase());
 	}
 
 	private String getMasterLogFilePath() throws Exception {
 		String fullPath = Utils.getMasterLogFileDir() + File.separator + "monitor.log";
-		return fullPath.replace(Utils.getHostName().toLowerCase(), otherMachineName.toLowerCase());
+		return fullPath.replace(Utils.getHostName().toLowerCase(), machineName.toLowerCase());
 	}
 
 	public void writeLongTermData() {
 		Utils.logToConsole(accountMonitor.accountName + "PivotDataApp.writeLongTermData() started.");
-		try {
-			for (String s : otherMachines) {
-				otherMachineName = s;
+		final String[] machineNames = { Utils.getHostName(), "2018-ck-nuc", "2012-xps" };
+		for (String s : machineNames) {
+			try {
+				machineName = s;
+				outputRows = new ConcurrentSkipListMap<LocalDateTime, ConcurrentSkipListMap<String, String>>();
+				firstSensorValues =	new ConcurrentSkipListMap<String, String>();
 				Predicate<Path> isParticleFile = i -> (checkPath(i));
-				Consumer<Path> processPath = i -> processPath(i);
+				Consumer<Path>	processPath = i -> processPath(i);
 				String logFileDir = getLogFileDir();
+				totalCsvLinesOutput = 0;
+
 				Files.walk(Paths.get(logFileDir)).
 							filter(isParticleFile).forEach(processPath);
+				String csvFileName = Paths.get(logFileDir) + File.separator + "all.csv";
+				Utils.logToConsole("Starting to write: " + csvFileName);
+				writeCsv(csvFileName, firstSensorValues, outputRows);
+				Utils.logToConsole("Wrote " + totalCsvLinesOutput + " lines to " + csvFileName);
+				processMasterLog(outputRows);
+			} catch (Exception e) {
+				System.out.println("writeLongTermData() : " + e.toString());
+				e.printStackTrace();
 			}
-		} catch (Exception e) {
-			System.out.println("writeLongTermData() : " + e.toString());
-			e.printStackTrace();
 		}
 		Utils.logToConsole(accountMonitor.accountName + "PivotDataApp.writeLongTermData() finished.");
 	}
