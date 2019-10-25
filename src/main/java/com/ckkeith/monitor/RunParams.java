@@ -21,7 +21,7 @@ public class RunParams {
 	Integer		sheetsDataIntervalInMinutes = 20;
 	Integer		htmlWriteIntervalInSeconds = 5;
 	String		devicesToReport = "";
-	Integer		csvTimeGranularityInSeconds = 60; // E.g. '60' == round to minutes, '30' == round to minutes and half-minutes.
+	Integer		csvTimeGranularityInSeconds = 300; // E.g. '60' == round to minutes, '30' == round to minutes and half-minutes.
 	Integer		sheetsWriteIntervalInSeconds = 10;
 	Boolean		writeLongTermData = false;
 	Hashtable<String, ArrayList<Dataset>> sheets =
