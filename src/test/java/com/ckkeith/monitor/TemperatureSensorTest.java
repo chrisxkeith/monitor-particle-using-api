@@ -44,17 +44,17 @@ public class TemperatureSensorTest extends TestCase {
 			ParticleDevice d = new ParticleDevice(new Device(deviceJson));
 			AccountMonitor accountMonitor = new AccountMonitor("junk	chris.keith@gmail.com");
 			doTest(accountMonitor, d, deviceJson, "{ coreid : 'fubar', "
-					+ "data : '|2018-07-06T21:30:00Z|91|85|853|85|8|0.022000',"
+					+ "data : '101',"
 					+ "published_at : '2018-07-06 21:30:00.000Z', ttl : 1 }", 
 				"{ coreid : 'fubar', "
-					+ "data : '|2018-07-06T23:35:00Z|91|85|853|85|8|0.022000',"
-					+ "published_at : '2018-07-06 23:31:00.000Z', ttl : 1 }");
-			doTest(accountMonitor, d, deviceJson, "{ coreid : 'fubar', "
-					+ "data : '91',"
-					+ "published_at : '2018-07-06 21:30:00.000Z', ttl : 1 }", 
-				"{ coreid : 'fubar', "
-					+ "data : '91',"
+					+ "data : '101',"
 					+ "published_at : '2018-07-06 24:31:00.000Z', ttl : 1 }");
+			doTest(accountMonitor, d, deviceJson, "{ coreid : 'fubar', "
+					+ "data : '|2018-07-06T21:30:00Z|101|85|853|85|8|0.022000',"
+					+ "published_at : '2018-07-06 21:30:00.000Z', ttl : 1 }", 
+				"{ coreid : 'fubar', "
+					+ "data : '|2018-07-06T23:35:00Z|101|85|853|85|8|0.022000',"
+					+ "published_at : '2018-07-06 23:31:00.000Z', ttl : 1 }");
 		} catch (Exception e) {
 			e.printStackTrace();
 			fail();
