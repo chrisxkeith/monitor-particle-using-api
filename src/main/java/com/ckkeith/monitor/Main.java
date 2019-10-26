@@ -44,6 +44,13 @@ public class Main {
 			if (!Utils.isDebug) {
 				Utils.displayEnv();
 			}
+			String isRunningFrom;
+			if (Utils.runFromTerminal() || Utils.isDebug) {
+				isRunningFrom = "terminal / debug";
+			} else {
+				isRunningFrom = "Task Scheduler / automatic";
+			}
+			Utils.logToConsole("Running from " + isRunningFrom);
 			String filePath = Utils.getHomeDir() + File.separator + "Documents" + File.separator + "particle-tokens.txt";
 			ArrayList<String> accountTokens = Utils.readParameterFile(filePath);
 			for (String c : accountTokens) {
@@ -53,11 +60,7 @@ public class Main {
 					monitors.add(m);
 				}
 			}
-			String isRunningFrom;
-			if (Utils.runFromTerminal() || Utils.isDebug) {
-				isRunningFrom = "terminal / debug";
-			} else {
-				isRunningFrom = "Task Scheduler / automatic";
+			if (!(Utils.runFromTerminal() || Utils.isDebug)) {
 				Utils.sleepUntil("MonitorParticle main - waiting to System.exit(0).", getShutdownTime());
 				System.exit(0);
 			}
