@@ -70,7 +70,7 @@ public class GoogleSheetsWriter extends Thread {
 			RunParams.Dataset d = datasetIt.next();
 			for (Map.Entry<String, HashSet<String>> mc : d.microcontrollers.entrySet()) {
 				for (String sensorName : mc.getValue()) {
-					sensorNameRow.add(this.accountMonitor.getMappedSensorName(sensorName));
+					sensorNameRow.add(sensorName);
 				}
 			}
 			mostRecentDataRow.add(" "); // different photons may report at different times. Start with a placeholder.
@@ -170,6 +170,7 @@ public class GoogleSheetsWriter extends Thread {
 			listOfRows.add(sensorNameRow);
 			loadRows(sensorNameRow, mostRecentDataRow, listOfRows, updateTime);
 			if (listOfRows.size() > 1) {
+				renameSensors(listOfRows.get(0));
 				GSheetsUtility.updateData(sheetId, "A1", listOfRows);
 				previousRowCount = listOfRows.size();
 				Utils.logToConsole("Updated Google Sheet : " + sheetId + ", rows : " + listOfRows.size()
@@ -180,6 +181,13 @@ public class GoogleSheetsWriter extends Thread {
 				entry.getKey() + " : " + e.getClass().getCanonicalName() + " " + e.getMessage());
 			e.printStackTrace();
 			throw e;
+		}
+	}
+
+	private void renameSensors(List<Object> list) {
+		int i = 0;
+		for (Object o: list) {
+			list.set(i++, this.accountMonitor.getMappedSensorName((String)o));
 		}
 	}
 
