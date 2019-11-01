@@ -48,6 +48,7 @@ public class PivotDataApp {
 	int totalCsvLinesOutput = 0;
 	int linesReadForSensorData = 0;
 	AccountMonitor accountMonitor;
+	public boolean ready = false;
 
 	private void writeCsv(String fileName, ConcurrentSkipListMap<String, String> firstSensorValues,
 			ConcurrentSkipListMap<LocalDateTime, ConcurrentSkipListMap<String, String>> outputRows) throws Exception {
@@ -158,6 +159,7 @@ public class PivotDataApp {
 	}
 
 	final private DateTimeFormatter logDateFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssX");
+	private GoogleSheetsWriter googleSheetsWriter;
 
 	private String checkInputData(String s) {
 		String[] vals = s.split("\t");
@@ -463,6 +465,62 @@ public class PivotDataApp {
 			}
 		}
 		Utils.logToConsole(accountMonitor.accountName + "PivotDataApp.writeLongTermData() finished.");
+	}
+
+	private void loadFromFile(String fn) throws Exception {
+		BufferedReader br = null;
+		try {
+			br = new BufferedReader(new FileReader(fn));
+			String s;
+			while ((s = br.readLine()) != null) {
+				if (checkInputData(s) == null) {
+					linesReadForSensorData++;
+					SensorData sensorData = getVals(s);
+					googleSheetsWriter.addData(new EventData(sensorData.localDateTime,
+						sensorData.deviceName, sensorData.sensorName,
+						sensorData.sensorValue));
+				}
+			}
+		} catch (Exception e) {
+			Utils.logToConsole("readSensorValues() : " + e.getMessage());
+			e.printStackTrace();
+		} finally {
+			if (br != null) {
+				br.close();
+			}
+		}
+	}
+
+	private void loadWriterFromPath(Path p) {
+		try {
+			String fn = p.toFile().getCanonicalPath();
+			Utils.logToConsole("Starting to load data from: " + fn);
+			totalInputLines = 0;
+			loadFromFile(fn);
+			Utils.logToConsole("Finished loading from " + totalInputLines + " lines from: " + fn);
+		} catch (Exception e) {
+			System.out.println("loadWriterFromPath() : " + e.toString());
+			e.printStackTrace();
+		}
+	}
+
+	public void loadSheetsWriter(GoogleSheetsWriter googleSheetsWriter) {
+		Utils.logToConsole(accountMonitor.accountName + "PivotDataApp.loadSheetsWriter() started.");
+		this.googleSheetsWriter = googleSheetsWriter;
+		try {
+			machineName = Utils.getHostName();
+			outputRows = new ConcurrentSkipListMap<LocalDateTime, ConcurrentSkipListMap<String, String>>();
+			firstSensorValues =	new ConcurrentSkipListMap<String, String>();
+			Predicate<Path> isParticleFile = i -> (checkPath(i));
+			Consumer<Path>	loadWriterFromPath = i -> loadWriterFromPath(i);
+			Files.walk(Paths.get(getLogFileDir())).
+						filter(isParticleFile).forEach(loadWriterFromPath);
+		} catch (Exception e) {
+			System.out.println("loadSheetsWriter() : " + e.toString());
+			e.printStackTrace();
+		}
+		Utils.logToConsole(accountMonitor.accountName + "PivotDataApp.loadSheetsWriter() finished.");
+		ready = true;
 	}
 
 	public PivotDataApp(AccountMonitor accountMonitor) {

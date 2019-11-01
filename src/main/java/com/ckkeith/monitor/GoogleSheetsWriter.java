@@ -232,7 +232,7 @@ public class GoogleSheetsWriter extends Thread {
 
 	public void run() {
 		Utils.logToConsole(this.getClass().getName() + ": thread starting : " + Utils.getCurrentThreadString());
-		if (accountMonitor.runParams.sheetsWriteIntervalInSeconds > 0) {
+		if (accountMonitor.runParams.sheetsWriteIntervalInSeconds > 0) { // TODO: Is this necessary?
 			initSheets();
 			while (true) {
 				try {

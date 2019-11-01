@@ -58,6 +58,29 @@ public class AccountMonitor extends Thread {
 				+ "runparams.xml";
 	}
 
+	private void loadSheetsWriter() {
+		PivotDataApp pda = new PivotDataApp(this);
+		pda.loadSheetsWriter(googleSheetsWriter);
+		int retry = 5;
+		while (!pda.ready && retry > 0) {
+			try {
+				Thread.sleep(3);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+				break;
+			}
+			retry--;
+		}
+}
+	
+	private void startSheetsWriter() {
+		if (googleSheetsWriter == null && runParams.sheetsWriteIntervalInSeconds > 0) {
+			googleSheetsWriter = new GoogleSheetsWriter(this);
+			googleSheetsWriter.start();
+//			loadSheetsWriter();
+		}
+	}
+
 	void startDeviceMonitors() {
 		ParticleCloud c = new ParticleCloud("Bearer " + accessToken, true, false);
 		ArrayList<DeviceMonitor> newDevices = new ArrayList<DeviceMonitor>();
@@ -100,10 +123,7 @@ public class AccountMonitor extends Thread {
 		for (DeviceMonitor dm : newDevices) {
 			dm.start();
 		}
-		if (googleSheetsWriter == null && runParams.sheetsWriteIntervalInSeconds > 0) {
-			googleSheetsWriter = new GoogleSheetsWriter(this);
-			googleSheetsWriter.start();
-		}
+		startSheetsWriter();
 	}
 
 	public void run() {
