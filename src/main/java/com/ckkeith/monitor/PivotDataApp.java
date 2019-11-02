@@ -13,7 +13,10 @@ import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.function.Consumer;
@@ -48,7 +51,6 @@ public class PivotDataApp {
 	int totalCsvLinesOutput = 0;
 	int linesReadForSensorData = 0;
 	AccountMonitor accountMonitor;
-	public boolean ready = false;
 
 	private void writeCsv(String fileName, ConcurrentSkipListMap<String, String> firstSensorValues,
 			ConcurrentSkipListMap<LocalDateTime, ConcurrentSkipListMap<String, String>> outputRows) throws Exception {
@@ -362,6 +364,33 @@ public class PivotDataApp {
 		return p.toString().endsWith("_particle_log.txt");
 	}
 
+	Boolean checkPathAndPhotonName(Path p) {
+		String deviceName = "";
+		try {
+			deviceName = p.toFile().getName().replace("_particle_log.txt", "");
+		} catch (Exception e) {
+			return false;
+		}
+		boolean found = false;
+		for (Map.Entry<String, ArrayList<RunParams.Dataset>> entry :
+						accountMonitor.runParams.sheets.entrySet()) {
+			Iterator<RunParams.Dataset> datasetIt = entry.getValue().iterator();
+			while (datasetIt.hasNext()) {
+				RunParams.Dataset d = datasetIt.next();
+				for (Map.Entry<String, HashSet<String>> mc : d.microcontrollers.entrySet()) {
+					if (mc.getKey().equals(deviceName)) {
+						found = true;
+						break;
+					}
+				}
+			}
+		}
+		if (!found) {
+			return false;
+		}
+		return p.toString().endsWith("_particle_log.txt");
+	}
+
 	private int createExceptionEvents(FileWriter tsvStream, String fullPath) throws Exception {
 		int outputLines = 0;
 		BufferedReader	br = new BufferedReader(new FileReader(fullPath));
@@ -511,7 +540,7 @@ public class PivotDataApp {
 			machineName = Utils.getHostName();
 			outputRows = new ConcurrentSkipListMap<LocalDateTime, ConcurrentSkipListMap<String, String>>();
 			firstSensorValues =	new ConcurrentSkipListMap<String, String>();
-			Predicate<Path> isParticleFile = i -> (checkPath(i));
+			Predicate<Path> isParticleFile = i -> (checkPathAndPhotonName(i));
 			Consumer<Path>	loadWriterFromPath = i -> loadWriterFromPath(i);
 			Files.walk(Paths.get(getLogFileDir())).
 						filter(isParticleFile).forEach(loadWriterFromPath);
@@ -520,7 +549,6 @@ public class PivotDataApp {
 			e.printStackTrace();
 		}
 		Utils.logToConsole(accountMonitor.accountName + "PivotDataApp.loadSheetsWriter() finished.");
-		ready = true;
 	}
 
 	public PivotDataApp(AccountMonitor accountMonitor) {
