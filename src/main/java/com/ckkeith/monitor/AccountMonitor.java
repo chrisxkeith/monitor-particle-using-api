@@ -61,6 +61,7 @@ public class AccountMonitor extends Thread {
 	private void startSheetsWriter() {
 		if (googleSheetsWriter == null && runParams.sheetsWriteIntervalInSeconds > 0) {
 			googleSheetsWriter = new GoogleSheetsWriter(this);
+			googleSheetsWriter.initSheets();
 			new PivotDataApp(this).loadSheetsWriter(googleSheetsWriter);
 			googleSheetsWriter.start();
 		}
@@ -116,7 +117,8 @@ public class AccountMonitor extends Thread {
 				"\tAccountMonitor thread starting : " + Utils.getCurrentThreadString());
 		Utils.logWithGSheetsDate(LocalDateTime.now(), "AccountMonitor thread starting.", logFileName, ",");
 		if (runParams.writeLongTermData) {
-			(new PivotDataApp(this)).writeLongTermData();
+			Utils.logToConsole("PivotDataApp.writeLongTermData() needs to be rewritten.");
+			// (new PivotDataApp(this)).writeLongTermData();
 		} else {
 			startDeviceMonitors();
 		}

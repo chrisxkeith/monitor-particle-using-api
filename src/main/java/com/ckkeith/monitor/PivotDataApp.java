@@ -239,7 +239,8 @@ public class PivotDataApp {
 				}
 			}
 		}
-		return new SensorData(LocalDateTime.parse(vals[1], googleSheetsDateFormat), vals[0], vals[2], vals[3]);
+		return new SensorData(LocalDateTime.parse(vals[1], googleSheetsDateFormat),
+								vals[4], vals[2], vals[3]);
 	}
 
 	private void readSensorNames(String fn, ConcurrentSkipListMap<String, String> firstSensorValues,
@@ -499,21 +500,25 @@ public class PivotDataApp {
 	private void loadFromFile(String fn) throws Exception {
 		BufferedReader br = null;
 		try {
+			linesReadForSensorData = 0;
 			br = new BufferedReader(new FileReader(fn));
 			String s;
 			while ((s = br.readLine()) != null) {
 				if (checkInputData(s) == null) {
 					linesReadForSensorData++;
 					SensorData sensorData = getVals(s);
-					googleSheetsWriter.addData(new EventData(sensorData.localDateTime,
-						sensorData.deviceName, sensorData.sensorName,
+					googleSheetsWriter.addData(new EventData(
+						sensorData.localDateTime,
+						sensorData.deviceName,
+						sensorData.sensorName,
 						sensorData.sensorValue));
 				}
 			}
 		} catch (Exception e) {
-			Utils.logToConsole("readSensorValues() : " + e.getMessage());
+			Utils.logToConsole("loadFromFile() : " + e.getMessage());
 			e.printStackTrace();
 		} finally {
+			Utils.logToConsole("loadFromFile() : linesReadForSensorData : " + linesReadForSensorData);
 			if (br != null) {
 				br.close();
 			}
