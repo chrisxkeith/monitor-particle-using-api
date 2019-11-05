@@ -498,26 +498,28 @@ public class PivotDataApp {
 	}
 
 	private void loadFromFile(String fn) throws Exception {
+		Utils.logToConsole("Starting to load data from: " + fn);
 		BufferedReader br = null;
 		try {
 			linesReadForSensorData = 0;
+			totalInputLines = 0;
 			br = new BufferedReader(new FileReader(fn));
 			String s;
 			while ((s = br.readLine()) != null) {
+				totalInputLines++;
 				if (checkInputData(s) == null) {
-					linesReadForSensorData++;
 					SensorData sensorData = getVals(s);
-					googleSheetsWriter.addData(new EventData(
-						sensorData.localDateTime,
-						sensorData.deviceName,
-						sensorData.sensorName,
-						sensorData.sensorValue));
+					googleSheetsWriter.addData(new EventData(sensorData.localDateTime, sensorData.deviceName,
+							sensorData.sensorName, sensorData.sensorValue));
+					linesReadForSensorData++;
 				}
 			}
 		} catch (Exception e) {
 			Utils.logToConsole("loadFromFile() : " + e.getMessage());
 			e.printStackTrace();
+			throw e;
 		} finally {
+			Utils.logToConsole("loadFromFile() : totalInputLines        : " + totalInputLines);
 			Utils.logToConsole("loadFromFile() : linesReadForSensorData : " + linesReadForSensorData);
 			if (br != null) {
 				br.close();
@@ -527,13 +529,8 @@ public class PivotDataApp {
 
 	private void loadWriterFromPath(Path p) {
 		try {
-			String fn = p.toFile().getCanonicalPath();
-			Utils.logToConsole("Starting to load data from: " + fn);
-			totalInputLines = 0;
-			loadFromFile(fn);
-			Utils.logToConsole("Finished loading from " + totalInputLines + " lines from: " + fn);
+			loadFromFile(p.toFile().getCanonicalPath());
 		} catch (Exception e) {
-			System.out.println("loadWriterFromPath() : " + e.toString());
 			e.printStackTrace();
 		}
 	}

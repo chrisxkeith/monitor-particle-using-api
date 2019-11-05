@@ -26,21 +26,24 @@ public class GoogleSheetsWriter extends Thread {
 
 	public void addData(EventData eventData) {
 		synchronized (this) {
+			LocalDateTime start = LocalDateTime.now().minusMinutes(accountMonitor.runParams.sheetsDataIntervalInMinutes);
 			Map.Entry<String, String> sensorDataEntry = eventData.getNextSensorData();
 			while (sensorDataEntry != null) {
-				String fullSensorName = eventData.deviceName + sensorDataEntry.getKey();
-				sensorNames.put(fullSensorName, sensorDataEntry.getKey());
-	
 				// Don't need time granularity finer than reporting granularity.
 				int seconds = eventData.timestamp.getSecond();
 				LocalDateTime truncatedTime = eventData.timestamp
 						.minusSeconds(seconds % accountMonitor.runParams.sheetsWriteIntervalInSeconds).withNano(0);
-				ConcurrentSkipListMap<String, String> sensorValues = sensorData.get(truncatedTime);
-				if (sensorValues == null) {
-					sensorValues = new ConcurrentSkipListMap<String, String>();
+				if (start.isBefore(truncatedTime)) {
+					String fullSensorName = eventData.deviceName + sensorDataEntry.getKey();
+					sensorNames.put(fullSensorName, sensorDataEntry.getKey());
+	
+					ConcurrentSkipListMap<String, String> sensorValues = sensorData.get(truncatedTime);
+					if (sensorValues == null) {
+						sensorValues = new ConcurrentSkipListMap<String, String>();
+					}
+					sensorValues.put(fullSensorName, sensorDataEntry.getValue());
+					sensorData.put(truncatedTime, sensorValues);
 				}
-				sensorValues.put(fullSensorName, sensorDataEntry.getValue());
-				sensorData.put(truncatedTime, sensorValues);
 				sensorDataEntry = eventData.getNextSensorData();
 			}
 		}
@@ -232,7 +235,7 @@ public class GoogleSheetsWriter extends Thread {
 
 	public void run() {
 		Utils.logToConsole(this.getClass().getName() + ": thread starting : " + Utils.getCurrentThreadString());
-		if (accountMonitor.runParams.sheetsWriteIntervalInSeconds > 0) { // TODO: Is this necessary?
+		if (accountMonitor.runParams.sheetsWriteIntervalInSeconds > 0) {
 			while (true) {
 				try {
 					updateGoogleSheets();
