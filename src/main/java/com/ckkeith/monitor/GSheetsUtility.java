@@ -23,10 +23,13 @@ import com.google.api.services.sheets.v4.SheetsScopes;
 import com.google.api.services.sheets.v4.model.BatchUpdateSpreadsheetRequest;
 import com.google.api.services.sheets.v4.model.ClearValuesRequest;
 import com.google.api.services.sheets.v4.model.DeleteDimensionRequest;
+import com.google.api.services.sheets.v4.model.DeleteSheetRequest;
 import com.google.api.services.sheets.v4.model.DimensionRange;
+import com.google.api.services.sheets.v4.model.GridRange;
 import com.google.api.services.sheets.v4.model.Request;
 import com.google.api.services.sheets.v4.model.Spreadsheet;
 import com.google.api.services.sheets.v4.model.SpreadsheetProperties;
+import com.google.api.services.sheets.v4.model.UpdateCellsRequest;
 import com.google.api.services.sheets.v4.model.ValueRange;
 
 public class GSheetsUtility {
@@ -97,7 +100,29 @@ public class GSheetsUtility {
 		return result.getSpreadsheetId();
     }
     
-	public static void appendData(String spreadSheetId, String targetCell, List<List<Object>> values)
+    public static void delete(String sheetId, int sheetIndex) throws Exception {
+        final List<Request> requests = new ArrayList<>(0);
+        final DeleteSheetRequest delete = new DeleteSheetRequest().setSheetId(sheetIndex);
+        requests.add(new Request().setDeleteSheet(delete));        
+        final BatchUpdateSpreadsheetRequest batch = new BatchUpdateSpreadsheetRequest().setRequests(requests);
+        getSheetsService().spreadsheets().batchUpdate(sheetId, batch).execute();
+    }
+
+    public static void clear(String spreadSheetId) throws Exception {
+        UpdateCellsRequest clearAllDataRequest = new UpdateCellsRequest();
+        int allSheetsId = 0;
+        GridRange gridRange = new GridRange();
+        gridRange.setSheetId(allSheetsId);
+        clearAllDataRequest.setRange(gridRange);
+        String clearAllFieldsSpell = "*";
+        clearAllDataRequest.setFields(clearAllFieldsSpell);
+        final List<Request> requests = new ArrayList<>(0);
+        BatchUpdateSpreadsheetRequest request = new BatchUpdateSpreadsheetRequest().setRequests(requests);
+        requests.add(new Request().setUpdateCells(clearAllDataRequest));
+        getSheetsService().spreadsheets().batchUpdate(spreadSheetId, request).execute();
+    }
+
+        public static void appendData(String spreadSheetId, String targetCell, List<List<Object>> values)
 			throws Exception {
 		ValueRange appendBody = new ValueRange().setValues(values);
 		getSheetsService().spreadsheets().values().append(spreadSheetId, targetCell, appendBody)

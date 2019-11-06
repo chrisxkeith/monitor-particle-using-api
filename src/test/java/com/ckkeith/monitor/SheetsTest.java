@@ -4,6 +4,8 @@ import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 
+import org.junit.Test;
+
 import junit.framework.TestCase;
 
 public class SheetsTest extends TestCase {
@@ -15,7 +17,8 @@ public class SheetsTest extends TestCase {
     private void printData(List<List<Object>> values) {
         System.out.println(Utils.getDataSb(values));
     }
-    
+	
+	@Test
 	public void testGetData() {
 		try {
 			List<List<Object>> values = GSheetsUtility.getRange("1vo9OiDWyDvUGhjaXLUrnr9FkzO2NdUgN-AVe_CONU6U",
@@ -32,9 +35,6 @@ public class SheetsTest extends TestCase {
 		String name = "test sheet " + t;
 		String spreadSheetId = GSheetsUtility.create(name);
 		System.out.println("created sheet named: " + name + " with spreadSheetId: " + spreadSheetId);
-// Uncomment for manual verification
-//		System.out.println("Sleeping for 10 seconds.");
-		Thread.sleep(10 * 1000);
 		return spreadSheetId;
 	}
 
@@ -66,10 +66,19 @@ public class SheetsTest extends TestCase {
 		printData(values);
 	}
 
+	private void doSleep(int seconds) throws Exception {
+		System.out.println("Sleeping...");
+		Thread.sleep(seconds * 1000);
+	}
+
+	@Test
 	public void testAll() throws Exception {
 		String spreadSheetId = doTestCreate();
+		doSleep(10);
 		Integer i = doTestAppend(spreadSheetId, 2);
 		doTestDelete(spreadSheetId, i);
 		doTestClear(spreadSheetId);
+		doSleep(10);
+		GSheetsUtility.clear(spreadSheetId);
 	}
 }

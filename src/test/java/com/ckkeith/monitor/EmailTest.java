@@ -1,5 +1,7 @@
 package com.ckkeith.monitor;
 
+import org.junit.Test;
+
 import junit.framework.TestCase;
 
 public class EmailTest extends TestCase {
@@ -8,6 +10,7 @@ public class EmailTest extends TestCase {
 		super(testName);
 	}
 
+	@Test
 	public void testGetLabel() {
 		try {
 			String ret = GMailer.printOneLabel();

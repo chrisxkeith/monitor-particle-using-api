@@ -3,6 +3,7 @@ package com.ckkeith.monitor;
 import java.util.TreeMap;
 
 import org.json.JSONObject;
+import org.junit.Test;
 
 import junit.framework.TestCase;
 import nl.infcomtec.jparticle.Device;
@@ -34,6 +35,7 @@ public class TemperatureSensorTest extends TestCase {
 		assertTrue(warn.contains("temperature"));
 	}
 
+	@Test
 	public void testDetectStoveLeftOn() {
 		try {
 			JSONObject deviceJson = new JSONObject(
