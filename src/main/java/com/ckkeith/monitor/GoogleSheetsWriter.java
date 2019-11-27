@@ -65,7 +65,7 @@ public class GoogleSheetsWriter extends Thread {
 			Map.Entry<String, ArrayList<RunParams.Dataset>> entry,
 			List<Object> mostRecentDataRow,
 			LocalDateTime updateTime) {
-		sensorNameRow.add("timestamp");
+		sensorNameRow.add("Time");
 		// Put a blank row with a timestamp that is sure to be less than any timestamp in the data.
 		mostRecentDataRow.add(Utils.googleSheetsDateFormat.format(LocalDateTime.now().withYear(1980)));
 		Iterator<RunParams.Dataset> datasetIt = entry.getValue().iterator();
