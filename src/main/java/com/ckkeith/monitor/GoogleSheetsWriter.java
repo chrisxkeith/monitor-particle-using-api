@@ -76,7 +76,7 @@ public class GoogleSheetsWriter extends Thread {
 					sensorNameRow.add(sensorName);
 				}
 			}
-			mostRecentDataRow.add(" "); // different photons may report at different times. Start with a placeholder.
+			mostRecentDataRow.add(""); // different photons may report at different times. Start with a placeholder.
 		}
 		sensorNameRow.add("Last update: " + Utils.googleSheetsDateFormat.format(updateTime));
 		sensorNameRow.add("Row count: " + previousRowCount.toString());
