@@ -150,6 +150,7 @@ public class AccountMonitor extends Thread {
 		sensorNameMap.put("photon-09 Outdoor Thermistor sensor 9", "FL Room");
 		sensorNameMap.put("photon-10 Outdoor Thermistor sensor 10", "Back Porch");
 		sensorNameMap.put("Home 5 IR heat sensor", "Office"); // SheetsWriter doesn't use photon name.
+		sensorNameMap.put("Faire 7 IR heat sensor", "Office"); // SheetsWriter doesn't use photon name.
 		sensorNameMap.put("Stove heat sensor", "Stove");
 		sensorNameMap.put("Thermistor sensor 9", "FL Room");
 		sensorNameMap.put("Outdoor Thermistor sensor 10", "Back Porch");
