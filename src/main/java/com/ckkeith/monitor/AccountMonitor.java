@@ -143,16 +143,16 @@ public class AccountMonitor extends Thread {
 		}
 	}
 
+	// TODO: Add this to XML configuration file.
 	public String getMappedSensorName(String photonSensorName) {
 		Map<String, String> sensorNameMap = new HashMap<String, String>();
-		sensorNameMap.put("photon-05 Home 5 IR heat sensor", "Office");
+		sensorNameMap.put("photon-07 Faire 7 IR heat sensor", "Office");
 		sensorNameMap.put("photon-08 Stove heat sensor", "Stove");
-		sensorNameMap.put("photon-09 Outdoor Thermistor sensor 9", "FL Room");
 		sensorNameMap.put("photon-10 Outdoor Thermistor sensor 10", "Back Porch");
-		sensorNameMap.put("Home 5 IR heat sensor", "Office"); // SheetsWriter doesn't use photon name.
-		sensorNameMap.put("Faire 7 IR heat sensor", "Office"); // SheetsWriter doesn't use photon name.
+
+		// SheetsWriter doesn't use photon name.
+		sensorNameMap.put("Faire 7 IR heat sensor", "Office");
 		sensorNameMap.put("Stove heat sensor", "Stove");
-		sensorNameMap.put("Thermistor sensor 9", "FL Room");
 		sensorNameMap.put("Outdoor Thermistor sensor 10", "Back Porch");
 		if (sensorNameMap.get(photonSensorName) != null) {
 			return sensorNameMap.get(photonSensorName);
