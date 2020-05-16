@@ -16,7 +16,6 @@ public class AccountMonitor extends Thread {
 	String accountName = null;
 	private String logFileName;
 	private Map<String, ParticleDeviceEvent> eventSubscribers = new HashMap<String, ParticleDeviceEvent>();
-	private HtmlFileDataWriter htmlFileDataWriter;
 	private GoogleSheetsWriter googleSheetsWriter;
 	RunParams runParams;
 	Map<String, DeviceMonitor> deviceMonitors = new HashMap<String, DeviceMonitor>();
@@ -39,8 +38,8 @@ public class AccountMonitor extends Thread {
 		Utils.logToConsole(accountName + ": loading params from: " + paramFileName);
 		runParams = RunParams.loadFromXML(paramFileName);
 		Utils.logToConsole(accountName + ": " + runParams.toString());
-		for (Map.Entry<String, ArrayList<RunParams.Dataset>> entry : runParams.sheets.entrySet()) {
-			for (RunParams.Dataset ds : entry.getValue()) {
+		for (Map.Entry<String, RunParams.SheetConfig> entry : runParams.sheets.entrySet()) {
+			for (RunParams.Dataset ds : entry.getValue().dataSets) {
 				for (String deviceName : ds.microcontrollers.keySet()) {
 					deviceNames.add(deviceName);
 				}
@@ -59,8 +58,8 @@ public class AccountMonitor extends Thread {
 	}
 
 	private void startSheetsWriter() {
-		if (googleSheetsWriter == null && runParams.sheetsWriteIntervalInSeconds > 0) {
-			googleSheetsWriter = new GoogleSheetsWriter(this);
+		for (Map.Entry<String, RunParams.SheetConfig> entry : this.runParams.sheets.entrySet()) {
+			googleSheetsWriter = new GoogleSheetsWriter(this, entry);
 			googleSheetsWriter.initSheets();
 			new PivotDataApp(this).loadSheetsWriter(googleSheetsWriter);
 			googleSheetsWriter.start();
@@ -134,9 +133,6 @@ public class AccountMonitor extends Thread {
 
 	public void addDataPoint(LocalDateTime ldt, String deviceName, String event, String data) {
 		if (event.contains("ensor") || event.contains("ontroller")) {
-			if ((htmlFileDataWriter != null)) {
-				this.htmlFileDataWriter.addData(new EventData(ldt, deviceName, event, data));
-			}
 			if ((googleSheetsWriter != null)) {
 				this.googleSheetsWriter.addData(new EventData(ldt, deviceName, event, data));
 			}

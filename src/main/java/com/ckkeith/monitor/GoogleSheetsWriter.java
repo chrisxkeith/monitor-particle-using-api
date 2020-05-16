@@ -7,6 +7,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -14,25 +15,28 @@ import java.util.regex.Pattern;
 public class GoogleSheetsWriter extends Thread {
 
 	private AccountMonitor accountMonitor;
+	private Map.Entry<String, RunParams.SheetConfig> entry;
 	private ConcurrentSkipListMap<LocalDateTime, ConcurrentSkipListMap<String, String>> sensorData =
 		new ConcurrentSkipListMap<LocalDateTime, ConcurrentSkipListMap<String, String>>();
 	private ConcurrentSkipListMap<String, String> sensorNames = 
 		new ConcurrentSkipListMap<String, String>();
 	private Integer previousRowCount = 0;
 
-	public GoogleSheetsWriter(AccountMonitor accountMonitor) {
+	public GoogleSheetsWriter(AccountMonitor accountMonitor,
+				Entry<String, RunParams.SheetConfig> entry) {
 		this.accountMonitor = accountMonitor;
+		this.entry = entry;
 	}
 
 	public void addData(EventData eventData) {
 		synchronized (this) {
-			LocalDateTime start = LocalDateTime.now().minusMinutes(accountMonitor.runParams.sheetsDataIntervalInMinutes);
+			LocalDateTime start = LocalDateTime.now().minusMinutes(entry.getValue().dataIntervalInMinutes);
 			Map.Entry<String, String> sensorDataEntry = eventData.getNextSensorData();
 			while (sensorDataEntry != null) {
 				// Don't need time granularity finer than reporting granularity.
 				int seconds = eventData.timestamp.getSecond();
 				LocalDateTime truncatedTime = eventData.timestamp
-						.minusSeconds(seconds % accountMonitor.runParams.sheetsWriteIntervalInSeconds).withNano(0);
+						.minusSeconds(seconds % entry.getValue().writeIntervalInSeconds).withNano(0);
 				if (start.isBefore(truncatedTime)) {
 					String fullSensorName = eventData.deviceName + sensorDataEntry.getKey();
 					sensorNames.put(fullSensorName, sensorDataEntry.getKey());
@@ -50,7 +54,7 @@ public class GoogleSheetsWriter extends Thread {
 	}
 
 	void deleteOldData() {
-		LocalDateTime start = LocalDateTime.now().minusMinutes(accountMonitor.runParams.sheetsDataIntervalInMinutes);
+		LocalDateTime start = LocalDateTime.now().minusMinutes(entry.getValue().dataIntervalInMinutes);
 		Set<LocalDateTime> keys = sensorData.keySet();
 		Iterator<LocalDateTime> itr = keys.iterator();
 		while (itr.hasNext()) {
@@ -62,13 +66,13 @@ public class GoogleSheetsWriter extends Thread {
 	}
 
 	private void initFirstRow(List<Object> sensorNameRow,
-			Map.Entry<String, ArrayList<RunParams.Dataset>> entry,
+			Map.Entry<String, RunParams.SheetConfig> entry,
 			List<Object> mostRecentDataRow,
 			LocalDateTime updateTime) {
 		sensorNameRow.add("Time");
 		// Put a blank row with a timestamp that is sure to be less than any timestamp in the data.
 		mostRecentDataRow.add(Utils.googleSheetsDateFormat.format(LocalDateTime.now().withYear(1980)));
-		Iterator<RunParams.Dataset> datasetIt = entry.getValue().iterator();
+		Iterator<RunParams.Dataset> datasetIt = entry.getValue().dataSets.iterator();
 		while (datasetIt.hasNext()) {
 			RunParams.Dataset d = datasetIt.next();
 			for (Map.Entry<String, HashSet<String>> mc : d.microcontrollers.entrySet()) {
@@ -156,7 +160,7 @@ public class GoogleSheetsWriter extends Thread {
 		return true;
 	}
  
-	private void updateSheetById(Map.Entry<String, ArrayList<RunParams.Dataset>>
+	private void updateSheetById(Map.Entry<String, RunParams.SheetConfig>
 			entry) throws Exception {
 		String sheetId = entry.getKey();
 		if (!validateSheetId(sheetId)) {
@@ -195,17 +199,12 @@ public class GoogleSheetsWriter extends Thread {
 	}
 
 	void updateBySheet() {
-		for (Map.Entry<String, ArrayList<RunParams.Dataset>> entry :
-						accountMonitor.runParams.sheets.entrySet()) {
-			try {
-				updateSheetById(entry);
-			} catch (Exception e) {
-				Utils.logToConsole("updateBySheet(): FAILED to update Google Sheet : " +
-						entry.getKey() + " : " + e.getClass().getCanonicalName() + " " + e.getMessage());
-				e.printStackTrace();
-				// If there's any failure, continue and update the next sheet.
-			}
-			
+		try {
+			updateSheetById(entry);
+		} catch (Exception e) {
+			Utils.logToConsole("updateBySheet(): FAILED to update Google Sheet : " +
+					entry.getKey() + " : " + e.getClass().getCanonicalName() + " " + e.getMessage());
+			e.printStackTrace();
 		}
 	}
 
@@ -217,29 +216,26 @@ public class GoogleSheetsWriter extends Thread {
 	}
 
 	public void initSheets() {
-		for (Map.Entry<String, ArrayList<RunParams.Dataset>> entry :
-						accountMonitor.runParams.sheets.entrySet()) {
-			String spreadSheetId = entry.getKey();
-			try {
-				if (validateSheetId(spreadSheetId)) {
-					GSheetsUtility.clear(spreadSheetId, "Sheet1!A1:Z1000");
-				}
-			} catch (Exception e) {
-				Utils.logToConsole("initSheets(): FAILED to update Google Sheet : " +
-					spreadSheetId + " : " + e.getClass().getCanonicalName() + " " + e.getMessage());
-				e.printStackTrace();
-				// If there's any failure, continue and initialize the next sheet.
+		String spreadSheetId = entry.getKey();
+		try {
+			if (validateSheetId(spreadSheetId)) {
+				GSheetsUtility.clear(spreadSheetId, "Sheet1!A1:Z1000");
 			}
+		} catch (Exception e) {
+			Utils.logToConsole("initSheets(): FAILED to update Google Sheet : " +
+				spreadSheetId + " : " + e.getClass().getCanonicalName() + " " + e.getMessage());
+			e.printStackTrace();
+			// If there's any failure, continue and initialize the next sheet.
 		}
 	}
 
 	public void run() {
 		Utils.logToConsole(this.getClass().getName() + ": thread starting : " + Utils.getCurrentThreadString());
-		if (accountMonitor.runParams.sheetsWriteIntervalInSeconds > 0) {
+		if (entry.getValue().writeIntervalInSeconds > 0) {
 			while (true) {
 				try {
 					updateGoogleSheets();
-					Thread.sleep(accountMonitor.runParams.sheetsWriteIntervalInSeconds * 1000);
+					Thread.sleep(entry.getValue().writeIntervalInSeconds * 1000);
 				} catch (Exception e) {
 					Utils.logToConsole(e.getMessage());
 					e.printStackTrace();

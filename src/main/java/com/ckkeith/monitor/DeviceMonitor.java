@@ -3,7 +3,6 @@ package com.ckkeith.monitor;
 
 import java.io.PrintStream;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
@@ -60,9 +59,9 @@ public class DeviceMonitor extends Thread {
 	}
 
 	private void subscribe() throws Exception {
-		for (Map.Entry<String, ArrayList<RunParams.Dataset>> entry :
-						accountMonitor.runParams.sheets.entrySet()) {
-			Iterator<RunParams.Dataset> datasetIt = entry.getValue().iterator();
+		for (Map.Entry<String, RunParams.SheetConfig> entry :
+					this.accountMonitor.runParams.sheets.entrySet()) {
+			Iterator<RunParams.Dataset> datasetIt = entry.getValue().dataSets.iterator();
 			while (datasetIt.hasNext()) {
 				RunParams.Dataset d = datasetIt.next();
 				for (Map.Entry<String, HashSet<String>> mc : d.microcontrollers.entrySet()) {

@@ -13,7 +13,6 @@ import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
@@ -373,9 +372,9 @@ public class PivotDataApp {
 			return false;
 		}
 		boolean found = false;
-		for (Map.Entry<String, ArrayList<RunParams.Dataset>> entry :
+		for (Map.Entry<String, RunParams.SheetConfig> entry :
 						accountMonitor.runParams.sheets.entrySet()) {
-			Iterator<RunParams.Dataset> datasetIt = entry.getValue().iterator();
+			Iterator<RunParams.Dataset> datasetIt = entry.getValue().dataSets.iterator();
 			while (datasetIt.hasNext()) {
 				RunParams.Dataset d = datasetIt.next();
 				for (Map.Entry<String, HashSet<String>> mc : d.microcontrollers.entrySet()) {

@@ -18,14 +18,17 @@ public class RunParams {
 		}
 	};
 
-	Integer		sheetsDataIntervalInMinutes = 20;
+	public class SheetConfig {
+		public Integer				dataIntervalInMinutes = 20;
+		public Integer				writeIntervalInSeconds = 10;
+		public ArrayList<Dataset>	dataSets;
+	};
+
 	Integer		htmlWriteIntervalInSeconds = 5;
 	String		devicesToReport = "";
 	Integer		csvTimeGranularityInSeconds = 300; // E.g. '60' == round to minutes, '30' == round to minutes and half-minutes.
-	Integer		sheetsWriteIntervalInSeconds = 10;
 	Boolean		writeLongTermData = false;
-	Hashtable<String, ArrayList<Dataset>> sheets =
-				new Hashtable<String, ArrayList<Dataset>>();
+	Hashtable<String, SheetConfig> sheets = new Hashtable<String, SheetConfig>();
 	int			temperatureLimit = 90; // degrees F
 	int			timeLimit = 60; // minutes before alert is logged.
 	String		emailTo = "chris.keith@gmail.com";
@@ -80,17 +83,27 @@ public class RunParams {
 		return datasets;
 	}
 
+	NodeList getNodeList( Element element, String id) throws Exception {
+		NodeList nodeList = element.getElementsByTagName(id);
+		if (nodeList.getLength() == 0) {
+			throw new Exception(id + ": getLength() == 0");
+		}
+		return nodeList;
+	}
+
+	private SheetConfig loadSheetConfig(Element sheetElement) throws Exception {
+		SheetConfig sheetConfig = new SheetConfig();
+		NodeList datasetElems = getNodeList(sheetElement, "dataSet");
+		sheetConfig.dataSets = buildDatasetList(datasetElems);
+		sheetConfig.dataIntervalInMinutes = Integer.valueOf(getNodeList(sheetElement, "dataIntervalInMinutes").item(0).getTextContent());
+		sheetConfig.writeIntervalInSeconds = Integer.valueOf(getNodeList(sheetElement, "writeIntervalInSeconds").item(0).getTextContent());
+		return sheetConfig;
+	}
+
 	private void addSheet(Element sheetElement) throws Exception {
-		NodeList sheetIdList = sheetElement.getElementsByTagName("sheetId");
-		if (sheetIdList.getLength() == 0) {
-			throw new Exception("sheetIdList.getLength() == 0");
-		}
+		NodeList sheetIdList = getNodeList(sheetElement, "sheetId");
 		String sheetId = sheetIdList.item(0).getTextContent();
-		NodeList datasetElems = sheetElement.getElementsByTagName("dataSet");
-		if (datasetElems.getLength() == 0) {
-			throw new Exception("datasets.getLength() == 0");
-		}
-		sheets.put(sheetId, buildDatasetList(datasetElems));
+		sheets.put(sheetId, loadSheetConfig(sheetElement));
 	}
 
 	private void loadSheets(Element root) throws Exception {
@@ -113,10 +126,8 @@ public class RunParams {
 	static RunParams loadFromXML(String filePath) throws Exception {
 		RunParams rp = new RunParams();
 		Element root = Utils.readTextFileIntoDOM(filePath).getDocumentElement();
-		rp.sheetsDataIntervalInMinutes = getInteger(root, "sheetsDataIntervalInMinutes", rp.sheetsDataIntervalInMinutes);
 		rp.htmlWriteIntervalInSeconds = getInteger(root, "htmlWriteIntervalInSeconds", rp.htmlWriteIntervalInSeconds);
 		rp.csvTimeGranularityInSeconds = getInteger(root, "csvTimeGranularityInSeconds", rp.csvTimeGranularityInSeconds);
-		rp.sheetsWriteIntervalInSeconds = getInteger(root, "sheetsWriteIntervalInSeconds", rp.sheetsWriteIntervalInSeconds);
 		rp.writeLongTermData = getInteger(root, "writeLongTermData", 0) == 0 ? false : true;
 		rp.devicesToReport = getString(root, "devicesToReport", rp.devicesToReport);
 		rp.temperatureLimit = getInteger(root, "temperatureLimit", 80);
@@ -131,12 +142,9 @@ public class RunParams {
 
 	public String toString() {
 		return "RunParams : "
-				+ "sheetsDataIntervalInMinutes = " + sheetsDataIntervalInMinutes
 				+ ", htmlWriteIntervalInSeconds = " + htmlWriteIntervalInSeconds
-				+ ", sheetsWriteIntervalInSeconds = " + sheetsWriteIntervalInSeconds
 				+ ", devicesToReport = " + devicesToReport
 				+ ", csvTimeGranularityInSeconds = " + csvTimeGranularityInSeconds
-				+ ", sheetsWriteIntervalInSeconds = " + sheetsWriteIntervalInSeconds
 				+ ", temperatureLimit = " + temperatureLimit
 				+ ", timeLimit = " + timeLimit
 				+ ", emailTo = " + emailTo
