@@ -508,6 +508,8 @@ public class PivotDataApp {
 				totalInputLines++;
 				if (checkInputData(s) == null) {
 					SensorData sensorData = getVals(s);
+					// For The Future: This looks like it will add more rows than necessary if
+					// some data was previously gathered at a higher (time) resolution.
 					googleSheetsWriter.addData(new EventData(sensorData.localDateTime, sensorData.deviceName,
 							sensorData.sensorName, sensorData.sensorValue));
 					linesReadForSensorData++;
