@@ -67,8 +67,7 @@ public class GoogleSheetsWriter extends Thread {
 
 	private void initFirstRow(List<Object> sensorNameRow,
 			Map.Entry<String, RunParams.SheetConfig> entry,
-			List<Object> mostRecentDataRow,
-			LocalDateTime updateTime) {
+			List<Object> mostRecentDataRow) {
 		sensorNameRow.add("Time");
 		// Put a blank row with a timestamp that is sure to be less than any timestamp in the data.
 		mostRecentDataRow.add(Utils.googleSheetsDateFormat.format(LocalDateTime.now().withYear(1980)));
@@ -82,10 +81,6 @@ public class GoogleSheetsWriter extends Thread {
 			}
 			mostRecentDataRow.add(""); // different photons may report at different times. Start with a placeholder.
 		}
-		sensorNameRow.add("Last update: " + Utils.googleSheetsDateFormat.format(updateTime));
-		sensorNameRow.add("Row count: " + previousRowCount.toString());
-		sensorNameRow.add("Host: " + Utils.getHostName());
-		sensorNameRow.add("Booted: " + Utils.googleSheetsDateFormat.format(Utils.getBootTime()));
 	}
 
 	int findSensorIndex(List<Object> sensorNameRow, String fullSensorName) {
@@ -172,12 +167,17 @@ public class GoogleSheetsWriter extends Thread {
 
 			// Keep most recent data values around to fill out potential 'holes' in the graph.
 			List<Object> mostRecentDataRow = new ArrayList<Object>();
-			initFirstRow(sensorNameRow, entry, mostRecentDataRow, updateTime);
+			initFirstRow(sensorNameRow, entry, mostRecentDataRow);
 			List<List<Object>> listOfRows = new ArrayList<List<Object>>();
 			listOfRows.add(sensorNameRow);
 			loadRows(sensorNameRow, mostRecentDataRow, listOfRows, updateTime);
 			if (listOfRows.size() > 1) {
-				renameSensors(listOfRows.get(0));
+				renameSensors(sensorNameRow);
+				sensorNameRow.add("Last update: " + Utils.googleSheetsDateFormat.format(updateTime));
+				sensorNameRow.add("Row count: " + listOfRows.size());
+				sensorNameRow.add("Host: " + Utils.getHostName());
+				sensorNameRow.add("Booted: " + Utils.googleSheetsDateFormat.format(Utils.getBootTime()));
+		
 				GSheetsUtility.updateData(sheetId, "A1", listOfRows);
 				previousRowCount = listOfRows.size();
 				Utils.logToConsole("Updated Google Sheet : " + sheetId + ", rows : " + listOfRows.size()
