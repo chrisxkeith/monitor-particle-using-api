@@ -7,6 +7,8 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -16,7 +18,7 @@ public class AccountMonitor extends Thread {
 	String accountName = null;
 	private String logFileName;
 	private Map<String, ParticleDeviceEvent> eventSubscribers = new HashMap<String, ParticleDeviceEvent>();
-	private GoogleSheetsWriter googleSheetsWriter;
+	private List<GoogleSheetsWriter> googleSheetsWriters = new ArrayList<GoogleSheetsWriter>();
 	RunParams runParams;
 	Map<String, DeviceMonitor> deviceMonitors = new HashMap<String, DeviceMonitor>();
 	Set<String> deviceNames = new HashSet<String>();
@@ -59,10 +61,11 @@ public class AccountMonitor extends Thread {
 
 	private void startSheetsWriter() {
 		for (Map.Entry<String, RunParams.SheetConfig> entry : this.runParams.sheets.entrySet()) {
-			googleSheetsWriter = new GoogleSheetsWriter(this, entry);
+			GoogleSheetsWriter googleSheetsWriter = new GoogleSheetsWriter(this, entry);
 			googleSheetsWriter.initSheets();
 			new PivotDataApp(this).loadSheetsWriter(googleSheetsWriter);
 			googleSheetsWriter.start();
+			googleSheetsWriters.add(googleSheetsWriter);
 		}
 	}
 
@@ -133,8 +136,16 @@ public class AccountMonitor extends Thread {
 
 	public void addDataPoint(LocalDateTime ldt, String deviceName, String event, String data) {
 		if (event.contains("ensor") || event.contains("ontroller")) {
-			if ((googleSheetsWriter != null)) {
-				this.googleSheetsWriter.addData(new EventData(ldt, deviceName, event, data));
+			for (GoogleSheetsWriter googleSheetsWriter : googleSheetsWriters) {
+				Iterator<RunParams.Dataset> datasetIt = googleSheetsWriter.entry.getValue().dataSets.iterator();
+				while (datasetIt.hasNext()) {
+					RunParams.Dataset d = datasetIt.next();
+					for (Map.Entry<String, HashSet<String>> mc : d.microcontrollers.entrySet()) {
+						if (mc.getKey().equals(deviceName)) {
+							googleSheetsWriter.addData(new EventData(ldt, deviceName, event, data));
+						}
+					}
+				}
 			}
 		}
 	}

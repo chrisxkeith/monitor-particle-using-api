@@ -15,13 +15,13 @@ import java.util.regex.Pattern;
 public class GoogleSheetsWriter extends Thread {
 
 	private AccountMonitor accountMonitor;
-	private Map.Entry<String, RunParams.SheetConfig> entry;
 	private ConcurrentSkipListMap<LocalDateTime, ConcurrentSkipListMap<String, String>> sensorData =
 		new ConcurrentSkipListMap<LocalDateTime, ConcurrentSkipListMap<String, String>>();
 	private ConcurrentSkipListMap<String, String> sensorNames = 
 		new ConcurrentSkipListMap<String, String>();
-	private Integer previousRowCount = 0;
 
+	public Map.Entry<String, RunParams.SheetConfig> entry;
+	
 	public GoogleSheetsWriter(AccountMonitor accountMonitor,
 				Entry<String, RunParams.SheetConfig> entry) {
 		this.accountMonitor = accountMonitor;
@@ -179,7 +179,6 @@ public class GoogleSheetsWriter extends Thread {
 				sensorNameRow.add("Booted: " + Utils.googleSheetsDateFormat.format(Utils.getBootTime()));
 		
 				GSheetsUtility.updateData(sheetId, "A1", listOfRows);
-				previousRowCount = listOfRows.size();
 				Utils.logToConsole("Updated Google Sheet : " + sheetId + ", rows : " + listOfRows.size()
 					+ ", columns : " + listOfRows.get(0).size());
 			}

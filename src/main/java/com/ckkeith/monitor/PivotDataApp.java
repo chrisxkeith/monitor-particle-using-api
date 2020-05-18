@@ -372,16 +372,13 @@ public class PivotDataApp {
 			return false;
 		}
 		boolean found = false;
-		for (Map.Entry<String, RunParams.SheetConfig> entry :
-						accountMonitor.runParams.sheets.entrySet()) {
-			Iterator<RunParams.Dataset> datasetIt = entry.getValue().dataSets.iterator();
-			while (datasetIt.hasNext()) {
-				RunParams.Dataset d = datasetIt.next();
-				for (Map.Entry<String, HashSet<String>> mc : d.microcontrollers.entrySet()) {
-					if (mc.getKey().equals(deviceName)) {
-						found = true;
-						break;
-					}
+		Iterator<RunParams.Dataset> datasetIt = this.googleSheetsWriter.entry.getValue().dataSets.iterator();
+		while (datasetIt.hasNext()) {
+			RunParams.Dataset d = datasetIt.next();
+			for (Map.Entry<String, HashSet<String>> mc : d.microcontrollers.entrySet()) {
+				if (mc.getKey().equals(deviceName)) {
+					found = true;
+					break;
 				}
 			}
 		}
