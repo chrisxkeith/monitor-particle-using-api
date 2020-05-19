@@ -13,7 +13,7 @@ import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.HashSet;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
@@ -51,13 +51,24 @@ public class PivotDataApp {
 	int linesReadForSensorData = 0;
 	AccountMonitor accountMonitor;
 
+	private String getMappedSensorName(String photonSensorName) {
+		Map<String, String> sensorNameMap = new HashMap<String, String>();
+		sensorNameMap.put("photon-07 Faire 7 IR heat sensor", "Office");
+		sensorNameMap.put("photon-08 Stove heat sensor", "Stove");
+		sensorNameMap.put("photon-10 Outdoor Thermistor sensor 10", "Back Porch");
+		if (sensorNameMap.get(photonSensorName) != null) {
+			return sensorNameMap.get(photonSensorName);
+		}
+		return photonSensorName;
+	}
+
 	private void writeCsv(String fileName, ConcurrentSkipListMap<String, String> firstSensorValues,
 			ConcurrentSkipListMap<LocalDateTime, ConcurrentSkipListMap<String, String>> outputRows) throws Exception {
 		Set<String> sensorNames = firstSensorValues.keySet();
 		StringBuilder sb = new StringBuilder(" ");
 		Iterator<String> sensorIt = sensorNames.iterator();
 		while (sensorIt.hasNext()) {
-			sb.append("\t").append(accountMonitor.getMappedSensorName(sensorIt.next()));
+			sb.append("\t").append(getMappedSensorName(sensorIt.next()));
 		}
 		LocalDateTime	lastSampleTime = null;
 		String			sensorNameString = sb.toString();
@@ -375,8 +386,8 @@ public class PivotDataApp {
 		Iterator<RunParams.Dataset> datasetIt = this.googleSheetsWriter.entry.getValue().dataSets.iterator();
 		while (datasetIt.hasNext()) {
 			RunParams.Dataset d = datasetIt.next();
-			for (Map.Entry<String, HashSet<String>> mc : d.microcontrollers.entrySet()) {
-				if (mc.getKey().equals(deviceName)) {
+			for (String mc : d.microcontrollers.keySet()) {
+				if (mc.equals(deviceName)) {
 					found = true;
 					break;
 				}

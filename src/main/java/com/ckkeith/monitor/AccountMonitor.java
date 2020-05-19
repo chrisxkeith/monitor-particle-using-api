@@ -140,8 +140,8 @@ public class AccountMonitor extends Thread {
 				Iterator<RunParams.Dataset> datasetIt = googleSheetsWriter.entry.getValue().dataSets.iterator();
 				while (datasetIt.hasNext()) {
 					RunParams.Dataset d = datasetIt.next();
-					for (Map.Entry<String, HashSet<String>> mc : d.microcontrollers.entrySet()) {
-						if (mc.getKey().equals(deviceName)) {
+					for (String mc : d.microcontrollers.keySet()) {
+						if (mc.equals(deviceName)) {
 							googleSheetsWriter.addData(new EventData(ldt, deviceName, event, data));
 						}
 					}
@@ -149,23 +149,4 @@ public class AccountMonitor extends Thread {
 			}
 		}
 	}
-
-	// TODO: Add this to XML configuration file.
-	public String getMappedSensorName(String photonSensorName) {
-		Map<String, String> sensorNameMap = new HashMap<String, String>();
-		sensorNameMap.put("photon-07 Faire 7 IR heat sensor", "Office");
-		sensorNameMap.put("photon-08 Stove heat sensor", "Stove");
-		sensorNameMap.put("photon-10 Outdoor Thermistor sensor 10", "Back Porch");
-
-		// SheetsWriter doesn't use photon name.
-		sensorNameMap.put("Faire 7 IR heat sensor", "Office");
-		sensorNameMap.put("Stove heat sensor", "Stove");
-		sensorNameMap.put("Outdoor Thermistor sensor 10", "Back Porch");
-		if (sensorNameMap.get(photonSensorName) != null) {
-			return sensorNameMap.get(photonSensorName);
-		}
-		return photonSensorName;
-	}
-	
-
 }

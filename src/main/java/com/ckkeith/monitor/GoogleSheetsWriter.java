@@ -2,7 +2,7 @@ package com.ckkeith.monitor;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -11,6 +11,8 @@ import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import com.ckkeith.monitor.RunParams.Dataset;
 
 public class GoogleSheetsWriter extends Thread {
 
@@ -74,8 +76,9 @@ public class GoogleSheetsWriter extends Thread {
 		Iterator<RunParams.Dataset> datasetIt = entry.getValue().dataSets.iterator();
 		while (datasetIt.hasNext()) {
 			RunParams.Dataset d = datasetIt.next();
-			for (Map.Entry<String, HashSet<String>> mc : d.microcontrollers.entrySet()) {
-				for (String sensorName : mc.getValue()) {
+			for (Map.Entry<String, HashMap<String, String>> mc :
+						d.microcontrollers.entrySet()) {
+				for (String sensorName : mc.getValue().keySet()) {
 					sensorNameRow.add(sensorName);
 				}
 			}
@@ -190,10 +193,22 @@ public class GoogleSheetsWriter extends Thread {
 		}
 	}
 
+	public String getMappedSensorName(String name) {
+		for (Dataset dataSet : entry.getValue().dataSets) {
+			for (HashMap<String, String> sensorMap : dataSet.microcontrollers.values()) {
+				String displayName = sensorMap.get(name);
+				if (displayName != null) {
+					return displayName;
+				}
+			}
+		}
+		return name;
+	}
+
 	private void renameSensors(List<Object> list) {
 		int i = 0;
 		for (Object o: list) {
-			list.set(i++, this.accountMonitor.getMappedSensorName((String)o));
+			list.set(i++, getMappedSensorName((String)o));
 		}
 	}
 

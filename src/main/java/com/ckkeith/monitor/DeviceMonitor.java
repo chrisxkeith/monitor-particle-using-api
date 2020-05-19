@@ -3,7 +3,7 @@ package com.ckkeith.monitor;
 
 import java.io.PrintStream;
 import java.time.LocalDateTime;
-import java.util.HashSet;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
@@ -64,9 +64,9 @@ public class DeviceMonitor extends Thread {
 			Iterator<RunParams.Dataset> datasetIt = entry.getValue().dataSets.iterator();
 			while (datasetIt.hasNext()) {
 				RunParams.Dataset d = datasetIt.next();
-				for (Map.Entry<String, HashSet<String>> mc : d.microcontrollers.entrySet()) {
+				for (Map.Entry<String, HashMap<String, String>> mc : d.microcontrollers.entrySet()) {
 					if (mc.getKey().equals(device.getName())) {
-						for (String sensorName : mc.getValue()) {
+						for (String sensorName : mc.getValue().keySet()) {
 							ParticleDeviceEvent cb;
 							if (sensorName.contains("thermistor")
 									|| sensorName.contains("IR ") 

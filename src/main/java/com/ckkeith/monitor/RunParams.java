@@ -2,7 +2,7 @@
 package com.ckkeith.monitor;
 
 import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.HashMap;
 import java.util.Hashtable;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -12,8 +12,8 @@ public class RunParams {
 
 	public class Dataset {
 		// microcontrollerName -> list of sensor names
-		Hashtable<String, HashSet<String>> microcontrollers;
-		public Dataset(Hashtable<String, HashSet<String>> microcontrollers) {
+		Hashtable<String, HashMap<String, String>> microcontrollers;
+		public Dataset(Hashtable<String, HashMap<String, String>> microcontrollers) {
 			this.microcontrollers = microcontrollers;
 		}
 	};
@@ -60,7 +60,8 @@ public class RunParams {
 		for (int i = 0; i < datasetElems.getLength(); i++) {
 			Node datasetNode = datasetElems.item(i);
 			if (datasetNode.getNodeType() == Node.ELEMENT_NODE) {
-				Hashtable<String, HashSet<String>> microcontrollers = new Hashtable<String, HashSet<String>>();
+				Hashtable<String, HashMap<String, String>> microcontrollers = 
+							new Hashtable<String, HashMap<String, String>>();
 				Element elem = (Element)datasetNode;
 				NodeList microcontrollerNameElems = elem.getElementsByTagName("microcontrollerName");
 				if (microcontrollerNameElems.getLength() == 0) {
@@ -71,10 +72,16 @@ public class RunParams {
 				if (sensors.getLength() == 0) {
 					throw new Exception("sensors.getLength() == 0");
 				}
-				HashSet<String> sensorNames = new HashSet<String>();
-				for (int nameIndex = 0; nameIndex < sensors.getLength(); nameIndex++) {
-					// TO (eventually) DO : find correct Node to get text from instead of using trim().
-					sensorNames.add(sensors.item(nameIndex).getTextContent().trim());
+				HashMap<String, String> sensorNames = new HashMap<String, String>();
+				NodeList sensorNodes = ((Element)sensors.item(0)).getElementsByTagName("sensor");
+				for (int nameIndex = 0; nameIndex < sensorNodes.getLength(); nameIndex++) {
+					Node sensorNode = sensorNodes.item(nameIndex);
+					if (sensorNode != null && sensorNode.getNodeType() == Node.ELEMENT_NODE) {
+						Element sensorElem = (Element)sensorNode;
+						String name = sensorElem.getElementsByTagName("name").item(0).getTextContent();
+						String displayName = sensorElem.getElementsByTagName("displayName").item(0).getTextContent();
+						sensorNames.put(name, displayName);
+					}
 				}
 				microcontrollers.put(microcontrollerName, sensorNames);
 				datasets.add(new Dataset(microcontrollers));
