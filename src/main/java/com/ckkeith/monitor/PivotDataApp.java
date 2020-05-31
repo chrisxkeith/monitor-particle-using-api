@@ -280,13 +280,8 @@ public class PivotDataApp {
 
 	private SensorData getVals(String s) throws Exception {
 		String vals[] = s.split("\t");
-		String deviceName = "unknown device";
-		if (vals.length > 4) {
-			deviceName = vals[4];
-		}
 		SensorData sensorData = mungeValues(vals);
 		setTimeGranularity(sensorData);
-		sensorData.sensorName = deviceName + " " + sensorData.sensorName;
 		return sensorData;
 	}
 

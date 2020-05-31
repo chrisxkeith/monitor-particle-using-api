@@ -16,7 +16,6 @@ import com.ckkeith.monitor.RunParams.Dataset;
 
 public class GoogleSheetsWriter extends Thread {
 
-	private AccountMonitor accountMonitor;
 	private ConcurrentSkipListMap<LocalDateTime, ConcurrentSkipListMap<String, String>> sensorData =
 		new ConcurrentSkipListMap<LocalDateTime, ConcurrentSkipListMap<String, String>>();
 	private ConcurrentSkipListMap<String, String> sensorNames = 
@@ -24,9 +23,7 @@ public class GoogleSheetsWriter extends Thread {
 
 	public Map.Entry<String, RunParams.SheetConfig> entry;
 	
-	public GoogleSheetsWriter(AccountMonitor accountMonitor,
-				Entry<String, RunParams.SheetConfig> entry) {
-		this.accountMonitor = accountMonitor;
+	public GoogleSheetsWriter(Entry<String, RunParams.SheetConfig> entry) {
 		this.entry = entry;
 	}
 
@@ -40,7 +37,7 @@ public class GoogleSheetsWriter extends Thread {
 				LocalDateTime truncatedTime = eventData.timestamp
 						.minusSeconds(seconds % entry.getValue().writeIntervalInSeconds).withNano(0);
 				if (start.isBefore(truncatedTime)) {
-					String fullSensorName = eventData.deviceName + sensorDataEntry.getKey();
+					String fullSensorName = eventData.deviceName + "\t" + sensorDataEntry.getKey();
 					sensorNames.put(fullSensorName, sensorDataEntry.getKey());
 	
 					ConcurrentSkipListMap<String, String> sensorValues = sensorData.get(truncatedTime);
@@ -87,10 +84,12 @@ public class GoogleSheetsWriter extends Thread {
 	}
 
 	int findSensorIndex(List<Object> sensorNameRow, String fullSensorName) {
+		String nameComponents[] = fullSensorName.split("\t");
+		String sensorName = nameComponents[nameComponents.length - 1];
 		int i = 0;
 		for (Object n : sensorNameRow.toArray()) {
-			if (fullSensorName.endsWith((String)n)) {
-					return i;
+			if (sensorName.equals((String)n)) {
+				return i;
 			}
 			i++;
 		}
