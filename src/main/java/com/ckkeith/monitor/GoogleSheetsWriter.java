@@ -77,9 +77,9 @@ public class GoogleSheetsWriter extends Thread {
 						d.microcontrollers.entrySet()) {
 				for (String sensorName : mc.getValue().keySet()) {
 					sensorNameRow.add(sensorName);
+					mostRecentDataRow.add(""); // different photons may report at different times. Start with a placeholder.
 				}
 			}
-			mostRecentDataRow.add(""); // different photons may report at different times. Start with a placeholder.
 		}
 	}
 
@@ -221,7 +221,7 @@ public class GoogleSheetsWriter extends Thread {
 		}
 	}
 
-	void updateGoogleSheets() {
+	public void updateGoogleSheets() {
 		synchronized(this) {
 			deleteOldData();
 			updateBySheet();

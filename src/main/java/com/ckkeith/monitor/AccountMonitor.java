@@ -149,4 +149,10 @@ public class AccountMonitor extends Thread {
 			}
 		}
 	}
+
+	public void updateGoogleSheets() {
+		for (GoogleSheetsWriter googleSheetsWriter : googleSheetsWriters) {
+			googleSheetsWriter.updateGoogleSheets();
+		}
+	}
 }
