@@ -232,7 +232,7 @@ public class GoogleSheetsWriter extends Thread {
 		String spreadSheetId = entry.getKey();
 		try {
 			if (validateSheetId(spreadSheetId)) {
-				GSheetsUtility.clear(spreadSheetId, "Sheet1!A1:Z1000");
+				GSheetsUtility.clear(spreadSheetId, "Sheet1");
 			}
 		} catch (Exception e) {
 			Utils.logToConsole("initSheets(): FAILED to update Google Sheet : " +
