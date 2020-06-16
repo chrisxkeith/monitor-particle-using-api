@@ -224,15 +224,16 @@ public class GoogleSheetsWriter extends Thread {
 	public void updateGoogleSheets() {
 		synchronized(this) {
 			deleteOldData();
+			initSheets();
 			updateBySheet();
 		}
 	}
 
-	public void initSheets() {
+	private void initSheets() {
 		String spreadSheetId = entry.getKey();
 		try {
 			if (validateSheetId(spreadSheetId)) {
-				GSheetsUtility.clear(spreadSheetId, "Sheet1");
+				GSheetsUtility.clear(spreadSheetId, "Sheet1"); // TODO: should this be "0"? What happens if sheet is renamed?
 			}
 		} catch (Exception e) {
 			Utils.logToConsole("initSheets(): FAILED to update Google Sheet : " +

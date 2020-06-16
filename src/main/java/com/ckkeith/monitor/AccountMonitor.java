@@ -62,7 +62,6 @@ public class AccountMonitor extends Thread {
 	private void startSheetsWriter() {
 		for (Map.Entry<String, RunParams.SheetConfig> entry : this.runParams.sheets.entrySet()) {
 			GoogleSheetsWriter googleSheetsWriter = new GoogleSheetsWriter(entry);
-			googleSheetsWriter.initSheets();
 			new PivotDataApp(this).loadSheetsWriter(googleSheetsWriter);
 			googleSheetsWriter.start();
 			googleSheetsWriters.add(googleSheetsWriter);
