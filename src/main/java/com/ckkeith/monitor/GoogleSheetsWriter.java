@@ -224,7 +224,6 @@ public class GoogleSheetsWriter extends Thread {
 	public void updateGoogleSheets() {
 		synchronized(this) {
 			deleteOldData();
-			initSheets();
 			updateBySheet();
 		}
 	}
@@ -246,6 +245,7 @@ public class GoogleSheetsWriter extends Thread {
 	public void run() {
 		Utils.logToConsole(this.getClass().getName() + ": thread starting : " + Utils.getCurrentThreadString());
 		if (entry.getValue().writeIntervalInSeconds > 0) {
+			initSheets(); // If I see junk show up in sheets, add a setting to do this in updateGoogleSheets() on a per-sheet basis.
 			while (true) {
 				try {
 					updateGoogleSheets();
