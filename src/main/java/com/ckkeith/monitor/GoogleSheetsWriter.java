@@ -1,6 +1,7 @@
 package com.ckkeith.monitor;
 
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -33,7 +34,7 @@ public class GoogleSheetsWriter extends Thread {
 			Map.Entry<String, String> sensorDataEntry = eventData.getNextSensorData();
 			while (sensorDataEntry != null) {
 				// Don't need time granularity finer than reporting granularity.
-				int seconds = eventData.timestamp.getSecond();
+				long seconds = eventData.timestamp.toEpochSecond(OffsetDateTime.now().getOffset());
 				LocalDateTime truncatedTime = eventData.timestamp
 						.minusSeconds(seconds % entry.getValue().writeIntervalInSeconds).withNano(0);
 				if (start.isBefore(truncatedTime)) {
