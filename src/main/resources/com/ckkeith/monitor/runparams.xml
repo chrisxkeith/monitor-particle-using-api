@@ -1,68 +1,37 @@
-<!-- overdesigned, not needed, not used -->
+<!-- This may or may not be up-to-date. Caveat emptor. -->
 <doc>
     <sheets>
-        <sheet>
-            <!-- Must be created (and edit access given) manually. -->
-            <sheetId>Some.Google.Sheet.Id</sheetId>
-
-            <!-- days:hours:minutes:seconds previous to 'now', default : 10 minutes -->
-            <duration>00:00:10:00</duration>
-
-            <!-- days:hours:minutes:seconds, default : 5 seconds -->
-            <dataGranularity>00:00:00:02</dataGranularity>
-
-            <!-- days:hours:minutes:seconds, default : no updates -->
-            <!-- All zeros (or empty/missing) mean no interactive update, e.g., create and populate once only -->
-            <updateInterval>00:00:00:02</updateInterval>
-
-             <!-- days:hours:minutes:seconds relative to midnight (local time) Saturday. -->
-             <!-- default (if needed) : 00:00:05:00, e.g., daily 5 minutes after midnight. -->
-             <!-- Will be ignored if sheetId is specified. -->
-            <createInterval></createInterval>
-
-             <dataSet> <!-- must have at least one -->
-                <microcontrollerName>thermistor-test</microcontrollerName>
-                <sensors> <!-- must have at least one -->
-                    <sensorName>Thermistor 01 sensor:</sensorName>
-                </sensors>
-            </dataSet>
-        </sheet>
-        <sheet>
-            <sheetId></sheetId>
-            <duration>01:00:00:00</duration>
-            <dataGranularity>00:00:02:00</dataGranularity>
-            <createInterval>00:00:05:00</createInterval>
-             <dataSet>
-                <microcontrollerName>thermistor2-test</microcontrollerName>
+         <sheet>
+            <!-- From the Google sheet URL. -->
+            <sheetId>12IljsD75CPTJ1iRIDZ97o-0JUEQOxY6cNgMRt0MAibY</sheetId>
+            <!-- How often the server will update the sheet. Also data granularity. -->
+            <writeIntervalInSeconds>60</writeIntervalInSeconds>
+            <!-- The full time data range of the sheet. --> 
+            <dataIntervalInMinutes>3600</dataIntervalInMinutes>
+            <dataSet> 
+                <!-- One microcontroller with one or more sensors.
+                Name is defined when controller is set up with Particle app. -->
+                <microcontrollerName>photon-09</microcontrollerName>
                 <sensors>
-                    <sensorName>IR heat sensor 2</sensorName>
-                </sensors>
-            </dataSet>
-        </sheet>
-        <sheet>
-            <sheetId>Some.Other.Google.Sheet.Id</sheetId>
-            <dataSet>
-                <microcontrollerName>thermistor-test</microcontrollerName>
-                <sensors>
-                    <sensorName>Thermistor 01 sensor:</sensorName>
+                    <sensor>
+                        <!-- Name as reported by the microcontroller. -->
+                        <name>Light sensor</name>
+                        <!-- Name as displayed in the column header in the Google Sheet. -->
+                        <displayName>CK's Light sensor (1K)</displayName>
+                    </sensor>
+                    <sensor>
+                        <name>Light sensor (10K)</name>
+                        <displayName>CK's Light sensor (10K)</displayName>
+                    </sensor>
                 </sensors>
             </dataSet>
             <dataSet>
-                <microcontrollerName>thermistor2-test</microcontrollerName>
+                <microcontrollerName>photon-11</microcontrollerName>
                 <sensors>
-                    <sensorName>IR heat sensor 2</sensorName>
-                </sensors>
-            </dataSet>
-            <dataSet>
-                <microcontrollerName>photon-05</microcontrollerName>
-                <sensors>
-                    <sensorName>Thermistor 05 sensor:</sensorName>
-                </sensors>
-            </dataSet>
-            <dataSet>
-                <microcontrollerName>photon-06</microcontrollerName>
-                <sensors>
-                    <sensorName>Thermistor 06 sensor:</sensorName>
+                    <sensor>
+                        <name>Jeff Light sensor</name>
+                        <displayName>Jeff's Light sensor</displayName>
+                    </sensor>
                 </sensors>
             </dataSet>
         </sheet>
