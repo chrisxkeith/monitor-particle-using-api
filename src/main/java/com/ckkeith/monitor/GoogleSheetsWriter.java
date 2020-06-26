@@ -99,8 +99,7 @@ public class GoogleSheetsWriter extends Thread {
 
 	void loadRows(List<Object> sensorNameRow,
 					List<Object> mostRecentDataRow,
-					List<List<Object>> listOfRows,
-					LocalDateTime updateTime) {
+					List<List<Object>> listOfRows) {
 		Iterator<LocalDateTime> itr = sensorData.keySet().iterator();
 		while (itr.hasNext()) {
 			LocalDateTime timestamp = itr.next();
@@ -173,7 +172,7 @@ public class GoogleSheetsWriter extends Thread {
 			initFirstRow(sensorNameRow, entry, mostRecentDataRow);
 			List<List<Object>> listOfRows = new ArrayList<List<Object>>();
 			listOfRows.add(sensorNameRow);
-			loadRows(sensorNameRow, mostRecentDataRow, listOfRows, updateTime);
+			loadRows(sensorNameRow, mostRecentDataRow, listOfRows);
 			if (listOfRows.size() > 1) {
 				renameSensors(sensorNameRow);
 				sensorNameRow.add("Last update: " + Utils.googleSheetsDateFormat.format(updateTime));
