@@ -2,6 +2,7 @@ package com.ckkeith.monitor;
 
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -65,12 +66,14 @@ public class GoogleSheetsWriter extends Thread {
 		}
 	}
 
+	private static LocalDateTime noDataMarker = LocalDateTime.ofEpochSecond(0, 0, ZoneOffset.UTC);
+
 	private void initFirstRow(List<Object> sensorNameRow,
 			Map.Entry<String, RunParams.SheetConfig> entry,
 			List<Object> mostRecentDataRow) {
 		sensorNameRow.add("Time");
 		// Put a blank row with a timestamp that is sure to be less than any timestamp in the data.
-		mostRecentDataRow.add(Utils.googleSheetsDateFormat.format(LocalDateTime.now().withYear(1980)));
+		mostRecentDataRow.add(Utils.googleSheetsDateFormat.format(noDataMarker));
 		Iterator<RunParams.Dataset> datasetIt = entry.getValue().dataSets.iterator();
 		while (datasetIt.hasNext()) {
 			RunParams.Dataset d = datasetIt.next();
@@ -97,12 +100,32 @@ public class GoogleSheetsWriter extends Thread {
 		return -1;
 	}
 
-	void loadRows(List<Object> sensorNameRow,
+    void fillInBlankRows(LocalDateTime nextRowTimestamp,
+                            List<Object> mostRecentDataRow,
+                            List<List<Object>> listOfRows) {
+        if (this.entry.getValue().missingDataShowsBlank) {
+            LocalDateTime prev = Utils.getLocalDateTime((String)mostRecentDataRow.get(0));
+            if (!prev.equals(noDataMarker)) {
+                List<Object> sensorDataRow = new ArrayList<Object>();
+                for (int i = 0; i < mostRecentDataRow.size(); i++) {
+                    sensorDataRow.add("");
+                }
+				prev = prev.plusSeconds(this.entry.getValue().writeIntervalInSeconds);
+				if (prev.isBefore(nextRowTimestamp)) {
+					sensorDataRow.set(0, Utils.googleSheetsDateFormat.format(prev));
+					listOfRows.add(sensorDataRow);
+				}
+            }
+        }
+    }
+    
+ 	void loadRows(List<Object> sensorNameRow,
 					List<Object> mostRecentDataRow,
 					List<List<Object>> listOfRows) {
 		Iterator<LocalDateTime> itr = sensorData.keySet().iterator();
 		while (itr.hasNext()) {
 			LocalDateTime timestamp = itr.next();
+			fillInBlankRows(timestamp, mostRecentDataRow, listOfRows);
 			LocalDateTime prev = Utils.getLocalDateTime((String)mostRecentDataRow.get(0));
 			if (prev.isBefore(timestamp)) {
 				List<Object> sensorDataRow = new ArrayList<Object>();
@@ -165,7 +188,6 @@ public class GoogleSheetsWriter extends Thread {
 		}
 		try {
 			List<Object> sensorNameRow = new ArrayList<Object>();
-			LocalDateTime	updateTime = LocalDateTime.now();
 
 			// Keep most recent data values around to fill out potential 'holes' in the graph.
 			List<Object> mostRecentDataRow = new ArrayList<Object>();
@@ -175,7 +197,7 @@ public class GoogleSheetsWriter extends Thread {
 			loadRows(sensorNameRow, mostRecentDataRow, listOfRows);
 			if (listOfRows.size() > 1) {
 				renameSensors(sensorNameRow);
-				sensorNameRow.add("Last update: " + Utils.googleSheetsDateFormat.format(updateTime));
+				sensorNameRow.add("Last update: " + Utils.googleSheetsDateFormat.format(LocalDateTime.now()));
 				sensorNameRow.add("Row count: " + listOfRows.size());
 				sensorNameRow.add("Host: " + Utils.getHostName());
 				sensorNameRow.add("Booted: " + Utils.googleSheetsDateFormat.format(Utils.getBootTime()));

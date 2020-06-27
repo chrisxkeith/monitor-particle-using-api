@@ -21,6 +21,7 @@ public class RunParams {
 	public class SheetConfig {
 		public Integer				dataIntervalInMinutes = 20;
 		public Integer				writeIntervalInSeconds = 10;
+		Boolean						missingDataShowsBlank = false;
 		public ArrayList<Dataset>	dataSets;
 	};
 
@@ -34,6 +35,7 @@ public class RunParams {
 	String		emailTo = "chris.keith@gmail.com";
 	Integer		gapTriggerInMinutes = 10; // Display gaps in the data if they are longer than this.
 	Integer		daysOfGapData = 30; // Go back this many days for gap data.
+	Boolean		missingDataShowsBlank = false;
 
 	 // If temperature doesn't go down (after sending email) in resendIntervalInMinutes,
 	 // keep resending emails until it does.
@@ -104,6 +106,10 @@ public class RunParams {
 		sheetConfig.dataSets = buildDatasetList(datasetElems);
 		sheetConfig.dataIntervalInMinutes = Integer.valueOf(getNodeList(sheetElement, "dataIntervalInMinutes").item(0).getTextContent());
 		sheetConfig.writeIntervalInSeconds = Integer.valueOf(getNodeList(sheetElement, "writeIntervalInSeconds").item(0).getTextContent());
+		NodeList blankDataNodeList = sheetElement.getElementsByTagName("missingDataShowsBlank");
+		if (blankDataNodeList.getLength() > 0) {
+			sheetConfig.missingDataShowsBlank = Boolean.valueOf(blankDataNodeList.item(0).getTextContent());
+		}
 		return sheetConfig;
 	}
 
