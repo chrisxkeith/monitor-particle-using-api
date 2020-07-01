@@ -32,6 +32,7 @@ mkdir -p src/main/resources/com/ckkeith/monitor/	  					; if [ $? -ne 0 ] ; then
 
 echo "Now copy your GCP client_secret.json/credentials.json files into:"
 echo "~/Documents/Github/monitor-particle-using-api/src/main/resources/com/ckkeith/monitor/"
+echo "Copy runparams.xml into ~/Documents/tmp/your-machine-name/your-munged-particle-account-name"
 echo "Then run : ~/Documents/Github/monitor-particle-using-api/scripts/run.sh"
 echo "You should get a browser window asking you to verify your credentials."
 echo "After that (in a couple of minutes), you should see output something like:"
