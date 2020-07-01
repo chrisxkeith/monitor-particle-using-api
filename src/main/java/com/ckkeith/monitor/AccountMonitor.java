@@ -36,10 +36,7 @@ public class AccountMonitor extends Thread {
 			throw new Exception("No account name specified.");
 		}
 		logFileName = Utils.getLogFileName(accountName, "devices-overview.txt");
-		String paramFileName = getParamFilePath();
-		Utils.logToConsole(accountName + ": loading params from: " + paramFileName);
-		runParams = RunParams.loadFromXML(paramFileName);
-		Utils.logToConsole(accountName + ": " + runParams.toString());
+		loadParams();
 		for (Map.Entry<String, RunParams.SheetConfig> entry : runParams.sheets.entrySet()) {
 			for (RunParams.Dataset ds : entry.getValue().dataSets) {
 				for (String deviceName : ds.microcontrollers.keySet()) {
@@ -51,6 +48,13 @@ public class AccountMonitor extends Thread {
 			Utils.logToConsole("No deviceNames for " + accountName);
 			System.exit(-1);
 		}
+	}
+
+	private void loadParams() throws Exception {
+		String paramFileName = getParamFilePath();
+		Utils.logToConsole(accountName + ": loading params from: " + paramFileName);
+		runParams = RunParams.loadFromXML(paramFileName);
+		Utils.logToConsole(accountName + ": " + runParams.toString());
 	}
 
 	private String getParamFilePath() throws Exception {
@@ -149,9 +153,23 @@ public class AccountMonitor extends Thread {
 		}
 	}
 
-	public void updateGoogleSheets() {
+	private void updateGoogleSheets() {
 		for (GoogleSheetsWriter googleSheetsWriter : googleSheetsWriters) {
 			googleSheetsWriter.updateGoogleSheets();
 		}
+	}
+
+	public boolean handleServerEvent(String event) throws Exception {
+		if ("update sheets".equalsIgnoreCase(event)) {
+			updateGoogleSheets();
+			return true;
+		}
+		if ("load params".equalsIgnoreCase(event)) {
+			loadParams(); // Changing devices in XML file will not add new DeviceMonitors. Only use for changing sheet parameters.
+			googleSheetsWriters.clear();
+			startSheetsWriter();
+			return true;
+		}
+		return false;
 	}
 }

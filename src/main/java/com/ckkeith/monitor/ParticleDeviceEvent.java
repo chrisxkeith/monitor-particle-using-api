@@ -22,19 +22,20 @@ public class ParticleDeviceEvent extends AnyDeviceEvent {
 	}
 	
 	private void handleServerEvent(ParticleEvent e) {
-		String subject = "";
-		String body = "photon coreId: " + e.getCoreId() +
-			", publishedAt: " + Utils.logDateFormat.format(e.getPublishedAt()) +
-			", server: " + Utils.getHostName() + 
-			", booted: " + Utils.googleSheetsDateFormat.format(Utils.getBootTime());
-		if ("send test email".equalsIgnoreCase(e.getData())) {
-			subject = "Test email requested.";
-			GMailer.sendMessageX(this.accountMonitor.runParams.emailTo, this.accountMonitor.runParams.emailTo, subject, body);
-		} else if ("update sheets".equalsIgnoreCase(e.getData())) {
-			accountMonitor.updateGoogleSheets();
-		} else {
-			subject = "Unknown server event : " + e.getData();
-			GMailer.sendMessageX(this.accountMonitor.runParams.emailTo, this.accountMonitor.runParams.emailTo, subject, body);
+		try {
+			if (!accountMonitor.handleServerEvent(e.getData())) {
+				String subject = "Unknown server event : " + e.getData();
+				String body = "photon coreId: " + e.getCoreId() + ", publishedAt: "
+						+ Utils.logDateFormat.format(e.getPublishedAt()) + ", server: " + Utils.getHostName()
+						+ ", booted: " + Utils.googleSheetsDateFormat.format(Utils.getBootTime());
+				if ("send test email".equalsIgnoreCase(e.getData())) {
+					subject = "Test email requested.";
+				}
+				GMailer.sendMessageX(this.accountMonitor.runParams.emailTo, this.accountMonitor.runParams.emailTo,
+					subject, body);
+			}
+		} catch (Exception e1) {
+			e1.printStackTrace();
 		}
 	}
 
