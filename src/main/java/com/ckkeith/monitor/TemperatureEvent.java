@@ -81,6 +81,12 @@ public class TemperatureEvent extends ParticleDeviceEvent {
 
 	public void handleEvent(ParticleEvent e) {
 		super.handleEvent(e);
-		checkStoveLeftOn(e);
+		String sensorName = e.getName();
+		if (sensorName.contains("thermistor")
+				|| sensorName.contains("IR ") 
+				|| sensorName.contains("heat") 
+				|| sensorName.contains("temperature")) {
+			checkStoveLeftOn(e);
+		}
 	}
 }

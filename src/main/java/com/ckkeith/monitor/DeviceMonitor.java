@@ -66,20 +66,10 @@ public class DeviceMonitor extends Thread {
 				RunParams.Dataset d = datasetIt.next();
 				for (Map.Entry<String, HashMap<String, String>> mc : d.microcontrollers.entrySet()) {
 					if (mc.getKey().equals(device.getName())) {
-						for (String sensorName : mc.getValue().keySet()) {
-							ParticleDeviceEvent cb;
-							if (sensorName.contains("thermistor")
-									|| sensorName.contains("IR ") 
-									|| sensorName.contains("heat") 
-									|| sensorName.contains("temperature")) {
-								cb = new TemperatureEvent(accountMonitor, device);
-							} else {
-								cb = new ParticleDeviceEvent(accountMonitor, device);
-							}
-							cloud.subscribe(cb);
-							accountMonitor.addEventSubscriber(device.getName(), cb);
-							log("Subscribed to: " + sensorName + ": " + cb.getClass().getName());
-						}
+						ParticleDeviceEvent cb = new TemperatureEvent(accountMonitor, device);
+						cloud.subscribe(cb);
+						accountMonitor.addEventSubscriber(device.getName(), cb);
+						log("Subscribed to: " + device.getName());
 					}
 				}
 			}

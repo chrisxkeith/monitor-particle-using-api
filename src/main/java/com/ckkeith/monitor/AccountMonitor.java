@@ -180,6 +180,7 @@ public class AccountMonitor extends Thread {
 		if (strs.length != 2) {
 			return false;
 		}
+		RunParams oldParams = runParams;
 		try {
 			runParams = RunParams.loadFromXMLString(GoogleSheetsReader.readData(strs[1], "Sheet1", "A1:A250"));
 			googleSheetsWriters.clear();
@@ -188,6 +189,7 @@ public class AccountMonitor extends Thread {
 			return true;
 		} catch (Throwable t) {
 			loadDiagnostics(strs[1], t.toString());
+			runParams = oldParams;
 			return false;
 		}
 	}
