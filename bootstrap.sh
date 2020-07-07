@@ -19,7 +19,8 @@ if [ -d ~/Documents/Github/monitor-particle-using-api ] ; then
 fi
 
 set -x
-mkdir -p ~/Documents/tmp/your-machine-name/your-munged-particle-account-name
+# Edit the following line to chris-keith-gmail-com to your (modified) particle account name.
+mkdir -p ~/Documents/tmp/${HOSTNAME}/chris-keith-gmail-com				; if [ $? -ne 0 ] ; then exit -6 ; fi
 mkdir -p ~/Documents/Github												; if [ $? -ne 0 ] ; then exit -6 ; fi
 cd ~/Documents/Github													; if [ $? -ne 0 ] ; then exit -6 ; fi
 rm -rf JParticle/														; if [ $? -ne 0 ] ; then exit -6 ; fi

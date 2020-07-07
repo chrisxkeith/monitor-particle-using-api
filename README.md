@@ -2,7 +2,10 @@
 
 Install Git client, Java JDK and maven as described here : https://github.com/chrisxkeith/commute-time-aggregator/blob/master/README.md . You can also use Visual Studio Code for development instead of Spring Tool Suite. 
 
-See https://github.com/chrisxkeith/monitor-particle-using-api/blob/master/bootstrap.sh for build steps. If you want to run the script directly, copy it into a temporary directory and run from that directory using Git Bash.
+See https://github.com/chrisxkeith/monitor-particle-using-api/blob/master/bootstrap.sh for build steps. If you want to run the script directly
+* copy it into a temporary directory
+* edit it to match your environment
+* run from that directory using Git Bash.
 
 You will need to create a runparams.xml file. See https://github.com/chrisxkeith/monitor-particle-using-api/blob/master/src/main/java/com/ckkeith/monitor/RunParams.java .
 
