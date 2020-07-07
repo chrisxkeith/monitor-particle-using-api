@@ -166,7 +166,7 @@ public class AccountMonitor extends Thread {
 			r1.add(Utils.nowInLogFormat());
 			r1.add(message);
 			listOfRows.add(r1);
-			GSheetsUtility.updateData(sheetId, "Sheet2:A1", listOfRows);
+			GSheetsUtility.updateData(sheetId, "Sheet2!A1", listOfRows);
 		} catch (Throwable t1) {
 			Utils.logToConsole(t1.toString());
 		}
@@ -205,6 +205,6 @@ public class AccountMonitor extends Thread {
 			startSheetsWriter();
 			return true;
 		}
-		return false ; // handleConfig(event);
+		return handleConfig(event);
 	}
 }
