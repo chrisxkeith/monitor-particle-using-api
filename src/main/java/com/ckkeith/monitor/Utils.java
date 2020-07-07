@@ -8,8 +8,10 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
+import java.io.ByteArrayInputStream;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -182,6 +184,12 @@ public class Utils {
 		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 		DocumentBuilder builder = factory.newDocumentBuilder();
 		return builder.parse(new FileInputStream(new File(filePath)));
+	}
+
+	public static Document readStringIntoDOM(String xml) throws Exception {
+		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+		DocumentBuilder builder = factory.newDocumentBuilder();
+		return builder.parse(new ByteArrayInputStream(xml.getBytes(StandardCharsets.UTF_8)));
 	}
 
 	public static String getHostName() {

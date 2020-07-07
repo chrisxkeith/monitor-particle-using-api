@@ -136,9 +136,8 @@ public class RunParams {
 		}
 	}
 
-	static RunParams loadFromXML(String filePath) throws Exception {
+	private static RunParams loadFromDOM(Element root) throws Exception {
 		RunParams rp = new RunParams();
-		Element root = Utils.readTextFileIntoDOM(filePath).getDocumentElement();
 		rp.htmlWriteIntervalInSeconds = getInteger(root, "htmlWriteIntervalInSeconds", rp.htmlWriteIntervalInSeconds);
 		rp.csvTimeGranularityInSeconds = getInteger(root, "csvTimeGranularityInSeconds", rp.csvTimeGranularityInSeconds);
 		rp.writeLongTermData = getInteger(root, "writeLongTermData", 0) == 0 ? false : true;
@@ -151,6 +150,16 @@ public class RunParams {
 		rp.daysOfGapData = getInteger(root, "daysOfGapData", 30);
 		rp.loadSheets(root);
 		return rp;
+	}
+
+	static RunParams loadFromXML(String filePath) throws Exception {
+		Element root = Utils.readTextFileIntoDOM(filePath).getDocumentElement();
+		return loadFromDOM(root);
+	}
+
+	static RunParams loadFromXMLString(String xml) throws Exception {
+		Element root = Utils.readStringIntoDOM(xml).getDocumentElement();
+		return loadFromDOM(root);
 	}
 
 	public String toString() {

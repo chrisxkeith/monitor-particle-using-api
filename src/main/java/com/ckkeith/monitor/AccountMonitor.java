@@ -159,6 +159,39 @@ public class AccountMonitor extends Thread {
 		}
 	}
 
+	private void loadDiagnostics(String sheetId, String message) {
+		try {
+			List<List<Object>> listOfRows = new ArrayList<List<Object>>();
+			List<Object> r1 = new ArrayList<Object>();
+			r1.add(Utils.nowInLogFormat());
+			r1.add(message);
+			listOfRows.add(r1);
+			GSheetsUtility.updateData(sheetId, "Sheet2:A1", listOfRows);
+		} catch (Throwable t1) {
+			Utils.logToConsole(t1.toString());
+		}
+}
+
+	private boolean handleConfig(String event) {
+		if (!event.startsWith("config:")) {
+			return false;
+		}
+		String strs[] = event.split(":");
+		if (strs.length != 2) {
+			return false;
+		}
+		try {
+			runParams = RunParams.loadFromXMLString(GoogleSheetsReader.readData(strs[1], "Sheet1", "A1:A250"));
+			googleSheetsWriters.clear();
+			startSheetsWriter();
+			loadDiagnostics(strs[1], "Success!");
+			return true;
+		} catch (Throwable t) {
+			loadDiagnostics(strs[1], t.toString());
+			return false;
+		}
+	}
+
 	public boolean handleServerEvent(String event) throws Exception {
 		if ("update sheets".equalsIgnoreCase(event)) {
 			updateGoogleSheets();
@@ -170,6 +203,6 @@ public class AccountMonitor extends Thread {
 			startSheetsWriter();
 			return true;
 		}
-		return false;
+		return false ; // handleConfig(event);
 	}
 }
