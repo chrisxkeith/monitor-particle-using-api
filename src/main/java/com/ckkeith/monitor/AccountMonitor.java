@@ -2,6 +2,7 @@
 package com.ckkeith.monitor;
 
 import java.io.File;
+import java.io.FileWriter;
 import java.io.PrintStream;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -10,6 +11,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Scanner;
 import java.util.Set;
 
 public class AccountMonitor extends Thread {
@@ -50,17 +52,43 @@ public class AccountMonitor extends Thread {
 		}
 	}
 
-	private void loadParams() throws Exception {
+	private void loadParamsFromFile() throws Exception {
 		String paramFileName = getParamFilePath();
 		Utils.logToConsole(accountName + ": loading params from: " + paramFileName);
 		runParams = RunParams.loadFromXML(paramFileName);
+	}
+
+	private void loadParams() throws Exception {
+		File f = new File(this.getParamCfgFilePath());
+		if (f.exists()) {
+			Scanner scanner = new Scanner(f);
+			try {
+				String id = scanner.nextLine();
+				Utils.logToConsole(accountName + ": loading params from: " + id);
+				runParams = RunParams.loadFromXMLString(GoogleSheetsReader.readData(id, "Sheet1", "A1:A250"));
+			} catch (Throwable t) {
+				loadParamsFromFile();
+			} finally {
+				scanner.close();
+			}
+		} else {
+			loadParamsFromFile();
+		}
 		Utils.logToConsole(accountName + ": " + runParams.toString());
 	}
 
-	private String getParamFilePath() throws Exception {
+	private String getParamFilePath(String fn) throws Exception {
 		return Utils.getHomeDir() + File.separator + "Documents" + File.separator + "tmp" + File.separator
 				+ Utils.getHostName() + File.separator + Utils.getSafeName(accountName) + File.separator
-				+ "runparams.xml";
+				+ fn;
+	}
+
+	private String getParamFilePath() throws Exception {
+		return getParamFilePath("runparams.xml");
+	}
+
+	private String getParamCfgFilePath() throws Exception {
+		return getParamFilePath("runparams.id");
 	}
 
 	private void startSheetsWriter() {
@@ -167,9 +195,24 @@ public class AccountMonitor extends Thread {
 			r1.add(message);
 			listOfRows.add(r1);
 			GSheetsUtility.updateData(sheetId, "Sheet2!A1", listOfRows);
-		} catch (Throwable t1) {
-			Utils.logToConsole(t1.toString());
+		} catch (Throwable t) {
+			Utils.logToConsole("Error in loadDiagnostics:\t" + t.toString());
 		}
+}
+
+private void writeCfgSheetId(String id) {
+	try {
+		File f = new File(this.getParamCfgFilePath());
+		if (f.exists()) {
+			f.delete();
+		}
+		f.createNewFile();
+		FileWriter writer = new FileWriter(this.getParamCfgFilePath());
+		writer.write(id);
+		writer.close();		
+	} catch (Throwable t) {
+		Utils.logToConsole("Error in writeCfgSheetId:\t" + t.toString());
+	}
 }
 
 	private boolean handleConfig(String event) {
@@ -180,29 +223,22 @@ public class AccountMonitor extends Thread {
 		if (strs.length != 2) {
 			return false;
 		}
-		RunParams oldParams = runParams;
 		try {
 			runParams = RunParams.loadFromXMLString(GoogleSheetsReader.readData(strs[1], "Sheet1", "A1:A250"));
-			googleSheetsWriters.clear();
-			startSheetsWriter();
-			loadDiagnostics(strs[1], "Success!");
-			return true;
 		} catch (Throwable t) {
 			loadDiagnostics(strs[1], t.toString());
-			runParams = oldParams;
 			return false;
 		}
-	}
+		googleSheetsWriters.clear();
+		startSheetsWriter();
+		loadDiagnostics(strs[1], "Success!");
+		writeCfgSheetId(strs[1]);
+		return true;
+}
 
 	public boolean handleServerEvent(String event) throws Exception {
 		if ("update sheets".equalsIgnoreCase(event)) {
 			updateGoogleSheets();
-			return true;
-		}
-		if ("load params".equalsIgnoreCase(event)) {
-			loadParams(); // Changing devices in XML file will not add new DeviceMonitors. Only use for changing sheet parameters.
-			googleSheetsWriters.clear();
-			startSheetsWriter();
 			return true;
 		}
 		return handleConfig(event);
