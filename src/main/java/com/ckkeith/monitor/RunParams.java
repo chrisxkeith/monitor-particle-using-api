@@ -21,6 +21,7 @@ public class RunParams {
 	public class SheetConfig {
 		public Integer				dataIntervalInMinutes = 20;
 		public Integer				writeIntervalInSeconds = 10;
+		public Integer				expectedDataIntervalInSeconds = writeIntervalInSeconds;
 		Boolean						missingDataShowsBlank = false;
 		public ArrayList<Dataset>	dataSets;
 	};
@@ -106,6 +107,7 @@ public class RunParams {
 		sheetConfig.dataSets = buildDatasetList(datasetElems);
 		sheetConfig.dataIntervalInMinutes = Integer.valueOf(getNodeList(sheetElement, "dataIntervalInMinutes").item(0).getTextContent());
 		sheetConfig.writeIntervalInSeconds = Integer.valueOf(getNodeList(sheetElement, "writeIntervalInSeconds").item(0).getTextContent());
+		sheetConfig.expectedDataIntervalInSeconds = getInteger(sheetElement, "expectedDataIntervalInSeconds", sheetConfig.writeIntervalInSeconds);
 		NodeList blankDataNodeList = sheetElement.getElementsByTagName("missingDataShowsBlank");
 		if (blankDataNodeList.getLength() > 0) {
 			sheetConfig.missingDataShowsBlank = Boolean.valueOf(blankDataNodeList.item(0).getTextContent());
