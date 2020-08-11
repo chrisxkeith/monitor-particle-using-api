@@ -154,7 +154,7 @@ public class PivotDataApp {
 		Set<LocalDateTime> keys = inputRows.keySet();
 		Iterator<LocalDateTime> itr = keys.iterator();
 		while (itr.hasNext()) {
-			LocalDateTime timestamp = setTimeGranularity(itr.next());
+			LocalDateTime timestamp = googleSheetsWriter.setTimeGranularity(itr.next());
 			if ((timestamp.getYear() < yearToStart) || (timestamp.getDayOfYear() < dayToStart)) {
 				continue;
 			}
@@ -285,24 +285,8 @@ public class PivotDataApp {
 		return sensorData;
 	}
 
-	private LocalDateTime setTimeGranularity(LocalDateTime ldt) {
-		int seconds = ldt.toLocalTime().toSecondOfDay();
-		int roundedSeconds = ((seconds + (accountMonitor.runParams.csvTimeGranularityInSeconds / 2))
-								/ accountMonitor.runParams.csvTimeGranularityInSeconds)
-								* accountMonitor.runParams.csvTimeGranularityInSeconds;
-		int dayFactor;
-		if (roundedSeconds < 86400) {
-			dayFactor = 0;
-		} else {  // we rounded up to the next day
-			roundedSeconds = 0;
-			dayFactor = 1;
-		}
-		LocalTime lt = LocalTime.ofSecondOfDay(roundedSeconds);
-		return LocalDateTime.of(ldt.toLocalDate(), lt).plusDays(dayFactor);
-	}
-
 	private void setTimeGranularity(SensorData sensorData) {
-		sensorData.localDateTime = setTimeGranularity(sensorData.localDateTime);
+		sensorData.localDateTime = googleSheetsWriter.setTimeGranularity(sensorData.localDateTime);
 	}
 
 	private void readSensorValues(String fn, ConcurrentSkipListMap<String, String> firstSensorValues,

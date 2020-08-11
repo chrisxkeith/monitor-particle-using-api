@@ -29,25 +29,31 @@ public class GoogleSheetsWriter extends Thread {
 		this.entry = entry;
 	}
 
+    public LocalDateTime setTimeGranularity(LocalDateTime ldt) {
+        // Don't need time granularity finer than expectedDataIntervalInSeconds.
+        long seconds = ldt.toEpochSecond(OffsetDateTime.now().getOffset());
+        Integer dataInterval = entry.getValue().expectedDataIntervalInSeconds;
+        long roundedSeconds = ((seconds + dataInterval / 2) / dataInterval) * dataInterval;
+		return LocalDateTime.ofEpochSecond(roundedSeconds, 0, OffsetDateTime.now().getOffset());
+	}
+	
 	public void addData(EventData eventData) {
 		synchronized (this) {
 			LocalDateTime start = LocalDateTime.now().minusMinutes(entry.getValue().dataIntervalInMinutes);
 			Map.Entry<String, String> sensorDataEntry = eventData.getNextSensorData();
 			while (sensorDataEntry != null) {
 				// Don't need time granularity finer than reporting granularity.
-				long seconds = eventData.timestamp.toEpochSecond(OffsetDateTime.now().getOffset());
-				LocalDateTime truncatedTime = eventData.timestamp
-						.minusSeconds(seconds % entry.getValue().writeIntervalInSeconds).withNano(0);
-				if (start.isBefore(truncatedTime)) {
+                LocalDateTime roundedTime = setTimeGranularity(eventData.timestamp);
+				if (start.isBefore(roundedTime)) {
 					String fullSensorName = eventData.deviceName + "\t" + sensorDataEntry.getKey();
 					sensorNames.put(fullSensorName, sensorDataEntry.getKey());
 	
-					ConcurrentSkipListMap<String, String> sensorValues = sensorData.get(truncatedTime);
+					ConcurrentSkipListMap<String, String> sensorValues = sensorData.get(roundedTime);
 					if (sensorValues == null) {
 						sensorValues = new ConcurrentSkipListMap<String, String>();
 					}
 					sensorValues.put(fullSensorName, sensorDataEntry.getValue());
-					sensorData.put(truncatedTime, sensorValues);
+					sensorData.put(roundedTime, sensorValues);
 				}
 				sensorDataEntry = eventData.getNextSensorData();
 			}
