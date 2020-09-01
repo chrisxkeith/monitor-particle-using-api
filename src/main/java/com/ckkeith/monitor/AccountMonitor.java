@@ -62,11 +62,14 @@ public class AccountMonitor extends Thread {
 		File f = new File(this.getParamCfgFilePath());
 		if (f.exists()) {
 			Scanner scanner = new Scanner(f);
+			String id = "unknown";
 			try {
-				String id = scanner.nextLine();
-				Utils.logToConsole(accountName + ": loading params from: " + id);
+				id = scanner.nextLine();
+				Utils.logToConsole(accountName + ": loading params from Google Sheet: " + id);
 				runParams = RunParams.loadFromXMLString(GoogleSheetsReader.readData(id, "Sheet1", "A1:A250"));
 			} catch (Throwable t) {
+				Utils.logToConsole("Error loading params from Google Sheet: " + id);
+				Utils.logToConsole(t.toString());
 				loadParamsFromFile();
 			} finally {
 				scanner.close();
