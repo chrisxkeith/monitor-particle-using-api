@@ -35,6 +35,7 @@ public class AccountMonitor extends Thread {
 		if (creds.length > 1) {
 			this.accountName = creds[1];
 		} else {
+			Utils.logToConsole(this.accessToken);
 			throw new Exception("No account name specified.");
 		}
 		logFileName = Utils.getLogFileName(accountName, "devices-overview.txt");
