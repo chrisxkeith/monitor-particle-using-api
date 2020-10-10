@@ -34,6 +34,7 @@ public class SheetsTest extends TestCase {
 		String t = LocalDateTime.now().toString();
 		String name = "test sheet " + t;
 		String spreadSheetId = GSheetsUtility.create(name);
+		GSheetsUtility.giveAccess(spreadSheetId, "anyone", "reader");
 		System.out.println("created sheet named: " + name + " with spreadSheetId: " + spreadSheetId);
 		return spreadSheetId;
 	}

@@ -12,7 +12,11 @@ import com.google.api.client.extensions.java6.auth.oauth2.AuthorizationCodeInsta
 import com.google.api.client.extensions.jetty.auth.oauth2.LocalServerReceiver;
 import com.google.api.client.googleapis.auth.oauth2.GoogleAuthorizationCodeFlow;
 import com.google.api.client.googleapis.auth.oauth2.GoogleClientSecrets;
+import com.google.api.client.googleapis.batch.BatchRequest;
+import com.google.api.client.googleapis.batch.json.JsonBatchCallback;
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
+import com.google.api.client.googleapis.json.GoogleJsonError;
+import com.google.api.client.http.HttpHeaders;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.jackson2.JacksonFactory;
@@ -31,6 +35,8 @@ import com.google.api.services.sheets.v4.model.Spreadsheet;
 import com.google.api.services.sheets.v4.model.SpreadsheetProperties;
 import com.google.api.services.sheets.v4.model.UpdateCellsRequest;
 import com.google.api.services.sheets.v4.model.ValueRange;
+import com.google.api.services.drive.Drive;
+import com.google.api.services.drive.model.Permission;
 
 public class GSheetsUtility {
     private static final String APPLICATION_NAME = "Google Sheets API Java Quickstart";
@@ -45,6 +51,7 @@ public class GSheetsUtility {
     private static final String CREDENTIALS_FILE_PATH = "credentials.json";
 
     private static Sheets sheetsService;
+    private static Drive driveService;
 
     /**
      * Creates an authorized Credential object.
@@ -68,23 +75,33 @@ public class GSheetsUtility {
         return new AuthorizationCodeInstalledApp(flow, receiver).authorize("user");
     }
 
+    private static Credential getCredentialsX() {
+        try {
+            return getCredentials(GoogleNetHttpTransport.newTrustedTransport());
+        } catch (Exception e) {
+            Utils.logToConsole("Unable to get Google Cloud credentials. No credentials file?");
+            e.printStackTrace();
+            System.exit(-1);
+        }
+        return null;
+    }
+    
     private static Sheets getSheetsService() throws Exception {
     	if (sheetsService == null) {
-            // Build a new authorized API client service.
-            final NetHttpTransport HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
-                Credential credentials = null;
-                try {
-                        credentials = getCredentials(HTTP_TRANSPORT);
-                } catch (Exception e) {
-                        Utils.logToConsole("Unable to get Google Cloud credentials. No credentials file?");
-                        e.printStackTrace();
-                        System.exit(-1);
-                }
-            sheetsService = new Sheets.Builder(HTTP_TRANSPORT, JSON_FACTORY, credentials)
+            sheetsService = new Sheets.Builder(GoogleNetHttpTransport.newTrustedTransport(), JSON_FACTORY, getCredentialsX())
                     .setApplicationName(APPLICATION_NAME)
                     .build();
     	}
     	return sheetsService;
+    }
+
+    private static Drive getDriveService() throws Exception {
+    	if (driveService == null) {
+            driveService = new Drive.Builder(GoogleNetHttpTransport.newTrustedTransport(), JSON_FACTORY, getCredentialsX())
+                    .setApplicationName(APPLICATION_NAME)
+                    .build();
+    	}
+    	return driveService;
     }
     
     public static List<List<Object>> getRange(String spreadsheetId, String range) throws Exception {
@@ -92,6 +109,33 @@ public class GSheetsUtility {
                 .get(spreadsheetId, range)
                 .execute();
         return response.getValues();
+    }
+
+    public static void giveAccess(String spreadsheetId, String type, String role) throws Exception {
+        JsonBatchCallback<Permission> callback = new JsonBatchCallback<Permission>() {
+            @Override
+            public void onFailure(GoogleJsonError e,
+                                    HttpHeaders responseHeaders)
+                throws IOException {
+                System.err.println(e.getMessage());
+            }
+
+            @Override
+            public void onSuccess(Permission permission,
+                                    HttpHeaders responseHeaders)
+                throws IOException {
+                System.out.println("Permission ID: '" + permission.getId() + "'");
+            }
+        };
+        BatchRequest batch = getDriveService().batch();
+        Permission userPermission = new Permission()
+            .setType(type)
+            .setRole(role);
+            getDriveService().permissions().create(spreadsheetId, userPermission)
+            .setFields("id")
+            .queue(batch, callback);
+
+        batch.execute();
     }
     
 	public static String create(String sheetName) throws Exception {
