@@ -24,6 +24,7 @@ public class RunParams {
 		public Integer				expectedDataIntervalInSeconds = writeIntervalInSeconds;
 		Boolean						missingDataShowsBlank = false;
 		public ArrayList<Dataset>	dataSets;
+		public String				sheetName;
 	};
 
 	Integer		htmlWriteIntervalInSeconds = 5;
@@ -112,13 +113,27 @@ public class RunParams {
 		if (blankDataNodeList.getLength() > 0) {
 			sheetConfig.missingDataShowsBlank = Boolean.valueOf(blankDataNodeList.item(0).getTextContent());
 		}
+		NodeList sheetNameList = sheetElement.getElementsByTagName("sheetName");
+		if (sheetNameList.getLength() > 0) {
+			sheetConfig.sheetName = sheetNameList.item(0).getTextContent();
+		} else {
+			sheetConfig.sheetName = "unspecified sheetName";
+		}
 		return sheetConfig;
 	}
 
 	private void addSheet(Element sheetElement) throws Exception {
 		NodeList sheetIdList = getNodeList(sheetElement, "sheetId");
 		String sheetId = sheetIdList.item(0).getTextContent();
-		sheets.put(sheetId, loadSheetConfig(sheetElement));
+		SheetConfig sc = loadSheetConfig(sheetElement);
+		if (sheetId.startsWith("/")) {
+			sheetId = GSheetsUtility.create(sc.sheetName);
+			GSheetsUtility.giveAccess(sheetId, "anyone", "reader");
+			System.out.println("Created sheet with id: " + sheetId + 
+							", name: " + sc.sheetName +
+							". After sheet has data, create graph, switch to line graph, remove Time series, add Time to X-axis.");
+		}
+		sheets.put(sheetId, sc);
 	}
 
 	private void loadSheets(Element root) throws Exception {
