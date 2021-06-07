@@ -71,7 +71,12 @@ public class AccountMonitor extends Thread {
 			} catch (Throwable t) {
 				Utils.logToConsole("Error loading params from Google Sheet: " + id);
 				Utils.logToConsole(t.toString());
-				loadParamsFromFile();
+				try {
+					loadParamsFromFile();
+				} catch (Throwable t1) {
+					Utils.logToConsole("Error loading params from file: " + f.getAbsolutePath());
+					System.exit(-1);
+				}
 			} finally {
 				scanner.close();
 			}
