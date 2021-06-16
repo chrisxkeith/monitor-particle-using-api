@@ -8,7 +8,6 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
@@ -21,6 +20,7 @@ public class AccountMonitor extends Thread {
 	private String logFileName;
 	private Map<String, ParticleDeviceEvent> eventSubscribers = new HashMap<String, ParticleDeviceEvent>();
 	private List<GoogleSheetsWriter> googleSheetsWriters = new ArrayList<GoogleSheetsWriter>();
+	private HtmlFileDataWriter htmlFileDataWriter;
 	RunParams runParams;
 	Map<String, DeviceMonitor> deviceMonitors = new HashMap<String, DeviceMonitor>();
 	Set<String> deviceNames = new HashSet<String>();
@@ -109,8 +109,14 @@ public class AccountMonitor extends Thread {
 		}
 	}
 
+	void startHtmlWriter() {
+		if (htmlFileDataWriter == null && runParams.htmlWriteIntervalInSeconds > 0) {
+			htmlFileDataWriter = new HtmlFileDataWriter(this);
+			htmlFileDataWriter.start();
+		}
+	}
 	void startDeviceMonitors() {
-		startSheetsWriter();
+		startHtmlWriter();
 		ParticleCloud c = new ParticleCloud("Bearer " + accessToken, true, false);
 		ArrayList<DeviceMonitor> newDevices = new ArrayList<DeviceMonitor>();
 		for (ParticleDevice device : c.getDevices()) {
@@ -176,7 +182,10 @@ public class AccountMonitor extends Thread {
 
 	public void addDataPoint(LocalDateTime ldt, String deviceName, String event, String data) {
 		if (event.contains("ensor") || event.contains("ontroller")) {
-			for (GoogleSheetsWriter googleSheetsWriter : googleSheetsWriters) {
+			if ((htmlFileDataWriter != null)) {
+				this.htmlFileDataWriter.addData(new SensorDataPoint(ldt, deviceName, event, data));
+			}
+/*			for (GoogleSheetsWriter googleSheetsWriter : googleSheetsWriters) {
 				Iterator<RunParams.Dataset> datasetIt = googleSheetsWriter.entry.getValue().dataSets.iterator();
 				while (datasetIt.hasNext()) {
 					RunParams.Dataset d = datasetIt.next();
@@ -187,7 +196,7 @@ public class AccountMonitor extends Thread {
 					}
 				}
 			}
-		}
+*/		}
 	}
 
 	private void updateGoogleSheets() {

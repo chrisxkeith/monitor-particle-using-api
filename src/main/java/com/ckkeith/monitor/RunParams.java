@@ -28,6 +28,7 @@ public class RunParams {
 	};
 
 	Integer		htmlWriteIntervalInSeconds = 5;
+	public int	dataIntervalInMinutes = 10;
 	String		devicesToReport = "";
 	Integer		csvTimeGranularityInSeconds = 300; // E.g. '60' == round to minutes, '30' == round to minutes and half-minutes.
 	Boolean		writeLongTermData = false;
