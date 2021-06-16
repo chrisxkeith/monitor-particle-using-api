@@ -9,10 +9,13 @@ See https://github.com/chrisxkeith/monitor-particle-using-api/blob/master/bootst
 
 You will need to create a runparams.xml file. See https://github.com/chrisxkeith/monitor-particle-using-api/blob/master/src/main/java/com/ckkeith/monitor/RunParams.java .
 
+This assumes that you have flashed https://github.com/chrisxkeith/particle-photon-sensor-test-bed onto one or more Particle microcontrollers.
+
+___
+_**Google Sheets now turned OFF**_
+
 You will also need to create and install a Google Cloud Platform credential file (e.g., client_secret.json) for the email functionality to work. The file should be put into the src/main/resources/com/ckkeith/monitor/ directory.
 
 You will also need to enable the Google Sheets, Email and Drive APIs.
 
 Email addresses (To: and From:) are currently hardcoded. You will need to find them (search for chris.keith@gmail.com) and change them.
-
-This assumes that you have flashed https://github.com/chrisxkeith/particle-photon-sensor-test-bed onto one or more Particle microcontrollers.
