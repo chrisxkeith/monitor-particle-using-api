@@ -127,6 +127,7 @@ public class RunParams {
 		NodeList sheetIdList = getNodeList(sheetElement, "sheetId");
 		String sheetId = sheetIdList.item(0).getTextContent();
 		SheetConfig sc = loadSheetConfig(sheetElement);
+		this.dataIntervalInMinutes = sc.dataIntervalInMinutes;
 		if (sheetId.startsWith("/")) {
 			sheetId = GSheetsUtility.create(sc.sheetName);
 			GSheetsUtility.giveAccess(sheetId, "anyone", "reader");
