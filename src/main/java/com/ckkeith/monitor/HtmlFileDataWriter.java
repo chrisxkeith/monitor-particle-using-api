@@ -190,6 +190,32 @@ public class HtmlFileDataWriter extends Thread {
 		}
 	}
 
+	private void writeCSV() throws Exception {
+		String fileName = Utils.getLogFileName(accountMonitor.accountName, "x.csv");
+		FileWriter csvStream = new FileWriter(fileName, false);
+		try {
+			Iterator<String> sensorIt = sensorNames.keySet().iterator();
+			while (sensorIt.hasNext()) {
+				String sensorName = sensorIt.next();
+				Set<LocalDateTime> keys = sensorData.keySet();
+				Iterator<LocalDateTime> itr = keys.iterator();
+				while (itr.hasNext()) {
+					LocalDateTime timestamp = itr.next();
+					ConcurrentSkipListMap<String, String> entries = sensorData.get(timestamp);
+		
+					String val = entries.get(sensorName);
+					if (val != null && !val.isEmpty()) {
+						StringBuilder sb2 = new StringBuilder();
+						sb2.append(timestamp).append(",").append(val);
+						writeln(csvStream, sb2.toString());
+					}
+				}
+			}
+		} finally {
+			csvStream.close();
+		}
+}
+
 	void writeOneHtml(String deviceName, int thisFileNumber) {
 		String thisFileName = "not yet specified";
 		int nDataPoints = 0;
@@ -255,6 +281,7 @@ public class HtmlFileDataWriter extends Thread {
 		try {
 			while (true) {
 				writeHtml();
+				this.writeCSV();
 				Thread.sleep(accountMonitor.runParams.htmlWriteIntervalInSeconds * 1000);
 			}
 		} catch (Exception e) {
