@@ -2,13 +2,11 @@
 package com.ckkeith.monitor;
 
 import java.io.File;
-import java.io.FileWriter;
 import java.io.PrintStream;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
 import java.util.Set;
@@ -19,7 +17,6 @@ public class AccountMonitor extends Thread {
 	String accountName = null;
 	private String logFileName;
 	private Map<String, ParticleDeviceEvent> eventSubscribers = new HashMap<String, ParticleDeviceEvent>();
-	private List<GoogleSheetsWriter> googleSheetsWriters = new ArrayList<GoogleSheetsWriter>();
 	private HtmlFileDataWriter htmlFileDataWriter;
 	RunParams runParams;
 	Map<String, DeviceMonitor> deviceMonitors = new HashMap<String, DeviceMonitor>();
@@ -100,15 +97,6 @@ public class AccountMonitor extends Thread {
 		return getParamFilePath("runparams.id");
 	}
 
-	private void startSheetsWriter() {
-		for (Map.Entry<String, RunParams.SheetConfig> entry : this.runParams.sheets.entrySet()) {
-			GoogleSheetsWriter googleSheetsWriter = new GoogleSheetsWriter(entry);
-			new PivotDataApp(this).loadSheetsWriter(googleSheetsWriter);
-			googleSheetsWriter.start();
-			googleSheetsWriters.add(googleSheetsWriter);
-		}
-	}
-
 	void startHtmlWriter() {
 		if (htmlFileDataWriter == null && runParams.htmlWriteIntervalInSeconds > 0) {
 			htmlFileDataWriter = new HtmlFileDataWriter(this);
@@ -185,80 +173,10 @@ public class AccountMonitor extends Thread {
 			if ((htmlFileDataWriter != null)) {
 				this.htmlFileDataWriter.addData(new SensorDataPoint(ldt, deviceName, event, data));
 			}
-/*			for (GoogleSheetsWriter googleSheetsWriter : googleSheetsWriters) {
-				Iterator<RunParams.Dataset> datasetIt = googleSheetsWriter.entry.getValue().dataSets.iterator();
-				while (datasetIt.hasNext()) {
-					RunParams.Dataset d = datasetIt.next();
-					for (String mc : d.microcontrollers.keySet()) {
-						if (mc.equals(deviceName)) {
-							googleSheetsWriter.addData(new EventData(ldt, deviceName, event, data));
-						}
-					}
-				}
-			}
-*/		}
-	}
-
-	private void updateGoogleSheets() {
-		for (GoogleSheetsWriter googleSheetsWriter : googleSheetsWriters) {
-			googleSheetsWriter.updateGoogleSheets();
 		}
 	}
-
-	private void loadDiagnostics(String sheetId, String message) {
-		try {
-			List<List<Object>> listOfRows = new ArrayList<List<Object>>();
-			List<Object> r1 = new ArrayList<Object>();
-			r1.add(Utils.nowInLogFormat());
-			r1.add(message);
-			listOfRows.add(r1);
-			GSheetsUtility.updateData(sheetId, "Sheet2!A1", listOfRows);
-		} catch (Throwable t) {
-			Utils.logToConsole("Error in loadDiagnostics:\t" + t.toString());
-		}
-}
-
-private void writeCfgSheetId(String id) {
-	try {
-		File f = new File(this.getParamCfgFilePath());
-		if (f.exists()) {
-			f.delete();
-		}
-		f.createNewFile();
-		FileWriter writer = new FileWriter(this.getParamCfgFilePath());
-		writer.write(id);
-		writer.close();		
-	} catch (Throwable t) {
-		Utils.logToConsole("Error in writeCfgSheetId:\t" + t.toString());
-	}
-}
-
-	private boolean handleConfig(String event) {
-		if (!event.startsWith("config:")) {
-			return false;
-		}
-		String strs[] = event.split(":");
-		if (strs.length != 2) {
-			return false;
-		}
-		try {
-			runParams = RunParams.loadFromXMLString(GoogleSheetsReader.readData(strs[1], "Sheet1", "A1:A250"));
-		} catch (Throwable t) {
-			loadDiagnostics(strs[1], t.toString());
-			return false;
-		}
-		googleSheetsWriters.clear();
-		startSheetsWriter();
-		loadDiagnostics(strs[1], "Success!");
-		writeCfgSheetId(strs[1]);
-		return true;
-}
 
 	public boolean handleServerEvent(String event) throws Exception {
-		if ("update sheets".equalsIgnoreCase(event)) {
-			updateGoogleSheets();
-			return true;
-		}
-		return handleConfig(event);
+		return true;
 	}
 }

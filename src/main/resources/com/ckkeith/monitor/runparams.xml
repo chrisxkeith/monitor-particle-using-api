@@ -11,26 +11,13 @@
             <dataSet> 
                 <!-- One microcontroller with one or more sensors.
                 Name is defined when controller is set up with Particle app. -->
-                <microcontrollerName>photon-09</microcontrollerName>
+                <microcontrollerName>photon-05</microcontrollerName>
                 <sensors>
                     <sensor>
                         <!-- Name as reported by the microcontroller. -->
-                        <name>Light sensor</name>
+                        <name>Current sensor</name>
                         <!-- Name as displayed in the column header in the Google Sheet. -->
-                        <displayName>CK's Light sensor (1K)</displayName>
-                    </sensor>
-                    <sensor>
-                        <name>Light sensor (10K)</name>
-                        <displayName>CK's Light sensor (10K)</displayName>
-                    </sensor>
-                </sensors>
-            </dataSet>
-            <dataSet>
-                <microcontrollerName>photon-11</microcontrollerName>
-                <sensors>
-                    <sensor>
-                        <name>Jeff Light sensor</name>
-                        <displayName>Jeff's Light sensor</displayName>
+                        <displayName>Current sensor</displayName>
                     </sensor>
                 </sensors>
             </dataSet>

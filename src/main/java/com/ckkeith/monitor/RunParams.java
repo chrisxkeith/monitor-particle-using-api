@@ -114,12 +114,6 @@ public class RunParams {
 		if (blankDataNodeList.getLength() > 0) {
 			sheetConfig.missingDataShowsBlank = Boolean.valueOf(blankDataNodeList.item(0).getTextContent());
 		}
-		NodeList sheetNameList = sheetElement.getElementsByTagName("sheetName");
-		if (sheetNameList.getLength() > 0) {
-			sheetConfig.sheetName = sheetNameList.item(0).getTextContent();
-		} else {
-			sheetConfig.sheetName = "unspecified sheetName";
-		}
 		return sheetConfig;
 	}
 
@@ -128,13 +122,6 @@ public class RunParams {
 		String sheetId = sheetIdList.item(0).getTextContent();
 		SheetConfig sc = loadSheetConfig(sheetElement);
 		this.dataIntervalInMinutes = sc.dataIntervalInMinutes;
-		if (sheetId.startsWith("/")) {
-			sheetId = GSheetsUtility.create(sc.sheetName);
-			GSheetsUtility.giveAccess(sheetId, "anyone", "reader");
-			System.out.println("Created sheet with id: " + sheetId + 
-							", name: " + sc.sheetName +
-							". After sheet has data, create graph, switch to line graph, remove Time series, add Time to X-axis.");
-		}
 		sheets.put(sheetId, sc);
 	}
 
