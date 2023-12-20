@@ -7,9 +7,9 @@ See https://github.com/chrisxkeith/monitor-particle-using-api/blob/master/bootst
 * edit it to match your environment
 * run from that directory using Git Bash.
 
-You will need to create a runparams.xml file. See https://github.com/chrisxkeith/monitor-particle-using-api/blob/master/src/main/java/com/ckkeith/monitor/RunParams.java .
+You will need to create a runparams.xml file. See https://github.com/chrisxkeith/monitor-particle-using-api/blob/master/src/main/java/com/ckkeith/monitor/RunParams.java . E.g., '[particle_token][tab][account name]'. Make sure your IDE didn't substitute spaces for the tab.
 
-This assumes that you have flashed https://github.com/chrisxkeith/particle-photon-sensor-test-bed onto one or more Particle microcontrollers.
+This assumes that you have flashed https://github.com/chrisxkeith/particle-photon-sensor-test-bed (or some other Particle app) onto one or more Particle microcontrollers.
 
 ___
 _**Google Sheets now turned OFF**_
