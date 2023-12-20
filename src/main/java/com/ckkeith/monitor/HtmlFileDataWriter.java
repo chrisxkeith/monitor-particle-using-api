@@ -191,13 +191,14 @@ public class HtmlFileDataWriter extends Thread {
 	}
 
 	private void writeCSV() throws Exception {
-		String fileName = Utils.getLogFileName(accountMonitor.accountName, "x.csv");
-		Utils.logToConsole("writeCSV: " + fileName);
-		FileWriter csvStream = new FileWriter(fileName, false);
-		try {
-			Iterator<String> sensorIt = sensorNames.keySet().iterator();
-			while (sensorIt.hasNext()) {
-				String sensorName = sensorIt.next();
+		Iterator<String> sensorIt = sensorNames.keySet().iterator();
+		while (sensorIt.hasNext()) {
+			String sensorName = sensorIt.next();
+			String fileName = Utils.getLogFileName(accountMonitor.accountName,
+								sensorName.replaceAll("\\W+", "_") + ".csv");
+			Utils.logToConsole("writeCSV: " + fileName);
+			FileWriter csvStream = new FileWriter(fileName, false);
+			try {
 				Set<LocalDateTime> keys = sensorData.keySet();
 				Iterator<LocalDateTime> itr = keys.iterator();
 				while (itr.hasNext()) {
@@ -211,11 +212,11 @@ public class HtmlFileDataWriter extends Thread {
 						writeln(csvStream, sb2.toString());
 					}
 				}
+			} finally {
+				csvStream.close();
 			}
-		} finally {
-			csvStream.close();
 		}
-}
+	}
 
 	void writeOneHtml(String deviceName, int thisFileNumber) {
 		String thisFileName = "not yet specified";
