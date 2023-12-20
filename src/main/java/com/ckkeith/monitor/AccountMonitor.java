@@ -177,7 +177,7 @@ public class AccountMonitor extends Thread {
 				this.htmlFileDataWriter.addData(new SensorDataPoint(ldt, deviceName, event, data));
 			}
 		} else {
-			Utils.logToConsole("Skipping event: " + event.toString());
+			Utils.logToConsole("Skipping event: " + deviceName + ", " + event + ", " + data);
 		}
 	}
 
