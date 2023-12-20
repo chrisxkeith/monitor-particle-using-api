@@ -109,6 +109,9 @@ public class AccountMonitor extends Thread {
 		ArrayList<DeviceMonitor> newDevices = new ArrayList<DeviceMonitor>();
 		for (ParticleDevice device : c.getDevices()) {
 			try {
+				if (!device.getName().equals("photon-09")) {
+					continue;
+				}
 				if (!device.getConnected()) {
 					if (!Utils.isDebug) {
 						Utils.logToConsole("Skipping disconnected device : " + device.getName());
