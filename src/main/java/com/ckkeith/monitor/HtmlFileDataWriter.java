@@ -192,6 +192,7 @@ public class HtmlFileDataWriter extends Thread {
 
 	private void writeCSV() throws Exception {
 		String fileName = Utils.getLogFileName(accountMonitor.accountName, "x.csv");
+		Utils.logToConsole("writeCSV: " + fileName);
 		FileWriter csvStream = new FileWriter(fileName, false);
 		try {
 			Iterator<String> sensorIt = sensorNames.keySet().iterator();
