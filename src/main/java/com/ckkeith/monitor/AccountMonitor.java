@@ -27,13 +27,13 @@ public class AccountMonitor extends Thread {
 		if (creds.length > 0) {
 			this.accessToken = creds[0];
 		} else {
-			throw new Exception("No particle token specified.");
+			throw new Exception("No particle token specified. particle-tokens.txt file should be: [particle_token][tab][particle_account_name]");
 		}
 		if (creds.length > 1) {
 			this.accountName = creds[1];
 		} else {
 			Utils.logToConsole(this.accessToken);
-			throw new Exception("No account name specified.");
+			throw new Exception("No account name specified. particle-tokens.txt file should be: [particle_token][tab][particle_account_name]");
 		}
 		logFileName = Utils.getLogFileName(accountName, "devices-overview.txt");
 		loadParams();
