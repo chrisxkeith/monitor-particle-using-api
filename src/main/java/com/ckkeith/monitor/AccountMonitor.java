@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.PrintStream;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -107,9 +108,10 @@ public class AccountMonitor extends Thread {
 		startHtmlWriter();
 		ParticleCloud c = new ParticleCloud("Bearer " + accessToken, true, false);
 		ArrayList<DeviceMonitor> newDevices = new ArrayList<DeviceMonitor>();
+		String[] photonsToMonitor = { "photon-01", "photon-09" }; 
 		for (ParticleDevice device : c.getDevices()) {
 			try {
-				if (!device.getName().equals("photon-09")) {
+				if (!Arrays.asList(photonsToMonitor).contains(device.getName())) {
 					continue;
 				}
 				if (!device.getConnected()) {

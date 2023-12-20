@@ -282,7 +282,7 @@ public class HtmlFileDataWriter extends Thread {
 		Utils.logToConsole("HtmlFileDataWriter thread starting.");
 		try {
 			while (true) {
-				writeHtml();
+				// writeHtml();
 				this.writeCSV();
 				Thread.sleep(accountMonitor.runParams.htmlWriteIntervalInSeconds * 1000);
 			}
