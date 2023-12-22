@@ -8,9 +8,11 @@ import java.io.FileWriter;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentSkipListMap;
 
@@ -190,6 +192,27 @@ public class HtmlFileDataWriter extends Thread {
 		}
 	}
 
+	private ConcurrentSkipListMap<LocalDateTime, ConcurrentSkipListMap<String, String>>
+				createMapAtOneSecondResolution() {
+		ConcurrentSkipListMap<LocalDateTime, ConcurrentSkipListMap<String, String>> newMap =
+				new ConcurrentSkipListMap<LocalDateTime, ConcurrentSkipListMap<String, String>>();
+		Iterator<LocalDateTime> sensorDataIt = sensorData.keySet().iterator();
+		while (sensorDataIt.hasNext()) {
+			LocalDateTime timestamp = sensorDataIt.next();
+			LocalDateTime timestampInSeconds = timestamp.truncatedTo(ChronoUnit.SECONDS);
+			ConcurrentSkipListMap<String, String> oldEntries = sensorData.get(timestamp);
+			ConcurrentSkipListMap<String, String> newEntries = newMap.get(timestampInSeconds);
+			if (newEntries == null) {
+				newMap.put(timestampInSeconds, oldEntries);
+			} else {
+				for (Map.Entry<String, String> e : oldEntries.entrySet()) {
+					newEntries.put(e.getKey(), e.getValue());
+				}
+			}
+		}
+		return newMap;
+	}
+
 	private StringBuilder getFullCSV() {
 		StringBuilder sb = new StringBuilder("Time,");
 		String sep = "";
@@ -203,12 +226,14 @@ public class HtmlFileDataWriter extends Thread {
 			sensorNamesInOrder.add(sensorName);
 		}
 		sb.append("\n");
-		Iterator<LocalDateTime> sensorDataIt = sensorData.keySet().iterator();
+		ConcurrentSkipListMap<LocalDateTime, ConcurrentSkipListMap<String, String>> newMap =
+						createMapAtOneSecondResolution();
+		Iterator<LocalDateTime> sensorDataIt = newMap.keySet().iterator();
 		while (sensorDataIt.hasNext()) {
 			LocalDateTime timestamp = sensorDataIt.next();
 			sb.append(timestamp);
 			sb.append(",");
-			ConcurrentSkipListMap<String, String> entries = sensorData.get(timestamp);
+			ConcurrentSkipListMap<String, String> entries = newMap.get(timestamp);
 			sep = "";
 			for (String sensorName : sensorNamesInOrder) {
 				String val = entries.get(sensorName);
@@ -224,6 +249,7 @@ public class HtmlFileDataWriter extends Thread {
 	}
 
 	private void writeCSV() throws Exception {
+		deleteOldData();
 		String fileName = Utils.getLogFileName(accountMonitor.accountName,
 							"sensordata.csv");
 		Utils.logToConsole("writeCSV: " + fileName);
