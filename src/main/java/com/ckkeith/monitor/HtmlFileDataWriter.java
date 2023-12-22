@@ -190,31 +190,48 @@ public class HtmlFileDataWriter extends Thread {
 		}
 	}
 
-	private void writeCSV() throws Exception {
-		Iterator<String> sensorIt = sensorNames.keySet().iterator();
-		while (sensorIt.hasNext()) {
-			String sensorName = sensorIt.next();
-			String fileName = Utils.getLogFileName(accountMonitor.accountName,
-								sensorName.replaceAll("\\W+", "_") + ".csv");
-			Utils.logToConsole("writeCSV: " + fileName);
-			FileWriter csvStream = new FileWriter(fileName, false);
-			try {
-				Set<LocalDateTime> keys = sensorData.keySet();
-				Iterator<LocalDateTime> itr = keys.iterator();
-				while (itr.hasNext()) {
-					LocalDateTime timestamp = itr.next();
-					ConcurrentSkipListMap<String, String> entries = sensorData.get(timestamp);
-		
-					String val = entries.get(sensorName);
-					if (val != null && !val.isEmpty()) {
-						StringBuilder sb2 = new StringBuilder();
-						sb2.append(timestamp).append(",").append(val);
-						writeln(csvStream, sb2.toString());
-					}
+	private StringBuilder getFullCSV() {
+		StringBuilder sb = new StringBuilder("Time,");
+		String sep = "";
+		List<String> sensorNamesInOrder = new ArrayList<String>();
+		Iterator<String> sensorNameIt = sensorNames.keySet().iterator();
+		while (sensorNameIt.hasNext()) {
+			String sensorName = sensorNameIt.next();
+			sb.append(sep);
+			sep = ",";
+			sb.append(sensorName);
+			sensorNamesInOrder.add(sensorName);
+		}
+		sb.append("\n");
+		Iterator<LocalDateTime> sensorDataIt = sensorData.keySet().iterator();
+		while (sensorDataIt.hasNext()) {
+			LocalDateTime timestamp = sensorDataIt.next();
+			sb.append(timestamp);
+			sb.append(",");
+			ConcurrentSkipListMap<String, String> entries = sensorData.get(timestamp);
+			sep = "";
+			for (String sensorName : sensorNamesInOrder) {
+				String val = entries.get(sensorName);
+				sb.append(sep);
+				sep = ",";
+				if (val != null) {
+					sb.append(val);
 				}
-			} finally {
-				csvStream.close();
 			}
+			sb.append("\n");
+		}
+		return sb;
+	}
+
+	private void writeCSV() throws Exception {
+		String fileName = Utils.getLogFileName(accountMonitor.accountName,
+							"sensordata.csv");
+		Utils.logToConsole("writeCSV: " + fileName);
+		FileWriter csvStream = new FileWriter(fileName, false);
+		try {
+			writeln(csvStream, getFullCSV().toString());
+		} finally {
+			csvStream.close();
 		}
 	}
 
