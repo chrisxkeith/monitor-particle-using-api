@@ -5,7 +5,6 @@ import java.io.File;
 import java.io.PrintStream;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -108,10 +107,9 @@ public class AccountMonitor extends Thread {
 		startHtmlWriter();
 		ParticleCloud c = new ParticleCloud("Bearer " + accessToken, true, false);
 		ArrayList<DeviceMonitor> newDevices = new ArrayList<DeviceMonitor>();
-		String[] photonsToMonitor = { "photon-01", "photon-09" }; 
 		for (ParticleDevice device : c.getDevices()) {
 			try {
-				if (Arrays.asList(photonsToMonitor).contains(device.getName())) {
+				if (deviceNames.contains(device.getName()) && deviceMonitors.get(device.getName()) == null) {
 					if (!device.getConnected()) {
 						if (!Utils.isDebug) {
 							Utils.logToConsole("Skipping disconnected device : " + device.getName());
@@ -121,10 +119,8 @@ public class AccountMonitor extends Thread {
 						device = device.getDevice("Bearer " + accessToken);
 						DeviceMonitor dm = new DeviceMonitor(this, device, c);
 						Utils.logWithGSheetsDate(LocalDateTime.now(), dm.toTabbedString(), logFileName);
-						if (deviceNames.contains(device.getName()) && deviceMonitors.get(device.getName()) == null) {
-							deviceMonitors.put(device.getName(), dm);
-							newDevices.add(dm);
-						}
+						deviceMonitors.put(device.getName(), dm);
+						newDevices.add(dm);
 						// Server returned HTTP response code: 502 for URL: https://api.particle.io/v1/devices/4b0050001151373331333230
 						if (Utils.isDebug) {
 							Thread.sleep(3 * 1000);
@@ -134,7 +130,7 @@ public class AccountMonitor extends Thread {
 								"AccountMonitor.startDeviceMonitors() sleeping to try to avoid \"Too many requests\" (http 502) error for: "
 										+ device.getName(),
 								then);
-							}
+						}
 					}
 				}
 			} catch (Exception e) {
