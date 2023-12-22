@@ -13,7 +13,7 @@
                 <!-- One microcontroller with one or more sensors.
                 Name is defined when controller is set up with Particle app. -->
                 <microcontrollerName>photon-05</microcontrollerName>
-                <sensors>
+                <sensors> <!-- *** Misleading *** Should only be one sensor per dataSet-->
                     <sensor>
                         <!-- Name as reported by the microcontroller. -->
                         <name>Current sensor</name>
