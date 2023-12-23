@@ -261,6 +261,36 @@ public class HtmlFileDataWriter extends Thread {
 		}
 	}
 
+	int doWriteOneHtml(String safeFn, File tempFile, String deviceName, int thisFileNumber, String thisFileName)
+				throws Exception {
+		int nDataPoints = 0;
+		FileWriter htmlStream = new FileWriter(tempFile.getCanonicalPath(), false);
+		try {
+			appendFromFileToFile(htmlStream, "src/main/resources/prefix.html",
+					safeFn + String.format("%03d", getNextFileNumber(thisFileNumber)));
+			nDataPoints = writeJson(htmlStream, deviceName);
+			appendFromFileToFile(htmlStream, "src/main/resources/suffix.html", "junk");
+		} finally {
+			htmlStream.close();
+		}
+		File thisFile = new File(thisFileName);
+		try {
+			thisFile.delete();
+		} catch (Exception ex) {
+			Utils.logToConsole(
+					"thisFile.delete() failed : " + ex.getMessage() + " " + ex.getClass().getName() + ", continuing");
+		}
+		try {
+			Files.move(tempFile.toPath(), thisFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+			Utils.logToConsole(
+					"Wrote " + thisFileName + " : # data points : " + new Integer(nDataPoints).toString());
+		} catch (Exception ex) {
+			Utils.logToConsole(
+					"Files.move() failed : " + ex.getMessage() + " " + ex.getClass().getName() + ", continuing");
+		}
+		return nDataPoints;
+	}
+
 	void writeOneHtml(String deviceName, int thisFileNumber) {
 		String thisFileName = "not yet specified";
 		int nDataPoints = 0;
@@ -276,32 +306,11 @@ public class HtmlFileDataWriter extends Thread {
 			thisFileName = fileName.replace("NNN", String.format("%03d", thisFileNumber));
 			String dir = new File(fileName).getParent();
 			File tempFile = File.createTempFile("tmp", ".html", new File(dir));
-			FileWriter htmlStream = new FileWriter(tempFile.getCanonicalPath(), false);
 			try {
-				appendFromFileToFile(htmlStream, "src/main/resources/prefix.html",
-						safeFn + String.format("%03d", getNextFileNumber(thisFileNumber)));
-				nDataPoints = writeJson(htmlStream, deviceName);
-				appendFromFileToFile(htmlStream, "src/main/resources/suffix.html", "junk");
+				nDataPoints = doWriteOneHtml(safeFn, tempFile, deviceName, thisFileNumber, thisFileName);
 			} finally {
-				htmlStream.close();
+				tempFile.delete();
 			}
-			File thisFile = new File(thisFileName);
-			try {
-				thisFile.delete();
-			} catch (Exception ex) {
-				Utils.logToConsole(
-						"thisFile.delete() failed : " + ex.getMessage() + " " + ex.getClass().getName() + ", continuing");
-			}
-			try {
-				Files.move(tempFile.toPath(), thisFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
-				Utils.logToConsole(
-						"Wrote " + thisFileName + " : # data points : " + new Integer(nDataPoints).toString());
-			} catch (Exception ex) {
-				Utils.logToConsole(
-						"Files.move() failed : " + ex.getMessage() + " " + ex.getClass().getName() + ", continuing");
-			}
-//Only use this when NOT running from Task Scheduler
-//			startChrome(thisFileName);
 		} catch (Exception e) {
 			Utils.logToConsole("FAILED to write : " + thisFileName + " : # data points : "
 					+ new Integer(nDataPoints).toString() + " : " + e.getMessage());
@@ -313,9 +322,6 @@ public class HtmlFileDataWriter extends Thread {
 	void writeHtml() throws Exception {
 		synchronized (this) {
 			int thisFileNumber = currentFileNumber;
-			for (DeviceMonitor dm : accountMonitor.deviceMonitors.values()) {
-				writeOneHtml(dm.device.getName(), thisFileNumber);
-			}
 			writeOneHtml(null, thisFileNumber);
 			currentFileNumber = getNextFileNumber(currentFileNumber);
 		}
@@ -325,7 +331,7 @@ public class HtmlFileDataWriter extends Thread {
 		Utils.logToConsole("HtmlFileDataWriter thread starting.");
 		try {
 			while (true) {
-				// writeHtml();
+				writeHtml();
 				this.writeCSV();
 				Thread.sleep(accountMonitor.runParams.htmlWriteIntervalInSeconds * 1000);
 			}
