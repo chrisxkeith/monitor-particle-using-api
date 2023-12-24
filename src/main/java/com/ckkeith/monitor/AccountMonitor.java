@@ -169,8 +169,8 @@ public class AccountMonitor extends Thread {
 	}
 
 	public void addDataPoint(LocalDateTime ldt, String deviceName, String event, String data) {
-		if (event.contains("ensor") || event.contains("ontroller")) {
-			if ((htmlFileDataWriter != null)) {
+		if (runParams.containsSensor(deviceName, event)) {
+			if ((this.htmlFileDataWriter != null)) {
 				this.htmlFileDataWriter.addData(new SensorDataPoint(ldt, deviceName, event, data));
 			}
 		} else {

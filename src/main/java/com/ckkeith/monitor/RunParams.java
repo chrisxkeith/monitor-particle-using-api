@@ -4,6 +4,8 @@ package com.ckkeith.monitor;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Hashtable;
+import java.util.Map;
+
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Node;
@@ -166,6 +168,26 @@ public class RunParams {
 	static RunParams loadFromXMLString(String xml) throws Exception {
 		Element root = Utils.readStringIntoDOM(xml).getDocumentElement();
 		return loadFromDOM(root);
+	}
+
+	public Boolean containsSensor(String deviceName, String sensorName) {
+		for (Map.Entry<String, SheetConfig> sheetEntry : this.sheets.entrySet()) {
+			for (Dataset dataSet : sheetEntry.getValue().dataSets) {
+				for (Map.Entry<String, HashMap<String, String>> microcontroller :
+										dataSet.microcontrollers.entrySet()) {
+					if (microcontroller.getKey().equals(deviceName)) {
+						for (Map.Entry<String, String> sensorEntry : 
+										microcontroller.getValue().entrySet()) {
+							if (sensorEntry.getKey().equals(sensorName)) {
+								return true;
+							}
+						}
+					}
+
+				}
+			}
+		}
+		return false;
 	}
 
 	public String toString() {
