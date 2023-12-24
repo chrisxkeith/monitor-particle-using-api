@@ -93,6 +93,24 @@ public class HtmlFileDataWriter extends Thread {
 		return nDataPoints;
 	}
 
+	private LocalDateTime[] findTimeLimits() throws Exception {
+		LocalDateTime min = LocalDateTime.MAX;
+		LocalDateTime max = LocalDateTime.MIN;
+		Set<LocalDateTime> keys = sensorData.keySet();
+		Iterator<LocalDateTime> itr = keys.iterator();
+		while (itr.hasNext()) {
+			LocalDateTime timestamp = itr.next();
+			if (timestamp.isBefore(min)) {
+				min = timestamp;
+			}
+			if (timestamp.isAfter(max)) {
+				max = timestamp;
+			}
+		}
+		LocalDateTime[] ret = { min, max };
+		return ret;
+	}
+
 	private Integer writeJson(FileWriter jsonStream, String deviceName) throws Exception {
 		Integer nDataPoints = 0;
 		try {
@@ -133,6 +151,7 @@ public class HtmlFileDataWriter extends Thread {
 	private void appendFromFileToFile(FileWriter htmlStream, String fromFile, String fileName) throws Exception {
 		try (BufferedReader br = new BufferedReader(new FileReader(new File(fromFile)))) {
 			String line;
+			LocalDateTime limits[] = findTimeLimits();
 			while ((line = br.readLine()) != null) {
 				if (line.contains("_fileNameGoesHere_.html")) {
 					String accountPath = Utils.getHomeURLPath(
@@ -143,10 +162,13 @@ public class HtmlFileDataWriter extends Thread {
 							.replace("_writeIntervalGoesHere_",
 									new Integer(accountMonitor.runParams.htmlWriteIntervalInSeconds).toString());
 				} else if (line.contains("_suggestedTimeMin_")) {
-					LocalDateTime then = LocalDateTime.now().minusMinutes(accountMonitor.runParams.dataIntervalInMinutes);
-					line = line.replace("_suggestedTimeMin_", Utils.googleSheetsDateFormat.format(then));
+					line = line.replace("_suggestedTimeMin_", Utils.googleSheetsDateFormat.format(limits[0]));
 				} else if (line.contains("_suggestedTimeMax_")) {
-					line = line.replace("_suggestedTimeMax_", Utils.googleSheetsDateFormat.format(LocalDateTime.now()));
+					LocalDateTime max = LocalDateTime.now();
+					if (max.isBefore(limits[1])) {
+						max = limits[1];
+					}
+					line = line.replace("_suggestedTimeMax_", Utils.googleSheetsDateFormat.format(max));
 				}
 				writeln(htmlStream, line);
 			}
