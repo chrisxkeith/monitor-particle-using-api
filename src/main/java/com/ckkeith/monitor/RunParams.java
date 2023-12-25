@@ -190,6 +190,26 @@ public class RunParams {
 		return false;
 	}
 
+	public String getDisplayNameForSensor(String deviceName, String sensorName) {
+		for (Map.Entry<String, SheetConfig> sheetEntry : this.sheets.entrySet()) {
+			for (Dataset dataSet : sheetEntry.getValue().dataSets) {
+				for (Map.Entry<String, HashMap<String, String>> microcontroller :
+										dataSet.microcontrollers.entrySet()) {
+					if (microcontroller.getKey().equals(deviceName)) {
+						for (Map.Entry<String, String> sensorEntry : 
+										microcontroller.getValue().entrySet()) {
+							if (sensorEntry.getKey().equals(sensorName)) {
+								return sensorEntry.getValue();
+							}
+						}
+					}
+
+				}
+			}
+		}
+		return "No display name for: " + deviceName + ", " + sensorName;
+	}
+
 	public String toString() {
 		return "RunParams : "
 				+ ", htmlWriteIntervalInSeconds = " + htmlWriteIntervalInSeconds

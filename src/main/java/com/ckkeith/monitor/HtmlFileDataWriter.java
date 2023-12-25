@@ -23,13 +23,15 @@ public class HtmlFileDataWriter extends Thread {
 	private ConcurrentSkipListMap<LocalDateTime, ConcurrentSkipListMap<String, String>> sensorData = new ConcurrentSkipListMap<LocalDateTime, ConcurrentSkipListMap<String, String>>();
 	private ConcurrentSkipListMap<String, String> sensorNames = new ConcurrentSkipListMap<String, String>();
 
+	private static String separator = "/";
+
 	public HtmlFileDataWriter(AccountMonitor accountMonitor) {
 		this.accountMonitor = accountMonitor;
 	}
 	
 	public void addData(SensorDataPoint sensorDataPoint) {
 		synchronized (this) {
-			String fullSensorName = sensorDataPoint.deviceName + " " + sensorDataPoint.sensorName;
+			String fullSensorName = sensorDataPoint.deviceName + separator + sensorDataPoint.sensorName;
 			sensorNames.put(fullSensorName, sensorDataPoint.sensorName);
 			ConcurrentSkipListMap<String, String> sensorValues = sensorData.get(sensorDataPoint.timestamp);
 			if (sensorValues == null) {
@@ -93,6 +95,12 @@ public class HtmlFileDataWriter extends Thread {
 		return nDataPoints;
 	}
 
+	private String getDisplayNameForSensor(String fullSensorName) {
+		String[] deviceSensorNames = fullSensorName.split(separator);
+		return accountMonitor.runParams.getDisplayNameForSensor(deviceSensorNames[0], 
+																deviceSensorNames[1]);
+	}
+
 	private LocalDateTime[] findTimeLimits() throws Exception {
 		LocalDateTime min = LocalDateTime.MAX;
 		LocalDateTime max = LocalDateTime.MIN;
@@ -132,7 +140,7 @@ public class HtmlFileDataWriter extends Thread {
 						sb1.append(" , ");
 					}
 					sb1.append("{ \"label\" : \"");
-					sb1.append(sensorName).append("\",");
+					sb1.append(getDisplayNameForSensor(sensorName)).append("\",");
 					writeln(jsonStream, sb1.toString());
 					writeln(jsonStream, "\"lineTension\" : 0,");
 					writeln(jsonStream, "\t\t\t\"borderColor\" : \"rgba(" + getNextColor() + ")\",");
@@ -244,7 +252,7 @@ public class HtmlFileDataWriter extends Thread {
 			String sensorName = sensorNameIt.next();
 			sb.append(sep);
 			sep = ",";
-			sb.append(sensorName);
+			sb.append(getDisplayNameForSensor(sensorName));
 			sensorNamesInOrder.add(sensorName);
 		}
 		sb.append("\n");
