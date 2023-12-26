@@ -357,10 +357,33 @@ public class HtmlFileDataWriter extends Thread {
 		}
 	}
 	
+	void fillEmpty() {
+		ConcurrentSkipListMap<String, String> prevEntries = new ConcurrentSkipListMap<String, String>();
+		Iterator<LocalDateTime> sensorDataIt = sensorData.keySet().iterator();
+		while (sensorDataIt.hasNext()) {
+			LocalDateTime timestamp = sensorDataIt.next();
+			ConcurrentSkipListMap<String, String> entries = sensorData.get(timestamp);
+			Iterator<String> sensorNameIt = sensorNames.keySet().iterator();
+			while (sensorNameIt.hasNext()) {
+				String sensorName = sensorNameIt.next();
+				if (!entries.containsKey(sensorName)) {
+					if (prevEntries.containsKey(sensorName)) {
+						entries.put(sensorName, prevEntries.get(sensorName));
+					}
+				}
+				String val = entries.get(sensorName);
+				if (val != null) {
+					prevEntries.put(sensorName, val);
+				}
+			}
+		}
+	}
+
 	public void run() {
 		Utils.logToConsole("HtmlFileDataWriter thread starting.");
 		try {
 			while (true) {
+				fillEmpty();
 				writeHtml();
 				this.writeCSV();
 				Thread.sleep(accountMonitor.runParams.htmlWriteIntervalInSeconds * 1000);
