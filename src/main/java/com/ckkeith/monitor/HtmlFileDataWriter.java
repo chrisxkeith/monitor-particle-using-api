@@ -7,6 +7,7 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
+import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
@@ -280,8 +281,9 @@ public class HtmlFileDataWriter extends Thread {
 
 	private void writeCSV() throws Exception {
 		deleteOldData();
+		String today = (new SimpleDateFormat("yyyy-MM-dd")).format(new java.util.Date());
 		String fileName = Utils.getLogFileName(accountMonitor.accountName,
-							"sensordata.csv");
+							"sensordata-" + today + ".csv");
 		Utils.logToConsole("writeCSV: " + fileName);
 		FileWriter csvStream = new FileWriter(fileName, false);
 		try {
