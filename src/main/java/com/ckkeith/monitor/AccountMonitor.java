@@ -173,7 +173,7 @@ public class AccountMonitor extends Thread {
 			if ((this.htmlFileDataWriter != null)) {
 				this.htmlFileDataWriter.addData(new SensorDataPoint(ldt, deviceName, event, data));
 			}
-		} else {
+		} else if (Utils.isDebug) {
 			Utils.logToConsole("Skipping event: " + deviceName + ", " + event + ", " + data);
 		}
 	}
