@@ -334,6 +334,8 @@ public class HtmlFileDataWriter extends Thread {
 			} else {
 				safeFn = Utils.getSafeName(deviceName);
 			}
+			String today = (new SimpleDateFormat("-yyyy-MM-dd-")).format(new java.util.Date());
+			safeFn += today;
 			String fileName = Utils.getLogFileName(accountMonitor.accountName, safeFn + "NNN.html");
 			thisFileName = fileName.replace("NNN", String.format("%03d", thisFileNumber));
 			String dir = new File(fileName).getParent();
