@@ -5,6 +5,8 @@ import java.io.PrintStream;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 
+import org.json.JSONObject;
+
 import nl.infcomtec.jparticle.AnyDeviceEvent;
 import nl.infcomtec.jparticle.Event;
 
@@ -49,7 +51,17 @@ public class ParticleDeviceEvent extends AnyDeviceEvent {
 				Utils.logToConsole(s);
 			}
 			mostRecentEvent = e;
-			accountMonitor.addDataPoint(ldt, device.getName(), e.getName(), e.getData());
+			if (e.getData().charAt(0) == '{') {
+				JSONObject deviceJson = new JSONObject(e.getData());
+				String[] names = JSONObject.getNames(deviceJson);
+				for (String name : names) {
+					String eventName = e.getName() + " " + name;
+					accountMonitor.addDataPoint(ldt, device.getName(), eventName, deviceJson.getString(name));
+				}
+
+			} else {
+				accountMonitor.addDataPoint(ldt, device.getName(), e.getName(), e.getData());
+			}
 		}
 	}
 

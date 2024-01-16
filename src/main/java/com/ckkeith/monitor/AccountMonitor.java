@@ -169,13 +169,14 @@ public class AccountMonitor extends Thread {
 	}
 
 	public void addDataPoint(LocalDateTime ldt, String deviceName, String event, String data) {
-		if (runParams.containsSensor(deviceName, event)) {
+		// Hack to display all values (even multiple values in one event).
+		// if (runParams.containsSensor(deviceName, event)) {
 			if ((this.htmlFileDataWriter != null)) {
 				this.htmlFileDataWriter.addData(new SensorDataPoint(ldt, deviceName, event, data));
 			}
-		} else if (Utils.isDebug) {
-			Utils.logToConsole("Skipping event: " + deviceName + ", " + event + ", " + data);
-		}
+		// } else if (Utils.isDebug) {
+		// 	Utils.logToConsole("Skipping event: " + deviceName + ", " + event + ", " + data);
+		// }
 	}
 
 	public boolean handleServerEvent(String event) throws Exception {

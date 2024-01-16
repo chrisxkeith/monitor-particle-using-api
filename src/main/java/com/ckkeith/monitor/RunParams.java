@@ -207,7 +207,7 @@ public class RunParams {
 				}
 			}
 		}
-		return "No display name for: " + deviceName + ", " + sensorName;
+		return deviceName + ":" + sensorName;
 	}
 
 	public String toString() {
