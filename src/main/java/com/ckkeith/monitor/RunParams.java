@@ -178,7 +178,8 @@ public class RunParams {
 					if (microcontroller.getKey().equals(deviceName)) {
 						for (Map.Entry<String, String> sensorEntry : 
 										microcontroller.getValue().entrySet()) {
-							if (sensorEntry.getKey().equals(sensorName)) {
+							String sensorFromXML = sensorEntry.getKey();
+							if (sensorName.startsWith(sensorFromXML)) {
 								return true;
 							}
 						}
