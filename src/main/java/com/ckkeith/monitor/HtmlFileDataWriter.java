@@ -157,8 +157,24 @@ public class HtmlFileDataWriter extends Thread {
 		return nDataPoints;
 	}
 
+	private File findFile(String fn) {
+		File f = new File(fn);
+		if (f.exists()) {
+			return f;
+		}
+		f = new File("monitor-particle-using-api" + File.pathSeparator + fn);
+		if (f.exists()) {
+			return f;
+		}
+		return null;
+	}
+
 	private void appendFromFileToFile(FileWriter htmlStream, String fromFile, String fileName) throws Exception {
-		try (BufferedReader br = new BufferedReader(new FileReader(new File(fromFile)))) {
+		File f = findFile(fromFile);
+		if (f == null) {
+			return;
+		}
+		try (BufferedReader br = new BufferedReader(new FileReader(f))) {
 			String line;
 			LocalDateTime limits[] = findTimeLimits();
 			while ((line = br.readLine()) != null) {
