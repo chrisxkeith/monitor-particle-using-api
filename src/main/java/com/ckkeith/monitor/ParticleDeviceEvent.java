@@ -63,6 +63,10 @@ public class ParticleDeviceEvent extends AnyDeviceEvent {
 						value = deviceJson.getString(name);
 					} else {
 						JSONObject jo = deviceJson.getJSONObject(name);
+						if (!jo.has("eventName")) {
+							System.out.println("No eventName in: " + deviceJson);
+							return;
+						}
 						eventName = jo.getString("eventName");
 						value = jo.getString("value");
 					}
