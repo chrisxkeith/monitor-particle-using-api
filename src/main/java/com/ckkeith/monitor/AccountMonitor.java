@@ -171,7 +171,12 @@ public class AccountMonitor extends Thread {
 	public void addDataPoint(LocalDateTime ldt, String deviceName, String event, String data) {
 		if (runParams.containsSensor(deviceName, event)) {
 			if ((this.htmlFileDataWriter != null)) {
-				this.htmlFileDataWriter.addData(new SensorDataPoint(ldt, deviceName, event, data));
+				try {
+					Float.parseFloat(data);
+					this.htmlFileDataWriter.addData(new SensorDataPoint(ldt, deviceName, event, data));
+				} catch(Exception e) {
+					Utils.logToConsole("Skipping data: " + deviceName + ", " + event + ", " + data);
+				}
 			}
 		} else if (Utils.isDebug) {
 		 	Utils.logToConsole("Skipping event: " + deviceName + ", " + event + ", " + data);
