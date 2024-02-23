@@ -73,7 +73,7 @@ public class ParticleDeviceEvent extends AnyDeviceEvent {
 					accountMonitor.addDataPoint(ldt, device.getName(), eventName, value);
 				}
 			} else {
-				accountMonitor.addDataPoint(ldt, device.getName(), e.getName(), e.getData());
+				Utils.logToConsole("Skipping non-JSON event: " + device.getName() + ", " + e.getName() + ", " + e.getData());
 			}
 		}
 	}
