@@ -295,12 +295,15 @@ public class HtmlFileDataWriter extends Thread {
 		return sb;
 	}
 
+	private String getCSVFileName() throws Exception {
+		String today = (new SimpleDateFormat("yyyy-MM-dd")).format(new java.util.Date());
+		return Utils.getLogFileName(accountMonitor.accountName,
+							"sensordata-" + today + ".csv");
+	}
+
 	private void writeCSV() throws Exception {
 		deleteOldData();
-		String today = (new SimpleDateFormat("yyyy-MM-dd")).format(new java.util.Date());
-		String fileName = Utils.getLogFileName(accountMonitor.accountName,
-							"sensordata-" + today + ".csv");
-		Utils.logToConsole("writeCSV: " + fileName);
+		String fileName = getCSVFileName();
 		FileWriter csvStream = new FileWriter(fileName, false);
 		try {
 			writeln(csvStream, getFullCSV().toString());
@@ -330,13 +333,23 @@ public class HtmlFileDataWriter extends Thread {
 		}
 		try {
 			Files.move(tempFile.toPath(), thisFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
-			Utils.logToConsole(
-					"Wrote " + thisFileName + " : # data points : " + new Integer(nDataPoints).toString());
 		} catch (Exception ex) {
 			Utils.logToConsole(
 					"Files.move() failed : " + ex.getMessage() + " " + ex.getClass().getName() + ", continuing");
 		}
 		return nDataPoints;
+	}
+
+	String getHTMLFileName(String deviceName) throws Exception {
+		String safeFn;
+		if (deviceName == null) {
+			safeFn = "all";
+		} else {
+			safeFn = Utils.getSafeName(deviceName);
+		}
+		String today = (new SimpleDateFormat("-yyyy-MM-dd-")).format(new java.util.Date());
+		safeFn += today;
+		return safeFn;
 	}
 
 	void writeOneHtml(String deviceName, int thisFileNumber) {
@@ -345,13 +358,7 @@ public class HtmlFileDataWriter extends Thread {
 		try {
 			deleteOldData();
 			String safeFn;
-			if (deviceName == null) {
-				safeFn = "all";
-			} else {
-				safeFn = Utils.getSafeName(deviceName);
-			}
-			String today = (new SimpleDateFormat("-yyyy-MM-dd-")).format(new java.util.Date());
-			safeFn += today;
+			safeFn = getHTMLFileName(deviceName);
 			String fileName = Utils.getLogFileName(accountMonitor.accountName, safeFn + "NNN.html");
 			thisFileName = fileName.replace("NNN", String.format("%03d", thisFileNumber));
 			String dir = new File(fileName).getParent();
@@ -402,6 +409,11 @@ public class HtmlFileDataWriter extends Thread {
 	public void run() {
 		Utils.logToConsole("HtmlFileDataWriter thread starting.");
 		try {
+			Utils.logToConsole("writeCSV : " + getCSVFileName());
+			String safeFn = getHTMLFileName(null);
+			String fileName = Utils.getLogFileName(accountMonitor.accountName, safeFn + "NNN.html");
+			fileName = fileName.replace("NNN", "000");
+			Utils.logToConsole("writeHTML: " + fileName);
 			while (true) {
 				fillEmpty();
 				writeHtml();
