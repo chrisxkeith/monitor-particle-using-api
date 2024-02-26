@@ -6,6 +6,13 @@ import java.io.PrintStream;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 
+/*
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+@SpringBootApplication
+*/
 public class Main {
 	private static ArrayList<AccountMonitor> monitors = new ArrayList<AccountMonitor>();
 
@@ -39,6 +46,7 @@ public class Main {
 	}
 
 	public static void main(String[] args) {
+		// SpringApplication.run(Main.class, args);
 		Utils.logToConsole("main thread starting : " + Utils.getCurrentThreadString());
 		try {
 			if (!Utils.isDebug) {
