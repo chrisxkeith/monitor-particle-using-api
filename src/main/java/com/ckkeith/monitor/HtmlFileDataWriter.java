@@ -69,12 +69,11 @@ public class HtmlFileDataWriter extends Thread {
 		return nextColor;
 	}
 
-	private int addDataForSensor(FileWriter jsonStream, String sensorName) throws Exception {
+	private void addDataForSensor(FileWriter jsonStream, String sensorName) throws Exception {
 		writeln(jsonStream, "\t\t\t\t\"data\" : [");
 		Set<LocalDateTime> keys = sensorData.keySet();
 		Iterator<LocalDateTime> itr = keys.iterator();
 		boolean first = true;
-		int nDataPoints = 0;
 		while (itr.hasNext()) {
 			LocalDateTime timestamp = itr.next();
 			ConcurrentSkipListMap<String, String> entries = sensorData.get(timestamp);
@@ -89,11 +88,9 @@ public class HtmlFileDataWriter extends Thread {
 				}
 				sb2.append("{ \"t\" : \"").append(timestamp).append("\", \"y\" : " + val + "}");
 				writeln(jsonStream, sb2.toString());
-				nDataPoints++;
 			}
 		}
 		writeln(jsonStream, "\t\t\t\t]");
-		return nDataPoints;
 	}
 
 	private String getDisplayNameForSensor(String fullSensorName) {
@@ -120,8 +117,7 @@ public class HtmlFileDataWriter extends Thread {
 		return ret;
 	}
 
-	private Integer writeJson(FileWriter jsonStream, String deviceName) throws Exception {
-		Integer nDataPoints = 0;
+	private void writeJson(FileWriter jsonStream, String deviceName) throws Exception {
 		try {
 			colorIndex = 0;
 			writeln(jsonStream, "\t{ \"datasets\" : ");
@@ -146,7 +142,7 @@ public class HtmlFileDataWriter extends Thread {
 					writeln(jsonStream, "\"lineTension\" : 0,");
 					writeln(jsonStream, "\t\t\t\"borderColor\" : \"rgba(" + getNextColor() + ")\",");
 					writeln(jsonStream, "\t\t\t\"backgroundColor\" : \"rgba(0, 0, 0, 0.0)\",");
-					nDataPoints += addDataForSensor(jsonStream, sensorName);
+					addDataForSensor(jsonStream, sensorName);
 					writeln(jsonStream, "\t\t\t}");
 				}
 			}
@@ -154,7 +150,6 @@ public class HtmlFileDataWriter extends Thread {
 			writeln(jsonStream, "\t\t]");
 			writeln(jsonStream, "\t}");
 		}
-		return nDataPoints;
 	}
 
 	private File findFile(String fn) {
@@ -312,14 +307,13 @@ public class HtmlFileDataWriter extends Thread {
 		}
 	}
 
-	int doWriteOneHtml(String safeFn, File tempFile, String deviceName, int thisFileNumber, String thisFileName)
+	void doWriteOneHtml(String safeFn, File tempFile, String deviceName, int thisFileNumber, String thisFileName)
 				throws Exception {
-		int nDataPoints = 0;
 		FileWriter htmlStream = new FileWriter(tempFile.getCanonicalPath(), false);
 		try {
 			appendFromFileToFile(htmlStream, "src/main/resources/prefix.html",
 					safeFn + String.format("%03d", getNextFileNumber(thisFileNumber)));
-			nDataPoints = writeJson(htmlStream, deviceName);
+			writeJson(htmlStream, deviceName);
 			appendFromFileToFile(htmlStream, "src/main/resources/suffix.html", "junk");
 		} finally {
 			htmlStream.close();
@@ -337,7 +331,6 @@ public class HtmlFileDataWriter extends Thread {
 			Utils.logToConsole(
 					"Files.move() failed : " + ex.getMessage() + " " + ex.getClass().getName() + ", continuing");
 		}
-		return nDataPoints;
 	}
 
 	String getHTMLFileName(String deviceName) throws Exception {
@@ -354,7 +347,6 @@ public class HtmlFileDataWriter extends Thread {
 
 	void writeOneHtml(String deviceName, int thisFileNumber) {
 		String thisFileName = "not yet specified";
-		int nDataPoints = 0;
 		try {
 			deleteOldData();
 			String safeFn;
@@ -364,13 +356,13 @@ public class HtmlFileDataWriter extends Thread {
 			String dir = new File(fileName).getParent();
 			File tempFile = File.createTempFile("tmp", ".html", new File(dir));
 			try {
-				nDataPoints = doWriteOneHtml(safeFn, tempFile, deviceName, thisFileNumber, thisFileName);
+				doWriteOneHtml(safeFn, tempFile, deviceName, thisFileNumber, thisFileName);
 			} finally {
 				tempFile.delete();
 			}
 		} catch (Exception e) {
 			Utils.logToConsole("FAILED to write : " + thisFileName + " : # data points : "
-					+ new Integer(nDataPoints).toString() + " : " + e.getMessage());
+					+ " : " + e.getMessage());
 			e.printStackTrace();
 			// If there's any failure, continue and write the next file at the appropriate time.
 		}
